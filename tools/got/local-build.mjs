@@ -1,0 +1,14 @@
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+export function localBuild(){
+ const root=new URL('../../',import.meta.url),hash=createHash('sha256');
+ hash.update(fileURLToPath(root));
+ for(const file of ['module/got/household-guards.mjs','module/got/daily-content.mjs','module/got/daily-engine.mjs','module/got/household-panel.mjs','module/got/navigation-engine.mjs','module/got/opening-engine.mjs'])hash.update(readFileSync(new URL(file,root)));
+ for(const file of ['tools/serve-local.mjs','got-state.html','module/got/state-panel.mjs','module/got/council-session.mjs','module/got/dialogue-runner.mjs','module/got/continuous-panel.mjs','module/got/campaign-engine.mjs','module/got/campaign-content.mjs','module/got/campaign-panel.mjs','module/got/dialogue-core.mjs','module/got/world-schema.mjs','module/got/event-cards-data.mjs','module/got/event-cards.mjs','module/got/event-work.mjs','module/got/event-schedule.mjs'])hash.update(readFileSync(new URL(file,root)));
+ for(const file of ['got-art.html','module/got/scene-art.mjs','module/got/scene-art-panel.mjs','module/got/state-panel.css','module/got/folio-theme.css','module/got/folio-reader.mjs','module/got/folio-shell.mjs','module/got/court-menu.mjs','module/got/immersive.css','module/got/authored-council.mjs','module/got/council-v3.mjs','module/got/dialogue-engine.mjs','module/got/state-runtime.mjs','module/got/world-engine.mjs','module/got/portrait-panel.mjs'])hash.update(readFileSync(new URL(file,root)));
+ for(const file of ['module/response-parser.js','module/game-ui.js','module/special-event.js','ui/prompt-manager-modal.js','module/got/generation-core.mjs','module/got/generation-client.mjs','module/got/generation-settings.mjs','module/got/council-v3-runner.mjs','module/got/chronicle.mjs','module/got/canon-reference.mjs','module/got/canon-data.mjs','module/got/dialogue-panel.mjs','module/got/council-v3-panel.mjs'])hash.update(readFileSync(new URL(file,root)));
+ for(const file of ['tools/got/model-gateway.mjs','tools/got/google-auth.mjs','tools/got/completion-reader.mjs','module/api-service.js','module/bgm-manager.js','module/got/music.mjs','module/got/compat/google-provider.js','ui/config-modal.js'])hash.update(readFileSync(new URL(file,root)));
+ for(const file of ['tools/got/canon-worker.mjs','tools/canon-runtime/worker.mjs','tools/canon-runtime/search.mjs','tools/canon-runtime/encoder.mjs','tools/canon-runtime/config.mjs'])hash.update(readFileSync(new URL(file,root)));
+ return hash.digest('hex');
+}

@@ -1,0 +1,26 @@
+{
+  "format": 3,
+  "version": "592aad69c296e11142eb8807d910848bd79738aad72ae626c5a57e213a017027",
+  "model": {
+    "id": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "dtype": "q8",
+    "dimension": 384,
+    "pooling": "mean",
+    "normalize": true,
+    "maxTokens": 512,
+    "queryPrefix": "query: ",
+    "passagePrefix": "passage: ",
+    "runtime": "4.3.1"
+  },
+  "fingerprint": "{\"id\":\"Xenova/multilingual-e5-small\",\"revision\":\"761b726dd34fb83930e26aab4e9ac3899aa1fa78\",\"dtype\":\"q8\",\"dimension\":384,\"pooling\":\"mean\",\"normalize\":true,\"maxTokens\":512,\"queryPrefix\":\"query: \",\"passagePrefix\":\"passage: \",\"runtime\":\"4.3.1\"}",
+  "dimension": 384,
+  "count": 423,
+  "reviewed": 423,
+  "matrix_sha256": "c3906cb6d9c6aaf74c005d6a67fd9943d2bbd3088b7056474ab878ed2f99eb16",
+  "milliseconds": 18008.756999999998,
+  "encoded": 423,
+  "cached": 0,
+  "unencoded": [],
+  "catalog_sha256": "9d08864d5f383539a05368295ba598b39c273df3a810466703b7fb0fea546e80"
+}

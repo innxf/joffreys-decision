@@ -1,0 +1,6 @@
+{
+  "name": "got-local-canon-embedding",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@huggingface/transformers": "4.3.1" }
+}

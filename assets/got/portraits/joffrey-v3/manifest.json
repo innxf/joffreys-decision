@@ -1,0 +1,51 @@
+{
+  "version": "joffrey-v3-20261018",
+  "character_id": "U001",
+  "likeness": "Jamie Campbell Bower / 杰米·坎贝尔·鲍尔",
+  "reference": "本轮用户提供的礼服形象，保留面部与中长后梳金发；V2盔甲仅作服装参考。",
+  "tool": "built-in image_gen",
+  "scope": "四张美术素材，未改游戏头像绑定；旧版保留。",
+  "approval": "待作者审美确认",
+  "portraits": [
+    {
+      "key": "court",
+      "file": "U001-court-neutral-v3.png",
+      "label": "礼服·常态",
+      "original": "exec-4fac55fd-6c87-4a13-9b60-831ea0f3c005.png",
+      "prompt": "Create ONE square pixel-art dialogue portrait for a Game of Thrones fan game: Joffrey recast with Jamie Campbell Bower's facial likeness and hairstyle. The USER'S LAST ATTACHED IMAGE is the primary reference for FACE, HAIR and ceremonial clothing. Follow that reference: distinctly long narrow sculpted face, high angular cheekbones, lean sharp jaw, fine straight nose, pale blue eyes, full sculpted lips, pale skin; recognizable Jamie Campbell Bower features, not Jack Gleeson and not the rounder face of earlier generated portraits. Blond medium-length swept-back tousled hair, side strands over ears and nape, NOT a short straight fringe. Keep elegant aloof aristocratic expression and slightly raised chin. Crop to head and shoulders, almost frontal subtle three-quarter angle, eyes toward viewer. Gold branching antler crown fully visible with top margin, high-collared plum-purple and gold floral brocade, deep purple velvet drape over one shoulder, match user's reference clothing closely. Crisp detailed 16-bit pixel-art RPG portrait with visible deliberate square pixel clusters, restrained dithering, not a photograph, not a blur or mosaic filter. Dark desaturated teal #18282b plain background, upper-left illumination, same overall portrait asset style as previous set. One person, no words, no border, no sword in crop. 1024x1024 square. This is the neutral ceremonial base portrait for a consistent four-image set.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "ee9584e366940c42580974b4db4fc1c62900a655f782ed1b4134984fc469c34f"
+    },
+    {
+      "key": "court-cold",
+      "file": "U001-court-cold-v3.png",
+      "label": "礼服·冷酷",
+      "original": "exec-011de4aa-2546-40a4-85a4-910dbb4064cb.png",
+      "prompt": "Edit this pixel-art portrait into an EXPRESSION ONLY variant. Precisely preserve Jamie Campbell Bower's recognizable long angular face, blue eyes, swept-back medium golden blond hair, pose, head angle, gold antler crown, purple-and-gold brocade pattern and velvet drape, pixel texture, lighting, dark teal background and square framing. Change only expression to quiet cruel authority: subtly narrow eyes, lower brow slightly, one corner of mouth lifts into a restrained contemptuous half-smile. Handsome but unnerving, aristocratic, not a cartoon villain or snarl. No new objects, no text. One square game portrait.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "8713a61c7f49cfbdd4082f53b64f31d73798f8c651699f12aa5c3f88df00a667"
+    },
+    {
+      "key": "armour",
+      "file": "U001-armour-neutral-v3.png",
+      "label": "盔甲·常态",
+      "original": "exec-eac62086-3c8a-458c-99b3-5c3d989349c9.png",
+      "prompt": "Create one square pixel-art dialogue portrait by changing the FIRST reference's clothing into the SECOND reference's armour. Identity MUST come solely from FIRST image: Jamie Campbell Bower's long sculpted handsome face, high angular cheekbones, blue eyes, full lips, lean jaw, swept-back medium-length golden blond hair visible at nape and sides. Preserve first image's slightly raised chin, three-quarter pose, aloof calm expression, lighting and pixel-art finish. Do NOT copy second image's face or short fringe. Remove crown and formal gown; retain swept-back hairstyle with naturally filled crown area. Clothing ONLY from second image: black high gorget, riveted gold engraved breastplate with lion decorations, rounded dark steel pauldrons gold trim. Same dark teal background, whole hair visible with margin, head and shoulders. No helmet, no crown, no weapon, no text or borders. One 1024x1024 square asset.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "127878aeb2043f2c3fa7f4aaaa63adf603e40c222a8254df61c4c9f3642d54da"
+    },
+    {
+      "key": "armour-cold",
+      "file": "U001-armour-cold-v3.png",
+      "label": "盔甲·威压",
+      "original": "exec-bad8056e-09bb-4044-b5e8-67194b8e5825.png",
+      "prompt": "Edit the supplied pixel-art Joffrey portrait, recast with Jamie Campbell Bower, into an EXPRESSION ONLY variant. Keep EXACT face identity, long angular proportions, cheekbones, pale blue eye color, golden swept-back medium hair, head angle, raised chin, square framing, black-and-gold engraved lion armour, all rivets, gorget, shoulder plates, lighting and teal background. Only subtly tighten brows and narrow eyes into an icy commanding stare, lips pressed with restrained menace. Handsome, calm, severe and intimidating, not screaming, not snarling, not smiling. No crown, helmet, new objects or text. Same crisp pixel art finish. One square portrait.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "64e01fe3fcae99b2eaaf080d9d99dbe0ac040626aa71f0ba27a71207f5a19e8c"
+    }
+  ]
+}

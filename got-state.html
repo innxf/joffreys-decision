@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>乔佛里的决定 · 测试版 v0.1</title>
+  <link rel="stylesheet" href="module/got/state-panel.css">
+<link rel="stylesheet" href="module/got/generation-dialog-base.css"><link rel="stylesheet" href="ui/settings-dialogs.css"><link rel="stylesheet" href="module/got/generation-panel.css">
+<link rel="stylesheet" href="module/got/portraits.css">
+<link rel="stylesheet" href="module/got/folio-theme.css?v=1">
+<link rel="stylesheet" href="module/got/immersive.css">
+</head>
+<body data-responsive-page="start">
+<main>
+  <p><a href="got-generation.html">正文API、中间层API与提示词设置</a>（独立生成检查，不改变世界进度）</p>
+  <p><a href="got-finale.html">进入独立终章试玩：紫色婚礼</a>（测试存档与当前T0进度隔离，无需API）</p>
+  <header><p class="eyebrow">乔佛里的决定 · 测试版 v0.1</p><h1>权游：乔弗里</h1>
+    <p>从处决后的清晨，到黑水河与最后的盛典。</p></header>
+  <p id="status" role="status" aria-live="polite">正在读取本地存档……</p>
+  <p id="clock"></p>
+  <aside id="runtime-notice" role="status" hidden></aside>
+  <p><a href="got-state.html?opening-test=1">隔离试玩全年粗版</a>（独立存档，不改正式进度）</p>
+  <section id="opening-panel" class="panel" hidden></section>
+  <section class="panel"><h2>活动与等待</h2><p class="muted">只检查时间与占用，不生成剧情。活动按节点走时，查看和反复阅读不走时。</p><div id="activity-controls" class="buttons"></div><p id="activity-status"></p></section>
+  <section class="panel"><h2>有限委托</h2><p class="muted">点击发令不等于办妥。收到回报前，不显示后台完成状态；没有规则的政治判断继续等待后续接入。</p><div id="action-controls" class="buttons"></div><div id="orders"></div></section>
+  <section class="panel"><h2>机构筹建</h2><label>机构名称 <input id="org-name" value="王室近卫筹备处" maxlength="80"></label><div id="org-controls" class="buttons"></div><div id="org-list"></div><p class="muted">筹建登记和任命不会产生新兵，不替桑铎接受职位，也不腾出白袍席位。</p></section>
+  <section class="panel"><h2>已送达的执行回报</h2><p class="muted">28日报表由程序汇总，不重复扣款。税入预测尚未交付时不会增加现金。</p><div id="reports"></div></section>
+  <section class="panel"><h2>政治方案与后续</h2><p class="muted">方案、双方接受、交接与回报分别推进。这里可以登记、撤回并检查执行条件；不会自动替人物同意，也不会生成认购者或账户异常。</p><div id="political-controls" class="buttons"></div><div id="political-list"></div></section>
+  <section class="panel" id="dialogue-panel"><h2>当前活动中的对话</h2>
+    <p id="dialogue-mode"></p><p><a href="got-state.html?dialogue-test=1">隔离的守卫／家庭测试存档</a> · <a href="got-state.html">正式T0存档</a></p>
+    <nav class="buttons"><button id="dialogue-prose-api">正文API</button><button id="dialogue-middle-api">中间层API</button><button id="dialogue-prompts">提示词与预设</button></nav>
+    <section id="prompt-section" hidden><div id="gs-prompt-manager-root"></div></section>
+    <div id="dialogue-scenes" class="buttons"></div><p id="dialogue-presence"></p>
+    <details id="dialogue-composer"><summary>另有想法，开口交谈</summary><p id="dialogue-availability" hidden></p>
+    <label>对谁说 <select id="dialogue-actor"></select></label><div id="dialogue-share" class="buttons"></div>
+    <label for="dialogue-input">乔弗里的话</label><textarea id="dialogue-input" rows="3" style="width:100%;box-sizing:border-box" placeholder="说出你的想法，或问问对方的条件。"></textarea>
+    <div class="buttons"><button id="dialogue-preview">发送前预览</button><button id="dialogue-send">发送</button><button id="dialogue-retry">继续未完成步骤</button><button id="dialogue-regenerate">重写未提交正文</button><button id="dialogue-cancel">停止生成</button><button id="dialogue-discard">放弃未提交草稿</button></div>
+    </details><p id="dialogue-status" role="status" aria-live="polite"></p><article id="story-text" data-got-draft="true"></article>
+    <div id="dialogue-candidates"></div><details><summary>已正式保存的对话</summary><div id="dialogue-history"></div></details>
+    <details id="dialogue-preview-box"><summary>本次实际发送内容（开发检查）</summary><pre id="dialogue-request"></pre></details>
+    <details id="memory-panel"></details>
+    <details id="autonomy-panel"></details>
+  </section>
+  <section aria-label="已送达的开局简报" id="briefing"></section>
+  <section class="panel" aria-labelledby="save-title"><h2 id="save-title">保存与恢复</h2>
+    <label>存档名称 <input id="save-name" value="清晨存档" maxlength="80"></label>
+    <div class="buttons">
+      <button id="save" disabled>保存当前进度</button><button id="export" disabled>导出存档文件</button>
+      <label class="file-button">导入存档文件<input id="import" type="file" accept="application/json,.json" disabled></label>
+      <button id="new" disabled>从 T0 重新开始</button>
+    </div><div id="slots"></div>
+  </section>
+  <p class="muted">进度保存在本机。阅读不走时；发送对话和整理会议记录会使用你配置的模型。</p>
+</main>
+<script src="module/bgm-manager.js"></script>
+<script src="module/variable-system.js"></script>
+<script src="module/idb-storage.js"></script>
+<script src="module/idb-snapshot.js"></script>
+<script src="module/storage-service.js"></script>
+<script src="module/sync-utils.js"></script>
+<script src="module/summary-runner.js"></script><script src="module/embedding-service.js"></script><script src="module/reranker.js"></script><script src="module/memory-recall.js"></script>
+<script src="module/template-engine.js"></script><script src="module/prompt-builder.js"></script><script src="module/api-service.js"></script><script src="module/markdown-it.min.js"></script><script src="module/game-ui.js"></script><script src="ui/config-modal.js"></script><script src="ui/prompt-manager-modal.js"></script>
+<script type="module" src="module/got/state-panel.mjs"></script>
+</body></html>

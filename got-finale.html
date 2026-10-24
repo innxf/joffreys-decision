@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>权游：乔弗里 · 第一部终章</title><link rel="stylesheet" href="module/got/finale-panel.css"><link rel="stylesheet" href="module/got/portraits.css">
+<link rel="stylesheet" href="module/got/folio-theme.css?v=1">
+</head>
+<body><main>
+<header><a href="got-state.html">← 返回首页</a><span class="brand">权游：乔弗里</span><span id="clock">终章独立试玩</span></header>
+<p id="status" role="status" aria-live="polite">正在读取本地进度……</p>
+<p id="revision-note" class="muted" hidden>当前恢复的是旧版剧情存档。阅读按《冰雨的风暴》原文改编的新稿，请点下方“重新选择测试存档”；旧进度会自动备份。</p>
+<section id="launcher" class="card"><p class="eyebrow">THE CROWN AND THE THRONE</p><h1>紫色婚礼</h1><p>宴席上的毒酒，使兰尼斯特一家再次站到了审判席前。</p>
+<p class="muted">新版已重写正文与选项。“比武改写”样本可在庭审时选择暗助奥柏伦。若要走到庭审，请先拒绝詹姆的退职交换。</p>
+<p class="muted">这是独立终章试玩。测试状态不是正式年度进度，不会覆盖首页的T0存档。剧情无需连接模型。</p>
+<label for="profile">婚礼前测试存档</label><select id="profile"></select><button id="start">开始独立试玩</button></section>
+<section id="player" class="card" hidden><div class="scene-heading"><span id="part" class="eyebrow"></span><span id="perspective"></span></div>
+<h1 id="title"></h1><p id="location" class="muted"></p><article id="prose" aria-label="剧情正文"></article>
+<div id="options" class="choices"></div><button id="continue" class="primary">继续</button><p id="finished" hidden>本次终章已经保存。未决事项保留在续作状态中。</p></section>
+<nav class="toolbar" aria-label="进度工具"><button id="save">存档</button><button id="load">读档</button><button id="history">回看</button><button id="export">导出存档</button><label class="file-button">导入存档<input id="import" type="file" accept=".json,application/json"></label><button id="restart">重新选择测试存档</button></nav>
+<dialog id="dialog"><button id="close-dialog" class="close" aria-label="关闭">关闭</button><div id="dialog-body"></div></dialog>
+<footer>独立测试存档 · 固定剧情 · 阅读不走时</footer>
+</main>
+<script src="module/bgm-manager.js"></script>
+<script src="module/variable-system.js"></script><script src="module/idb-storage.js"></script><script src="module/idb-snapshot.js"></script><script src="module/storage-service.js"></script>
+<script type="module" src="module/got/finale-panel.mjs"></script></body></html>

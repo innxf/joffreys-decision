@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+import {openIndex,searchIndex} from './search.mjs';
+import {compileWithCanon,categories} from '../../module/got/canon-reference.mjs';
+import {root} from './config.mjs';
+const index=await openIndex('pilot/');assert.equal(index.rows.length,50);
+assert.deepEqual([...new Set(index.rows.map(x=>x.category))].sort(),[...categories].sort());
+const frame={version:3,actor:'P001',actor_name:'瑟曦',place:'R05',facts:{'scene.meal':true},audience:['U001','P001'],period:'day',staging:'家庭用餐',recent:[]};
+const result=await searchIndex(index,{frame,context:{actor:'P001'},query:'与母亲共进晚餐，今天吃什么？王室家庭用餐，瑟曦。'});
+assert(result.ids.includes('CANON-0011'));assert(!result.ids.includes('CANON-0012'));assert(result.chars<=1000);
+const output=compileWithCanon({guidance:'原有指导'},result,p=>({compiled:{messages:[{role:'user',content:p.guidance}],trimmed:0},preview:{warnings:[]}}));
+assert(output.compiled.messages[0].content.includes(result.text));
+await writeFile(new URL('pilot-check.json',root),JSON.stringify({passed:true,samples:50,categories:7,result,compiler:output.canon_reference},null,2));
+console.log(JSON.stringify({passed:true,samples:50,ids:result.ids,chars:result.chars}));

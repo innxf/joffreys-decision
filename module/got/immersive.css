@@ -1,0 +1,88 @@
+/* C: 帷幕叙事. Presentation only; inherited reader and action handlers remain. */
+.court-folio{background:#241416;min-height:100vh;--curtain-height:28vh;--curtain-bottom:76px}
+.court-folio main,.court-folio.continuous-play main,.court-folio:has(.player-portrait-button) main{position:fixed;z-index:3;bottom:var(--curtain-bottom);left:210px;right:30px;margin:0;min-height:0;max-height:var(--curtain-height);overflow:auto;width:auto;max-width:none;padding:14px 26px;background:#34232af5;color:#f6e6ca;border:1px solid #8d704c;border-top:3px solid #b89b62;border-radius:2px;box-shadow:0 8px 40px #170b1280;scrollbar-color:#a88b5c #34232a}
+#court-stage{position:fixed;inset:58px 0 58px;z-index:0;pointer-events:none}
+.court-folio .scene-art{position:fixed;inset:58px 0 58px;z-index:0;margin:0;pointer-events:none}
+.court-folio .scene-art .scene-frame{height:100%;max-height:none;width:100%;margin:0;border:0;aspect-ratio:auto}
+.court-folio .scene-frame>img{width:100%;height:100%;object-fit:cover}
+.court-folio .scene-frame>figcaption{position:absolute;right:24px;left:auto;top:12px;bottom:auto;width:auto;gap:18px;background:#231314c9;padding:8px 14px;color:#fff1d7;border:1px solid #b89a6b}
+.court-folio .scene-art>small{display:none}
+.court-folio #court-header{height:58px;padding-left:130px;background:#3a1720f2;z-index:95}
+.court-folio .player-portrait-button{left:12px;top:8px;width:95px;padding:4px!important;z-index:100}
+.court-folio .player-portrait-button .got-portrait{width:72px;height:78px}
+.court-folio .player-portrait-button small{display:none}
+#court-roster{position:fixed;left:12px;top:140px;bottom:auto;width:174px;height:auto;max-height:calc(100vh - 235px);overflow:auto!important;margin:0;padding:10px;background:#f5ead4ed;border:1px solid #b89a6b;color:#39271d;z-index:20}
+#court-roster details{display:block}#court-roster summary{color:#39271d;font-size:16px;min-height:44px;cursor:pointer;align-content:center}
+#court-roster .portrait-roster{display:flex;flex-direction:column;max-height:35vh;overflow:auto}
+#court-roster .presence-person{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0;padding:5px!important;min-height:54px}
+#court-roster .presence-person .got-portrait{width:42px;height:48px;flex:0 0 42px}
+#court-roster .presence-person span{color:#39271d}#court-roster .presence-person span:not(.got-portrait){background:transparent;border:0;padding:0}#court-roster .household-guards{margin-top:2px;padding-top:2px}
+#court-bottom{position:fixed;bottom:0;left:0;right:0;min-height:58px;display:flex;gap:6px;align-items:center;padding:5px 16px;background:#3a1720f5;border-top:1px solid #b89a6b;z-index:90}
+#court-bottom button{background:transparent;color:#fff1d7;border:1px solid #a88b5c;padding:8px 14px;min-height:44px;margin:0}
+#court-bottom button:last-child{position:sticky;right:0;flex-shrink:0;margin-left:auto;background:#f5ead4;color:#40241b}
+#court-tasks{position:fixed;left:auto;right:0;top:58px;bottom:58px;margin:0;width:min(440px,92vw);max-height:none;height:auto;border-radius:0;overflow:auto}
+.schedule-row{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #c5ae89}.schedule-row small{font-size:13px}
+#court-npc .court-content>.got-portrait,#guard-actions>.got-portrait{display:block;width:180px;height:210px;margin:12px auto}
+#court-personnel{width:min(650px,94vw)}#court-personnel select{max-width:100%}
+.court-dialog[open]{z-index:80}
+.court-folio .got-folio{padding:8px 4px;background:transparent;border:0;box-shadow:none;margin:6px 0}
+.court-folio main .folio-text{max-height:none;overflow:visible;color:#f6e6ca}
+.court-folio main :is(h2,h3,h4,.folio-focus,.folio-navigation,small,summary,label,.got-speaker){color:#dfc58b}
+.court-folio main .folio-focus{flex-basis:82px}.court-folio main .folio-focus .got-portrait{width:82px;height:96px}
+.court-folio #opening-panel .folio-navigation button,.court-folio #dialogue-panel .folio-navigation button{color:#f6e6ca;border-color:#a88b5c;background:transparent}
+.court-folio #opening-panel .folio-navigation button:hover,.court-folio #dialogue-panel .folio-navigation button:hover{background:#62434a}
+.court-folio main .council-proposals{color:#302219}.court-folio main .council-proposals small{color:#66513d}
+.court-folio.continuous-play #story-text{color:#f6e6ca!important}
+.court-folio #opening-panel,.court-folio #dialogue-panel{padding:0;border:0;margin:0;background:transparent;color:inherit}
+.court-folio #opening-panel>h2{margin:0 0 6px;font-size:17px}.court-folio #opening-panel>p{margin:8px 0;font-size:17px}
+.court-folio #dialogue-panel details{padding:4px 0}.court-folio #dialogue-panel details:not([open]){margin:8px 0}
+.court-folio #dialogue-panel>h2,.court-folio #dialogue-presence,.court-folio #dialogue-settings{display:none}
+.court-folio #status:not([hidden]){background:#fff1d7;color:#493527;border:2px solid #793440;padding:12px}
+.court-folio button{min-height:44px}
+.court-action-rail{position:fixed;right:30px;bottom:calc(var(--curtain-bottom) + var(--curtain-height) + 14px);width:min(340px,32vw);max-height:calc(100vh - var(--curtain-height) - 220px);overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px;scrollbar-color:#a88b5c #34232a}
+.court-folio #opening-panel .court-action-rail>button{display:block;width:100%;margin:0;padding:11px 18px;text-align:left;white-space:normal;overflow-wrap:anywhere;background:#f5ead4f5;color:#3a2418;border:1px solid #b89b62;box-shadow:0 3px 12px #170b1240}
+.court-folio #opening-panel .court-action-rail>button:first-child{background:#652a35f5;color:#fff1d7}
+.court-folio #opening-panel .court-action-rail>button:hover{background:#e9d7b6;color:#29190f}
+.court-folio main:has(.quiet-scene){background:transparent;border:0;box-shadow:none;height:0;padding:0;overflow:visible}
+.quiet-scene>h2,.quiet-scene>p{display:none}.court-folio main:has(.quiet-scene) #opening-panel{padding:0}
+.court-folio #return-region-map,.court-folio #switch-region{position:fixed;right:18px;top:122px;background:#f5ead4ec!important;color:#5b3926;z-index:15}
+.court-folio.on-map main{top:76px;bottom:76px;left:200px;right:195px;max-height:none;overflow:auto;background:transparent;border:0;box-shadow:none;padding:0}
+.court-folio.on-map .region-board{max-width:calc((100vh - 190px)*1.7778);margin:0 auto}.court-folio.on-map .region-board>img{width:100%;display:block}
+#court-curtain{position:fixed;inset:58px 0 58px;z-index:60;background:#1c1018bb;display:grid;place-items:center}#court-curtain[hidden]{display:none}#court-curtain>section{background:#f5ead4;padding:32px;width:min(520px,90vw);border:2px solid #ae8c55;text-align:center;color:#39271d;box-shadow:0 20px 100px #080509}
+.court-folio:has(#dialogue-panel:not([hidden]) #dialogue-composer[open]:not([hidden])),.court-folio:has(.council-input){--curtain-height:42vh}
+@media(max-width:800px){
+ .court-folio,.court-folio:has(#dialogue-panel:not([hidden]) #dialogue-composer[open]:not([hidden])),.court-folio:has(.council-input){--curtain-height:46vh;--curtain-bottom:70px}
+ .court-folio main,.court-folio.continuous-play main,.court-folio:has(.player-portrait-button) main{left:8px;right:8px;padding:12px}
+ .court-folio.on-map main{top:170px;max-height:none}
+ .court-action-rail{position:static;width:auto;max-height:none;overflow:visible;padding:8px 0}
+ #court-roster{left:8px;top:125px;width:132px;max-height:29vh}
+ .court-folio .player-portrait-button{width:70px}.court-folio .player-portrait-button .got-portrait{width:52px;height:58px}
+ .court-folio #court-header{padding-left:90px}
+ #court-bottom{overflow-x:auto;padding:4px;gap:4px}#court-bottom button{white-space:nowrap;padding:7px;font-size:13px}
+ .court-folio .scene-frame>figcaption{right:8px;font-size:13px}.court-folio #return-region-map{top:112px}
+ .court-folio main .folio-focus{flex-basis:42px}.court-folio main .folio-focus .got-portrait{width:42px;height:50px}
+ .court-folio .on-scene .council-seat figcaption{inset:auto;position:static;padding:2px;font-size:10px}
+}
+
+/* Direct room actions: prominent controls within the scene, not the reading rail. */
+.court-folio main:has(.room-routine){height:0;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;overflow:visible}
+.court-folio #opening-panel:has(.room-routine)>:is(h2,p:not(.scene-notice)){display:none}
+.court-folio .room-routine{position:fixed;z-index:12;left:50%;bottom:18vh;transform:translateX(-50%);width:min(660px,calc(100vw - 440px));display:flex;flex-direction:column;gap:14px;padding:22px 26px;background:linear-gradient(110deg,#29191ded,#42252aeb,#29191ded);border:1px solid #b69b6c;border-top:2px solid #ddc493;box-shadow:0 14px 48px #10080aaa,inset 0 0 0 5px #d6ba8120;border-radius:4px;max-height:calc(100vh - 290px);overflow:auto}
+.court-folio .room-routine>p{margin:0 0 4px;color:#f6e7ce;font-size:22px;line-height:1.7;text-align:center;text-wrap:pretty}
+.court-folio #opening-panel .room-action{display:flex;align-items:center;justify-content:center;gap:20px;min-height:84px;width:100%;margin:0;padding:12px 24px;background:linear-gradient(110deg,#f7ecd5,#e5cfaa);color:#392119;border:1px solid #d8b779;border-radius:3px;box-shadow:inset 0 0 0 4px #76562d20,0 4px 12px #0e080940;font-size:26px;font-weight:600;letter-spacing:.08em;text-align:center;white-space:normal}
+.court-folio #opening-panel .room-action:hover{background:linear-gradient(110deg,#fff5df,#efdab4);border-color:#fff0bc;box-shadow:inset 0 0 0 4px #76562d20,0 0 22px #dfbb6355}
+.court-folio #opening-panel .room-action:focus-visible{outline:3px solid #ffe6a5;outline-offset:5px}
+.room-action-seal{width:52px;height:52px;flex:0 0 52px;border:1px solid #a8834d;border-radius:50%;display:grid;place-items:center;background:#5b2d3320}
+.room-action-seal svg{width:35px;height:35px;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.court-folio #opening-panel .scene-notice{position:fixed;z-index:14;left:50%;top:35%;transform:translateX(-50%);width:min(720px,calc(100vw - 440px));padding:22px 30px;margin:0;color:#fff0d4;background:#322026f5;border:1px solid #c8a970;border-block-width:2px;box-shadow:0 12px 42px #10080a99;text-align:center;font-size:24px;font-weight:500;line-height:1.7;text-wrap:pretty}
+.court-folio #opening-panel .room-routine>.scene-notice{position:static;transform:none;width:auto;padding:0 0 18px;background:none;border:0;border-bottom:1px solid #c8a97077;box-shadow:none;margin:0}
+.court-folio #status:not([hidden]){position:fixed;z-index:110;left:50%;top:22%;transform:translateX(-50%);width:min(720px,calc(100vw - 40px));margin:0;padding:22px 28px;font-size:22px;line-height:1.6;text-align:center;max-height:40vh;overflow:auto;box-shadow:0 10px 40px #160b1680}
+@media(max-width:800px){
+ .court-folio #opening-panel #return-region-map,.court-folio #opening-panel #switch-region{width:auto;max-width:calc(100vw - 170px);right:8px;margin:0;padding:10px 12px}
+ .court-folio .room-routine{width:calc(100vw - 32px);bottom:110px;padding:18px;gap:12px;max-height:calc(100dvh - 300px)}
+ .court-folio .room-routine>p{font-size:20px}
+ .court-folio #opening-panel .room-action{font-size:22px;min-height:76px;padding:10px 14px;gap:14px;letter-spacing:.04em}
+ .room-action-seal{width:44px;height:44px;flex-basis:44px}.room-action-seal svg{width:30px;height:30px}
+ .court-folio #opening-panel .scene-notice{width:calc(100vw - 32px);top:38%;padding:20px;font-size:22px}
+ .court-folio #opening-panel .room-routine>.scene-notice{width:auto;padding:0 0 14px}
+}

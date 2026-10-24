@@ -1,0 +1,8 @@
+.local/
+.backups/
+*.log
+*.tmp
+*.zip
+node_modules/
+runtime/node.exe
+tools/canon-data/model/onnx/*.onnx

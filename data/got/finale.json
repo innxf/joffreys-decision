@@ -1,0 +1,4742 @@
+{
+  "version": "FIN-PLAYER-1.2",
+  "design_version": "0.14.0",
+  "provenance": [
+    {
+      "source": "终章固定场景与逐幕台词.md",
+      "sha256": "9d1b3135d3295b7c4f2c3172ea14a9f3dfa7affa72a2ad700be68de57d835a8a"
+    },
+    {
+      "source": "数据/主线剧情节点与解锁条件.json",
+      "sha256": "dc5ca75a366de9cc6205b66bd12236afb7b9d8975b9ba9636ae1a392c6d22188"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "FIN01-S01",
+      "parent": "FIN01",
+      "part": 1,
+      "part_scene": 1,
+      "title": "宴会之前",
+      "location": "红堡 · 王座厅门前",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001"
+      ],
+      "default_next": "FIN01-S02",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s01",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S02",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN01-S02"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S01",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P034",
+              "C60-P045"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "烤面包和烤肉的香味业已四散飘逸。\n\n许多宾客业已进厅寻找座位，其他人则聚集在大门前，享受难得的秋日温暖。"
+          },
+          {
+            "when": {
+              "ceremony": "MARGAERY_WEDDING"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P004"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "国王看起来堂皇，身穿暗玫瑰色外衣，披挂纹饰着雄鹿与狮子的深绯红色天鹅绒斗篷，王冠潇洒地戴在卷发上，两种金色融为一体。"
+          },
+          {
+            "when": {
+              "ceremony": "ROYAL_CELEBRATION"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "乔佛里在门前停步，侍从最后替他理了一次披风。今晚没有婚誓，也没有新娘；各家诸侯仍要在国王席前举杯。"
+          },
+          {
+            "when": {
+              "guard_handover": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“各门已经换过岗，陛下。”近卫军官说，“您的人守着高台。”"
+          },
+          {
+            "when": {
+              "guard_handover": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“首相大人已安排守卫，陛下。”军官说。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P055"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“天哪，七十七道大餐，不是有点过于铺张，大人？我最多只能尝尝三四道。”\n\n奥莲娜夫人的声音从门外传来。掌礼官侧身让路，厅里的喇叭响了。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S02",
+      "parent": "FIN01",
+      "part": 1,
+      "part_scene": 2,
+      "title": "国王入席",
+      "location": "宴会厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P001",
+        "P002",
+        "P030",
+        "P031",
+        "P032"
+      ],
+      "default_next": "FIN01-S03",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s02",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S03",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN01-S03"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S02",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P056"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "黄昏还有一小时才降临，王座厅内却已灯火通明，每个壁台的火炬统统点燃。已到的客人站在长桌后，正在进门的领主和贵妇们经传令官依次通报名讳与头衔后，再由身穿王家服装的侍酒护送穿越宽阔的中央走道。旁听席上全是乐师，有鼓手、笛手和提琴手，还有的操着号角、竖琴和皮风笛。"
+          },
+          {
+            "when": {
+              "ceremony": "MARGAERY_WEDDING"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P058",
+              "C60-P059"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted"
+            ],
+            "text": "乔佛里与玛格丽坐在相匹配的纯白战马上骑进大厅。侍酒们跑在前面，散下无数玫瑰花瓣。\n\n小乔穿黑与深红的条纹马裤，金线上衣有黑绸袖子和玛瑙纽扣。\n\n她柔软的棕发披散在洁白的肩膀，直垂到腰，额头则戴了一顶纤细的黄金王冠。王后的笑容羞涩而又甜蜜。\n\n御林铁卫护送国王夫妇步上高台，坐在铁王座阴影底的荣誉位置，前面垂下一排长丝旗，有拜拉席恩的金、兰尼斯特的绯红和提利尔的绿。瑟曦拥抱玛格丽，亲吻儿媳的脸颊。接着泰温公爵、凯冯爵士和蓝赛尔爵士也上前施礼。"
+          },
+          {
+            "when": {
+              "ceremony": "ROYAL_CELEBRATION"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P059"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "御林铁卫护送国王步上高台，坐在铁王座阴影底的荣誉位置，前面垂下一排长丝旗，有拜拉席恩的金、兰尼斯特的绯红和提利尔的绿。"
+          },
+          {
+            "when": {
+              "tywin_attitude": "overbearing"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "泰温站在座椅旁。“先向河湾诸侯致意，陛下。他们还等着您。”"
+          },
+          {
+            "when": {
+              "tywin_attitude": "bargaining"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“陛下。”泰温指向河湾诸侯的席位，“请别忘了我们约定的祝词。”"
+          },
+          {
+            "when": {
+              "tywin_attitude": "recognizes_king"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "泰温向国王低头，退到自己的座位前，等乔佛里落座。"
+          },
+          {
+            "when": {
+              "ceremony": "MARGAERY_WEDDING"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P059"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "当国王和王后就座后，总主教带领大家作祈祷。"
+          },
+          {
+            "when": {
+              "ceremony": "ROYAL_CELEBRATION"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P059"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "当国王就座后，总主教带领大家作祈祷。"
+          },
+          {
+            "when": {
+              "tyrell_attitude": "hostile"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "梅斯的杯子举到半途，先看向泰温。奥莲娜没有接上儿子的祝词，只向国王点了点头。"
+          },
+          {
+            "when": {
+              "tyrell_attitude": "bargaining"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "梅斯举杯向国王致意。奥莲娜等他说完，才提醒乔佛里：“陛下，可别忘了我们谈妥的事。”"
+          },
+          {
+            "when": {
+              "tyrell_attitude": "committed"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "梅斯高举酒杯。“为国王！”奥莲娜这次没有打断他。“我们答应的事会办好，”她对乔佛里说，“陛下也不曾叫我们失望。”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S03",
+      "parent": "FIN01",
+      "part": 1,
+      "part_scene": 3,
+      "title": "贺词与回报",
+      "location": "宴会厅高台",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P002",
+        "P030",
+        "P031",
+        "P032",
+        "P003"
+      ],
+      "default_next": "FIN01-S04",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s03",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S04",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN01-S04"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S03",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P063",
+              "C60-P069",
+              "C60-P070"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "第一道大餐是蘑菇和黄油蜗牛炖的浓汤，盛在镀金碗里。\n\n第二道大餐也上来了——夹猪肉、松仁与鸡蛋的糕饼。珊莎也只小咬了一口，传令官们则宣七位歌手的第一位出场。灰胡子的“琴手”哈米西首先道，“诸神和世人为证，即将表演的这首歌是从未在七大王国奏响的天籁之音。”\n\n歌手的指头拂过竖琴琴弦，王座厅内充溢甜美的音律。“在那骸骨的王座上，死神打量着被谋杀的王兄……”哈米西开始唱，歌词讲述了蓝礼后悔攫取侄儿的王冠，所以拒绝死神的召唤，重回阳间，对抗自己的二哥，以保卫王国。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P072",
+              "C60-P073"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "“琴手”还为大家表演了一些熟悉的歌曲。毫无疑问，《金玫瑰》是赞美提利尔家，《卡斯特梅的雨季》是奉承泰温公爵，《少女、圣母与老妪》是取悦总主教，而《我心爱的妻子》则点燃了少男少女胸中的罗曼蒂克之火。\n\n接下来，菜上得越来越快，表演也愈加繁多，侍酒们不停地往杯里添着麦酒与葡萄酒。哈米西走后，一只矮个老熊在笛子和鼓声的指挥下笨拙地翩翩起舞，同时宾客们享用碎杏仁包裹着煮的鳟鱼。月童踩着高跷，在席间追逐提利尔大人滑稽的胖弄臣黄油饼，领主夫人们品尝烤苍鹭和洋葱奶酪派。一个潘托斯杂技团或翻着筋斗，或倒立着走出来，一会儿单脚踩在盘子上保持平衡，一会儿又共同组成大金字塔。伴随这次表演的是用味道强烈的东方香料煮的螃蟹，杏仁奶中加胡萝卜、葡萄干和洋葱炖的大块羊排，还有新烤的鱼饼，热得烫手。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P082",
+              "C60-P083"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "传令官们又吹响喇叭。“为镀金竖琴的竞赛，”其中一人高声宣布，“库伊家族的葛勒昂上场了。”\n\n葛勒昂是个胸围宽阔的大胖子，黑胡须，秃了顶，洪亮的声音教厅内每个角落都能听见。他带来六名乐师，“尊敬的大人们，美丽的女士们，今晚，我只给您们带来一首歌，”他朗声道，“《黑水河之歌》，唱的是王国得救的故事。”鼓手们打出缓慢而阴郁的节律。"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P088",
+              "C60-P089"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "“若我再当上首相，头一件事就是吊死所有歌手。”提利昂不由自主地大声喝道。\n\n身边的莱昂妮夫人轻声浅笑，而加兰爵士靠过来，“请宽心，大人，公道自在人心，歌颂与否，事迹都不会被抹杀。”"
+          },
+          {
+            "when": {
+              "prestige": "important_political_capital"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "歌手唱到国王在黑水河的功劳时，曾随军作战的骑士们举起酒杯。那一段不必由歌手解释，他们亲眼见过。"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": true,
+              "sansa_present": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P096"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "“永远不要相信歌谣里说的任何故事，夫人。”提利昂叫仆人再把酒杯斟满。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P097"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "盛夏群岛的舞者身穿明亮的羽衣袍子和烟须状丝绸雀跃着来到大厅，派席尔国师却已伏案呼呼大睡。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S04",
+      "parent": "FIN01",
+      "part": 1,
+      "part_scene": 4,
+      "title": "提利昂面前的笑声",
+      "location": "宴会厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003",
+        "P001",
+        "P002"
+      ],
+      "default_next": "FIN01-S05",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s04",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "S04-A",
+        "S04-B",
+        "S04-C"
+      ],
+      "route_note": "提利昂未在场或羞辱已被有效制止时，自动跳过选择，转FIN01-S05；不再造新醉客逼玩家营救。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN01-S05"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S04",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P100",
+              "C60-P102",
+              "C60-P103"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "所谓的“王家骑士”原来是两名侏儒，其中一人骑在一只长腿大嘴的灰狗上，另一人骑一只斑点大母猪。随着动物行动，侏儒骑士身上的彩绘木盔甲劈砰乱响。两人皆雄赳赳气昂昂地挺起长枪，提着比他们本身还大的盾牌，不时摇晃叫嚣，显得格外滑稽。一名骑士全身金色，盾牌上绘有黑色雄鹿；另一名骑士灰白相间，装饰冰原狼纹章。马铠也是类似装扮。\n\n侏儒们在高台下停步，向国王致意时，狼骑士忙乱中掉了盾牌。他弯腰去捡，而鹿骑士同时握不住长枪，结果武器“砰”地一下砸到狼骑士背上，把他打下猪来。接着两人便乱了套，东西在地板上纠缠一团。等他们重新站起来，又一同跑去骑狗，随之而来的是另一阵叫嚷争夺和推挤。最后，两名侏儒终于重新上鞍，却互相交换了坐骑，拿错了盾牌，还坐反了方向。\n\n又作了一番可笑的整理后，两人终于骑到大厅走道相对的两面，准备比武。领主和贵妇们有的哄笑，有的傻乐。侏儒们“啪嗒啪嗒”地跑过来，猛然相撞，狼骑士的长枪正中鹿骑士的头盔，将对方的脑袋挑飞出去。头颅溅洒鲜血，在空中旋转，最后落到盖尔斯伯爵膝上。\n\n无头的侏儒在席间奔跑，双手拼命挥舞。狗儿狂吠，女人尖叫，月童极为惊险地踩着高跷避开现场，结果盖尔斯伯爵却从打烂的头盔里掏出一个粉碎的西瓜。当看到鹿骑士的头从盔甲里伸出来时，一阵笑闹的风暴席卷大厅。"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“还有谁上场？”一名喝醉的骑士朝高台叫道。他望着提利昂，邻座的人也跟着回头。\n\n提利昂没有笑。瑟曦优雅地吃吃发笑，等着儿子开口。"
+          },
+          {
+            "when": {
+              "last_choice": "S04-A"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C60-P111"
+            ],
+            "source_modes": [
+              "branch",
+              "verbatim"
+            ],
+            "text": "“不许拿我叔父取乐。让他们下去。”\n\n乐师重新演奏，厅内气氛得以舒缓。两名侏儒领着猪狗离开，宾客们开始享用野猪肉。\n\n提利昂向国王欠身，重新拿起酒杯。"
+          },
+          {
+            "when": {
+              "last_choice": "S04-B"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C60-P117"
+            ],
+            "source_modes": [
+              "branch",
+              "verbatim"
+            ],
+            "text": "“请歌手上场。”\n\n“希望他再唱一遍《卡斯特梅的雨季》，吃了个把钟头，我都快忘记词了。”\n\n奥莲娜拄着拐杖说道。侏儒牵走坐骑，乐师重新演奏。"
+          },
+          {
+            "when": {
+              "last_choice": "S04-C"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C60-P107"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "乔佛里没有出面。那个骑士还在催提利昂去骑猪。\n\n他用扭曲的面容扮出也许是七大王国有史以来最为丑陋、最为讽刺的微笑。“爵士，”他喊回去，“我骑猪……你骑狗！”\n\n骑士不作声了。几桌客人笑得更响。提利昂跳下椅子，背过身去。"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "提利昂的席位空着。演员牵着坐骑退下，仆人端上野猪肉。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S05",
+      "parent": "FIN01",
+      "part": 1,
+      "part_scene": 5,
+      "title": "最后一轮祝酒",
+      "location": "王室席位",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P060",
+        "P061",
+        "P012",
+        "P032"
+      ],
+      "default_next": "FIN01-S06",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s05",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S06",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN01-S06"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S05",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P123",
+              "C60-P125"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "“陛下，”泰温公爵以不受影响的精准语气发话，“馅饼上来了，您得亲自切割。”\n\n大馅饼由六名喜气洋洋的厨师抬着，缓缓进入长厅，大家都站起来，叫嚷喝彩，互碰酒杯。它的直径足有两码之长，颜色金褐，表皮松脆，里面传来鸟类尖叫、扑腾和打闹的声音。"
+          },
+          {
+            "when": {
+              "ceremony": "MARGAERY_WEDDING"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P127",
+              "C60-P130",
+              "C60-P134"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "乔佛里与玛格丽在高台下等候大馅饼。国王拔出配剑，王后伸手制止，“寡妇之嚎不是用来切饼子的。”\n\n伊林爵士在国王夫妇面前鞠躬，伸手过肩，将一柄六尺长、刻满符文、装饰华丽的银色巨剑抽出来，随后单膝跪地，将巨剑剑柄朝前献给乔佛里，剑柄以大块龙晶雕成微笑骷髅，红宝石眼睛闪烁着红色火光。\n\n乔佛里和玛格丽协力举起那柄巨剑，猛然挥下，划出一道银弧。馅饼皮破开的同时，一百只白鸽迫不及待地冲出来，向各个方向乱飞，最后拍翅站到窗户和房梁上，空中都是飞散的羽毛。大厅内欢声雷动，旁听席上的提琴和风笛奏出轻快的乐章。"
+          },
+          {
+            "when": {
+              "ceremony": "ROYAL_CELEBRATION"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P134"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "掌礼官将切饼的剑呈给国王。\n\n乔佛里举起那柄巨剑，猛然挥下，划出一道银弧。馅饼皮破开的同时，一百只白鸽迫不及待地冲出来，向各个方向乱飞，最后拍翅站到窗户和房梁上，空中都是飞散的羽毛。大厅内欢声雷动，旁听席上的提琴和风笛奏出轻快的乐章。"
+          },
+          {
+            "when": {
+              "tommen_close": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "托曼挤到哥哥身边，指着窗上停下的一只白鸽。“我能留下那只吗？”"
+          },
+          {
+            "when": {
+              "tommen_close": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "托曼站在离国王两步远的地方，仰头数着房梁上的鸽子。有人碰到他的肩膀，他便往旁边让。"
+          },
+          {
+            "when": {
+              "sansa_present": true,
+              "tyrion_at_banquet": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P064",
+              "C60-P065"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "珊莎尝了一口汤，便将碗推开。“味道不好么，夫人？”提利昂询问。\n\n“还有好多菜呢，大人，我胃口小，不能先吃撑了。”"
+          },
+          {
+            "when": {
+              "myrcella_present": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "弥赛菈将弟弟的袖口从一盘酱汁边拉开，替他让出桌边的位置。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "侍酒者把留在高台上的金杯收进托盘。有人催他去接另一轮祝酒，他转身时，拿错了杯子。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S06",
+      "parent": "FIN01",
+      "part": 2,
+      "part_scene": 1,
+      "title": "错置的礼仪份",
+      "location": "王室席位",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P060"
+      ],
+      "default_next": "FIN01-S07",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s06",
+      "minutes": 1,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S07",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "19:30",
+      "possible_targets": [
+        "FIN01-S07"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S06",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“小殿下还没有酒。”托曼身后的侍从叫住他。\n\n侍酒者把刚从国王桌前收回、尚未换酒的那只杯子放了下来。乔佛里仍在高台下，等着厨师撤走切开的馅饼。\n\n托曼两手捧起杯子。杯沿遮住了他的鼻尖。他只喝了一口，便放下来，伸手去拿盘里的饼。\n\n“敬哥哥。”他说，声音被厅里的祝酒声盖住。\n\n国王回到座位时，弟弟已经开始咳嗽。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S07",
+      "parent": "FIN01",
+      "part": 2,
+      "part_scene": 2,
+      "title": "托曼失声",
+      "location": "王室席位",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P060",
+        "P001",
+        "P018"
+      ],
+      "default_next": "FIN01-S08",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s07",
+      "minutes": 1,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S08",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "19:31",
+      "possible_targets": [
+        "FIN01-S08"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S07",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P142",
+              "C60-P143",
+              "C60-P144",
+              "C60-P145",
+              "C60-P146",
+              "C60-P147"
+            ],
+            "source_modes": [
+              "adapted",
+              "verbatim"
+            ],
+            "text": "“是，咳，馅饼，没关——咳——系。”托曼再喝一口酒，但当又一阵咳嗽猛然降临时，所有汁液都喷将出来。他的脸色越涨越红。“我，咳，无法，咳咳咳咳……”金杯自手中滑落，暗红的葡萄酒流淌在高台上。\n\n“他噎住了！”玛格丽惊呼。\n\n她的祖母迅速靠拢。“快帮帮这可怜的孩子！”荆棘女王以比身材高十倍的嗓门尖叫，“你们这帮白痴！只会张口结舌傻站着看吗！快帮帮你们的王子！”\n\n加兰爵士推开提利昂，来为托曼捶背。奥斯蒙·凯特布莱克爵士割开王子的衣领。这孩子从咽喉深处发出细得吓人、充满恐惧的嘶声，就像一个人想用一根芦苇饮尽一条长江，随后竟连这也消失了，只剩恐怖的沉寂。“把他翻过来！”梅斯·提利尔手足无措地大吼，“把他翻过来，提起脚跟抖！”另一个嗓门吼的则是，“水，给他喝水！”总主教高声祈祷，派席尔国师嚷着命人扶自己回去取药。托曼伸手抓向喉咙，指甲在皮肤上挖出道道血痕，然而下面的肌肉硬得像岩石。\n\n狗儿吠叫，孩童嚎啕，大人们彼此呼喊桩桩毫无意义的建议。一半的宾客站了起来，有的推挤过来想看清楚，有的则忙着溜出门去。\n\n“不不不不，”瑟曦嘶声哭嚎，“天父啊，救救他吧，谁来救救他啊，他是我儿子，我儿子……”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S08",
+      "parent": "FIN01",
+      "part": 2,
+      "part_scene": 3,
+      "title": "谁接管大厅",
+      "location": "宴会厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P002",
+        "P001",
+        "P030"
+      ],
+      "default_next": "FIN01-S09",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s08",
+      "minutes": 2,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S09",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "19:32",
+      "possible_targets": [
+        "FIN01-S09"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S08",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P149"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "泰半的乐师业已逃离，只有一个笛手留在旁听席里奏出一曲挽歌。王座厅底部的大门边，爆发了混战，宾客们互相践踏争夺，亚当爵士的金袍军连忙上前维持秩序。客人们不顾一切地冲向黑夜，有的哭泣，有的踉跄，有的呕吐，惨白的脸上写满恐惧。\n\n“把门守住。”泰温命令，“让学士过去，旁人退开。”"
+          },
+          {
+            "when": {
+              "can_protect": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "近卫军官在乔佛里面前停步。“陛下，高台和门口都已守住。您还有什么吩咐？”"
+          },
+          {
+            "when": {
+              "can_protect": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "当值军官向泰温领命，带人将厅门重新合上。国王身边的卫士举起白盾，挡住还要往前挤的客人。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S09",
+      "parent": "FIN01",
+      "part": 2,
+      "part_scene": 4,
+      "title": "指控落到提利昂身上",
+      "location": "宴会厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003",
+        "P001"
+      ],
+      "default_next": "FIN01-S10",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s09",
+      "minutes": 2,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S10",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "19:34",
+      "possible_targets": [
+        "FIN01-S10"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S09",
+        "blocks": [
+          {
+            "when": {
+              "tyrion_at_banquet": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P148",
+              "C60-P154",
+              "C60-P155",
+              "C60-P156"
+            ],
+            "source_modes": [
+              "adapted",
+              "verbatim"
+            ],
+            "text": "提利昂的目光落到那只被遗忘在地板的金杯上，他便把它捡了起来，底部还有少许深紫色酒液。提利昂考虑了一会儿，将它倒光了。\n\n“他没有噎住，”瑟曦的音调比伊林爵士的宝剑更锋利，“我儿子是被毒死的。”她扫视无助地环绕在周围的白骑士，“御林铁卫们，履行职责。”\n\n“夫人？”洛拉斯·提利尔爵士狐疑地询问。\n\n“立刻逮捕我弟弟，”她下令，“是他干的，这侏儒害了我儿子。抓住他！抓住他！”"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": false
+            },
+            "kind": "body",
+            "source_refs": [
+              "C60-P154",
+              "C60-P155"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "“他没有噎住，”瑟曦的音调比伊林爵士的宝剑更锋利，“我儿子是被毒死的。”她扫视无助地环绕在周围的白骑士，“御林铁卫们，履行职责。”\n\n“夫人？”洛拉斯·提利尔爵士狐疑地询问。\n\n“立刻逮捕我弟弟！”瑟曦叫道。\n\n“他不在这里，陛下。”卫士回答。\n\n“那就去找！他以为不来，就能瞒过我吗？”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S10",
+      "parent": "FIN01",
+      "part": 2,
+      "part_scene": 5,
+      "title": "被带离的王子",
+      "location": "宴会厅外的走廊",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P060",
+        "P018"
+      ],
+      "default_next": "FIN01-S11",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s10",
+      "minutes": 9,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN01-S11",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "19:36",
+      "author_only_participants": [
+        "R007"
+      ],
+      "possible_targets": [
+        "FIN01-S11"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S10",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P152"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "太后瘫倒在一滩酒水里，怀抱着儿子一动不动的身躯。她的裙服破烂脏污，她的脸颊白如垩石。一只瘦黑狗爬到她身边，舔嗅托曼的手。“这孩子去了，瑟曦，”泰温公爵把戴手套的手放在女儿肩上，手下卫士则将狗赶开，“松手，让他走吧。”\n\n两名御林铁卫协力才把她手指掰开。学士的助手将托曼接过去，裹住身子，放上担架。派席尔跟在后面，命人让出通向门口的路。\n\n瑟曦要跟出去，泰温拦住了她。担架从门后消失时，她仍在喊孩子的名字。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN01-S11",
+      "parent": "FIN01",
+      "part": 2,
+      "part_scene": 6,
+      "title": "宣告与沉默",
+      "location": "宴会厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P001",
+        "P002",
+        "P018"
+      ],
+      "default_next": "FIN02-S01",
+      "script_ref": "终章固定场景与逐幕台词.md#fin01-s11",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN02-S01",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "19:45",
+      "possible_targets": [
+        "FIN02-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN01-S11",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C60-P153"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "派席尔在门口停下，低着头。\n\n“托曼殿下去了，陛下。”\n\n“天上的圣父啊，求你公正地裁判托曼王子吧，”他拖长声音吟咏，开始作临终祷告。\n\n瑟曦没有看总主教。她望着提利昂被带走的那道门。\n\n“我儿子是被毒死的。”她又说了一遍。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN02-S01",
+      "parent": "FIN02",
+      "part": 3,
+      "part_scene": 1,
+      "title": "拘押的方式",
+      "location": "红堡 · 候审室",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003"
+      ],
+      "default_next": "FIN02-S02",
+      "script_ref": "终章固定场景与逐幕台词.md#fin02-s01",
+      "minutes": 20,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "FIN02-01",
+        "FIN02-02",
+        "CUSTODY-FAMILY"
+      ],
+      "route_note": "继续→FIN02-S02",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 0,
+      "scheduled_clock": "20:00",
+      "possible_targets": [
+        "FIN02-S02"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN02-S01",
+        "blocks": [
+          {
+            "when": {
+              "last_choice": "FIN02-01"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“先收押，等候审判。任何人不得私自处置。”\n\n军官领命，把提利昂带出房间。提利昂没有反抗，只在经过门口时回头看了一眼。"
+          },
+          {
+            "when": {
+              "last_choice": "FIN02-02"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“把他送到有人守卫的客房，由我的近卫看管。没我的命令，不许拷打，也不许伤他。”\n\n近卫军官站到提利昂身边，向门口的卫兵伸出手。钥匙交到了他手里。\n\n提利昂慢慢松开紧握的拳头。“陛下，这句话我记住了。”"
+          },
+          {
+            "when": {
+              "last_choice": "CUSTODY-FAMILY"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“交给首相安排。案情每天向我禀报。”\n\n泰温的军官俯身领命。提利昂被带走前说：“那就请陛下别忘了听一听。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C66-P014",
+              "C66-P019",
+              "C66-P020"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted",
+              "verbatim"
+            ],
+            "text": "提利昂被两名金袍卫士拦在门边。军官转向国王，等候处置。\n\n“王子是被毒死的，”凯冯说，“这件事须在王室面前审清。”\n\n“你受谋害王子和弑亲的双重指控，怎可能来去自如？”凯冯爵士说，“给你纸、笔和墨水，把证人的名字写下来，我以身为兰尼斯特的荣誉向你保证，会尽一切努力将他找到。但开庭以前，你确实不能自由走动。”\n\n“这事不是我干的。”\n\n“希望如此，提利昂，希望如此。”\n\n军官问：“陛下，由谁看管提利昂大人？”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN02-S02",
+      "parent": "FIN02",
+      "part": 3,
+      "part_scene": 2,
+      "title": "第一次探视",
+      "location": "红堡 · 关押提利昂的房间",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003"
+      ],
+      "default_next": "FIN02-S03",
+      "script_ref": "终章固定场景与逐幕台词.md#fin02-s02",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN02-S03",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 1,
+      "scheduled_clock": "09:00",
+      "possible_targets": [
+        "FIN02-S03"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN02-S02",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C66-P025"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "一名仆人端来麦片粥和苹果，外加一角杯麦酒。提利昂边吃边瞪着桌上那张空白羊皮纸。\n\n乔佛里到来时，他放下了勺子。"
+          },
+          {
+            "when": {
+              "tyrion_attitude": "trusted"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“陛下。”提利昂拉过另一把椅子，“你肯来，我很感激。”"
+          },
+          {
+            "when": {
+              "tyrion_attitude": "cautious"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "提利昂起身行礼。“陛下是来听我说话，还是来劝我认罪？”"
+          },
+          {
+            "when": {
+              "tyrion_attitude": "resentful"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C66-P136"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "“——看见了个鬼！我什么都没做！但我该怎么证明？你们把我关在这里，我又能怎么办？”\n\n他说完才低下头。“陛下。”"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C66-P125",
+              "C66-P011"
+            ],
+            "source_modes": [
+              "adapted",
+              "verbatim",
+              "branch"
+            ],
+            "text": "“陛下，想要我的脑袋尽管来取！但我和自己亲外甥的死毫无瓜葛！”\n\n“是吗？那我也得去收集证据才行。”\n\n“我碰杯子的时候，他已经倒下了。杯子不是我送过去的。”"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我没有去宴会，陛下。若说我指使了谁，就该把那个人带来。我无法证明自己没有说过一句根本没说的话。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C66-P015"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "提利昂不愿求告叔叔，“你能准许我的侍从为我奔走吗？就波德瑞克·派恩那个孩子？”\n\n“他若知道什么，就把他带来。”乔佛里说。\n\n提利昂点头，重新拿起羽毛笔。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN02-S03",
+      "parent": "FIN02",
+      "part": 3,
+      "part_scene": 3,
+      "title": "瑟曦要求的公道",
+      "location": "王室私室",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P001"
+      ],
+      "default_next": "FIN02-S04",
+      "script_ref": "终章固定场景与逐幕台词.md#fin02-s03",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN02-S04",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 1,
+      "scheduled_clock": "10:00",
+      "possible_targets": [
+        "FIN02-S04"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN02-S03",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C72-P065"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“我管他有什么理由！”瑟曦叫道，“让他带着他的好理由下地狱去！你没见托曼是怎么死的……他挣扎呀，乔佛里，他挣扎着呼吸，好像被恶灵扼住了喉咙，眼中充满恐惧……小时候，他要是被吓着，或受到伤害，总跑来找我，而我会保护他。但那天晚上，我什么也做不了！提利昂当着我的面谋杀了我的孩子，而我什么也做不了！”\n\n她望着儿子，像是等他否认亲眼看见的事。"
+          },
+          {
+            "when": {
+              "custody_choice": "FIN02-02"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“如今你用自己的卫兵保护他。”她说，“你弟弟却再也用不着卫兵了。”"
+          },
+          {
+            "when": {
+              "custody_choice": "FIN02-01"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我会把证人带到庭上。”她说，“我要你听清每一句话。”"
+          },
+          {
+            "when": {
+              "custody_choice": "CUSTODY-FAMILY"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“你外祖父会让他偿命。”她说，“这次你别替他说话。”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN02-S04",
+      "parent": "FIN02",
+      "part": 3,
+      "part_scene": 4,
+      "title": "泰温提出的秩序",
+      "location": "首相会见室",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P002"
+      ],
+      "default_next": "FIN02-S05",
+      "script_ref": "终章固定场景与逐幕台词.md#fin02-s04",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN02-S05",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 1,
+      "scheduled_clock": "11:00",
+      "possible_targets": [
+        "FIN02-S05"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN02-S04",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C62-P159"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "炉火照在泰温公爵结实的金胡须上，反射金光，衬托脸庞。\n\n“提利昂受弑亲之罪的指控。”泰温说，“若无辜，就不该害怕。我们会听取两方面的证据。”"
+          },
+          {
+            "when": {
+              "tywin_attitude": "overbearing"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“由我主持审理。”泰温将文书推到一旁，“陛下应当出席，但别在听完证词之前许诺什么。”"
+          },
+          {
+            "when": {
+              "tywin_attitude": "bargaining"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我们谈过的事不变。”泰温说，“你的人可以查，证人也可以带来。在众人面前，兰尼斯特不能先分成两家。”"
+          },
+          {
+            "when": {
+              "tywin_attitude": "recognizes_king"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“裁决属于陛下。”泰温说，“我会召齐证人。若要驳回他们的证词，也该当众讲明原因。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C66-P143"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“我们家族已经够丢脸了。提利昂若肯悔罪，穿上黑衣，此事还可以平息。”\n\n“那是认罪，不是无罪。”乔佛里说。\n\n泰温没有否认。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN02-S05",
+      "parent": "FIN02",
+      "part": 3,
+      "part_scene": 5,
+      "title": "詹姆与牢中的弟弟",
+      "location": "红堡 · 关押提利昂的房间",
+      "viewpoint": "observer",
+      "participant_candidates": [
+        "P015",
+        "P003"
+      ],
+      "default_next": "FIN03-S01",
+      "script_ref": "终章固定场景与逐幕台词.md#fin02-s05",
+      "minutes": 20,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "詹姆未到场时跳本幕，转FIN03-S01；旁观不进入国王记忆。",
+      "knowledge": "spectator_only_no_character_memory",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 1,
+      "scheduled_clock": "21:00",
+      "possible_targets": [
+        "FIN03-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN02-S05",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P008",
+              "C77-P009",
+              "C77-P010",
+              "C77-P011",
+              "C77-P012",
+              "C62-P153"
+            ],
+            "source_modes": [
+              "branch",
+              "verbatim",
+              "adapted"
+            ],
+            "text": "詹姆走进囚室时，提利昂盯住他空下来的右袖。\n\n提利昂半晌透不过气，“是你？”\n\n“对，大部分的我，”詹姆有些憔悴，头发也短了，“一只手被忘在了赫伦堡——将勇士团飘扬过海地请来可不是父亲的好主意。”他举起右手，让提利昂看看断肢。\n\n弟弟不可遏抑、歇斯底里地大笑，“噢，老天，”他说，“詹姆，我很遗憾，可是……诸神在上，你看看我们：一个缺胳膊，一个没鼻子，好一对快乐的兰尼斯特小子！”\n\n“我的手一度难闻死人，倒希望自己缺的是鼻子。”詹姆放低火炬，仔细查看弟弟的面容，“可怕的伤痕。”\n\n提利昂别开头，“他们逼我打，又不放高个哥哥前来保护。”\n\n“你来问托曼的事？”提利昂问。\n\n“我来听你说。”\n\n“不是我干的。”\n\n詹姆在他面前坐下。“父亲要我回凯岩城。”\n\n“他说我有责任，”詹姆道，“对兰尼斯特家族的责任。我从前是凯岩城的继承人，以后也应当是。”\n\n“你要答应他？”提利昂问。\n\n“如果他肯放你。”\n\n提利昂很久没有回答。詹姆起身时，弟弟叫住了他，却又把话咽了回去。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN03-S01",
+      "parent": "FIN03",
+      "part": 4,
+      "part_scene": 1,
+      "title": "送到国王面前的材料",
+      "location": "国王书房",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001"
+      ],
+      "default_next": "FIN03-S02",
+      "script_ref": "终章固定场景与逐幕台词.md#fin03-s01",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN03-S02",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 3,
+      "scheduled_clock": "09:00",
+      "possible_targets": [
+        "FIN03-S02"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN03-S01",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C67-P038"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "巴隆·史文爵士先把宴席上的情形复述了一遍。\n\n巴隆·史文爵士皱紧眉头，“高台上人很多，远不止小恶魔一人。当时已是婚宴末尾，不断有人走来走去，交换座位、上厕所等等，仆人们更是进出忙碌……切开馅饼时，所有人的目光都放在他们和那些该死的鸽子身上，无暇关注酒杯。”\n\n呈来的杯底有紫色残迹，另有一封旧信，印着提利尔的玫瑰。信中经手的毒物和这次查得的线索相连，但写信的日子在婚宴之前很久。"
+          },
+          {
+            "when": {
+              "report": "EXCLUSION_EXISTING"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“证人已说清了，陛下。送杯子时，提利昂不在桌边。他是在王子倒下以后才捡起它。”"
+          },
+          {
+            "when": {
+              "report": "CONTRADICTORY_EXISTING"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“证词对不上，陛下。有人说他碰过酒，有人说没有。现在还不能断定哪一个说谎。”"
+          },
+          {
+            "when": {
+              "report": "REPORT_UNFORMED"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“能说清自己亲眼见过什么的人太少。其余都是听来的。”"
+          },
+          {
+            "when": {
+              "report": "REPORT_INITIAL"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“侍酒承认拿错了杯子。可酒倒了几回、谁又碰过，他答不清楚。”"
+          },
+          {
+            "when": {
+              "report": "REPORT_STABLE"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“两处问来的话相合，陛下。送杯子时，提利昂没有接近；他碰到杯子，已经是王子倒下以后。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "军官将旧信留在桌上，退到门边。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN03-S02",
+      "parent": "FIN03",
+      "part": 4,
+      "part_scene": 2,
+      "title": "玫瑰的解释",
+      "location": "私下会见室",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P030",
+        "P031",
+        "P032"
+      ],
+      "default_next": "FIN03-S03",
+      "script_ref": "终章固定场景与逐幕台词.md#fin03-s02",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "T02-A",
+        "T02-B",
+        "T02-C"
+      ],
+      "route_note": "继续→FIN03-S03",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 3,
+      "scheduled_clock": "11:00",
+      "possible_targets": [
+        "FIN03-S03"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN03-S02",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "奥莲娜坐下后，先拿起那封信看了看。梅斯站在她的椅子旁，脸上已没有宴会时的笑容。\n\n“这枚印记，我们认得。”奥莲娜把信放回桌上，“陛下想问什么，直说吧。”"
+          },
+          {
+            "when": {
+              "culprit_route": "ROSE"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“不过，一封旧信不能把整个河湾的人都送上审判席。”她抬起眼，“我们是来替国王打仗的，不是来等人给全家套上绞索。”"
+          },
+          {
+            "when": {
+              "culprit_route": "VARYS"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我们以前做过的事，未必值得夸耀。但这一次，有人把旧东西翻了出来，恰好留给您看。”奥莲娜的声音冷下来，“我也想知道是谁。”"
+          },
+          {
+            "when": {
+              "reply_version": "ROSE_ACCOUNTABILITY"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我会把能找到的人带来。”奥莲娜说，“但若有人想借托曼的死清算整个河湾，我劝他先想想城里还剩多少粮食。”\n\n梅斯挺直了背。这一次，他没有反驳母亲。"
+          },
+          {
+            "when": {
+              "reply_version": "VARYS_ACCOUNTABILITY"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "奥莲娜沉默片刻。“那就查。旧信里的经手人、库房里的账，您要的我们交出来。可我也要知道，谁借我们的手留下了这桩罪名。”\n\n梅斯低声道：“我们失去的已经够多了，不能再失去这个联盟。”"
+          },
+          {
+            "when": {
+              "reply_version": "ROSE_BOUNDED_EXCHANGE"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“让我们的人一起核对。”奥莲娜答道，“您可以留下信件，我们不会任由侍从被抓走逼供。婚盟和供粮照旧，案子一件一件查。”"
+          },
+          {
+            "when": {
+              "reply_version": "VARYS_BOUNDED_EXCHANGE"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“可以。”奥莲娜答得很快，“账簿和经手人都交给您，这次查问的费用也由我们出。我只要求陛下别让流言先毁掉我们已经谈成的事。”\n\n梅斯总算坐了下来，双手仍紧握在一起。"
+          },
+          {
+            "when": {
+              "reply_version": "ROSE_ALLIANCE_FIRST"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "梅斯松了口气。“陛下明智。河湾不会忘记——”\n\n奥莲娜抬手止住他。“信留在这里。我们记得陛下今日没有轻下断言，也希望今后仍是如此。”"
+          },
+          {
+            "when": {
+              "reply_version": "VARYS_ALLIANCE_FIRST"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“陛下愿意听我们解释，我们会记住。”奥莲娜说，“已经答应的粮船照期抵达。至于这封信，我会亲自去问，不让您空等。”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN03-S03",
+      "parent": "FIN03",
+      "part": 4,
+      "part_scene": 3,
+      "title": "詹姆的交换",
+      "location": "王室会见室",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P015",
+        "P002",
+        "P003"
+      ],
+      "default_next": "FIN03-S04",
+      "script_ref": "终章固定场景与逐幕台词.md#fin03-s03",
+      "minutes": 60,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "FIN03-02",
+        "T03-B",
+        "T03-C"
+      ],
+      "route_note": "入场未编有效詹姆提案则跳FIN03-S04；固定接受答复演出并履行→FIN07，固定拒绝→FIN03-S04。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 4,
+      "scheduled_clock": "10:00",
+      "possible_targets": [
+        "FIN07-S01",
+        "FIN03-S04"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "ending_resolver": "已实际结束时读取finale_exit_contract；拒绝或原执行未完成先继续，不提前入尾声",
+      "playback": {
+        "id": "FIN03-S03",
+        "blocks": [
+          {
+            "when": {
+              "reply_version": "EXCHANGE_STANDARD_ACCEPTED"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“准许你退职。提利昂退出朝廷，安全离京。”\n\n詹姆向国王低头。泰温收起白袍，命人拟好释放和离京的诏令。\n\n消息送到提利昂面前时，他看了好一会儿。“至少这回，父亲终于承认我的命值一点东西。”\n\n他签下名字。傍晚，守卫打开房门，詹姆亲自送他穿过院子。马车已在外面等着。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_LIMITED_ACCEPTED"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“詹姆可以退职。提利昂保留原有的那份差事，不得再借此案逼他交出来。”\n\n泰温沉默片刻。“不得借机扩大职权。”\n\n詹姆把白袍向前推了推。“我答应。”\n\n提利昂听到条件后，问清自己还能办哪些事，才在诏令上签字。门外的守卫让开，詹姆站在走廊尽头等他。兄弟俩谁也没急着开口。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_REFUSED_P015"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "詹姆摇头。“如果连他的性命都不能保证，我不会拿白袍来换。”他收回披风，“先审案吧。”"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_REFUSED_P002"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“不行。”泰温把白袍推回詹姆面前，“我说过的条件没有改变。谈不成，就让审判继续。”\n\n詹姆盯着父亲，没有再去碰那件披风。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_REFUSED_P003"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C66-P144"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“替我好好谢谢他，陛下，”提利昂说，“并告诉他，我没有悔罪的心情。”\n\n使者带回这句话时，詹姆闭了闭眼。未签的文书被收了起来，审判照常进行。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_STANDARD_REFUSED_P015"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "詹姆摇头。“如果连他的性命都不能保证，我不会拿白袍来换。”他收回披风，“先审案吧。”"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_STANDARD_REFUSED_P002"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“不行。”泰温把白袍推回詹姆面前，“我说过的条件没有改变。谈不成，就让审判继续。”\n\n詹姆盯着父亲，没有再去碰那件披风。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_STANDARD_REFUSED_P003"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C66-P144"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“替我好好谢谢他，陛下，”提利昂说，“并告诉他，我没有悔罪的心情。”\n\n使者带回这句话时，詹姆闭了闭眼。未签的文书被收了起来，审判照常进行。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_LIMITED_REFUSED_P015"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "詹姆摇头。“如果连他的性命都不能保证，我不会拿白袍来换。”他收回披风，“先审案吧。”"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_LIMITED_REFUSED_P002"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“不行。”泰温把白袍推回詹姆面前，“我说过的条件没有改变。谈不成，就让审判继续。”\n\n詹姆盯着父亲，没有再去碰那件披风。"
+          },
+          {
+            "when": {
+              "reply_version": "EXCHANGE_LIMITED_REFUSED_P003"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C66-P144"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“替我好好谢谢他，陛下，”提利昂说，“并告诉他，我没有悔罪的心情。”\n\n使者带回这句话时，詹姆闭了闭眼。未签的文书被收了起来，审判照常进行。"
+          },
+          {
+            "when": {
+              "last_choice": "T03-C"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“不要拿詹姆的继承权来决定提利昂有没有罪。让他在庭上答辩。”\n\n詹姆重新拿起白袍。“那就请陛下听完他的回答。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C62-P159",
+              "C62-P153"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch",
+              "adapted"
+            ],
+            "text": "炉火照在泰温公爵结实的金胡须上，反射金光，衬托脸庞。\n\n詹姆站在父亲面前，白袍搭在手臂上。\n\n“我回凯岩城，继承你的封地。”他说，“你得放过提利昂。”\n\n“你当然有责任，”泰温公爵说，“对兰尼斯特家族的责任。你从前是凯岩城的继承人，以后也应当是。”\n\n“那就说定他会活着。”詹姆把白袍放下。\n\n泰温看向国王。“他的誓言由陛下解除。至于提利昂，他必须答应离开朝廷。”\n\n“陛下？”詹姆等待答复。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN03-S04",
+      "parent": "FIN03",
+      "part": 4,
+      "part_scene": 4,
+      "title": "被安排好的证词",
+      "location": "审判厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P002",
+        "P003",
+        "P001",
+        "P018",
+        "P004",
+        "P044",
+        "R001",
+        "P030"
+      ],
+      "default_next": "FIN03-S05",
+      "script_ref": "终章固定场景与逐幕台词.md#fin03-s04",
+      "minutes": 60,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN03-S05",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 5,
+      "scheduled_clock": "09:00",
+      "possible_targets": [
+        "FIN03-S05"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN03-S04",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P010",
+              "C66-P082",
+              "C66-P083",
+              "C66-P084",
+              "C66-P085",
+              "C66-P090"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted"
+            ],
+            "text": "提利昂试着找回所有的尊严，蹒跚下楼。通过庭院时，他感觉人们全都在注视他：城墙上的守卫，马厩边的马夫，还有仆人、洗衣妇和侍女。进入王座厅，骑士和贵族们纷纷为他让路，然后和身边的贵妇窃窃私语。\n\n国王的铁王座下，为婚宴搭建的高台并没有拆，但是而今上面只剩了一张桌子。健壮的梅斯·提利尔和苗条的奥柏伦·马泰尔亲王分坐两边，前者绿衣外披金披风，后者穿滑顺的橙、黄、绯红三色条纹袍，泰温·兰尼斯特公爵居于两人之间。\n\n审判由总主教的祷告开始，他祈求天父主持正义。当他说完后，提利昂的父亲倾身向前，“提利昂，是你杀害了托曼王子吗？”\n\n“不是。”\n\n“噢，这下首相大人可放心了。”奥柏伦·马泰尔干巴巴地说。\n\n“控方请到不少证人，”泰温大人声明，“我们先听取他们的证词，随后由你请出辩方证人。请注意，未经法官允许，不得打断证人发言。”"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "侍酒者承认把本该送给国王的杯子交给了托曼。瑟曦追问提利昂何时碰到它，他只记得王子已从椅子上滑下。"
+          },
+          {
+            "when": {
+              "tyrion_at_banquet": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "侍酒者承认把本该送给国王的杯子交给了托曼。他没见到提利昂；瑟曦仍要求他说出此前有没有人向他传话。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C66-P119",
+              "C66-P121",
+              "C66-P122",
+              "C66-P123",
+              "C66-P124",
+              "C66-P125",
+              "C66-P126",
+              "C66-P157",
+              "C66-P158"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted",
+              "branch"
+            ],
+            "text": "派席尔大学士接着上场，他沉重地倚靠着一根扭曲藤杖，边走边抖，长长的鸡脖子上只剩几点白须。他太过虚弱，因此法官们特别备下桌椅。派席尔把一堆小瓶罐放到桌上，津津有味地挨个介绍。\n\n“派席尔！”提利昂不顾父亲的警告，厉声质问道，“这些东西中有哪一样是能让人窒息而死的？”\n\n“没有。所以我得出结论，你用的是更为恶毒的药品。当我少年时代在学城求学时，导师曾向我介绍过一味剧毒——扼死者。”\n\n“这味剧毒并未被调查人员发现，对不对？”\n\n“的确，大人，”派席尔朝他眨眨眼，“但这改变不了事实。诸神在上，我肯定你是以它来对付托曼殿下。”\n\n提利昂的怒火压倒了理智。“托曼从没害过我，我没杀他！大人们，想要我的脑袋尽管来取！但我和自己亲外甥的死毫无瓜葛！”\n\n“安静！”泰温大人说，“这是第三次，再出声，就把你嘴巴塞住绑起来。”\n\n“瓦里斯大人，”司仪宣布，“情报总管。”\n\n八爪蜘蛛刻意打扮，脸上扑满了粉，闻起来有股玫瑰香水的味道，一边说一边搓手。\n\n瓦里斯将旧日的威胁、争吵和账目摆到法官面前。只要有人问到他是否见过投毒，他便不再正面回答。\n\n“小小鸟儿说的呗。它们天生便是要四处刺探，把情报告诉我，好由我转达给诸位大人。”"
+          },
+          {
+            "when": {
+              "shae_testimony": "false_accusation"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C70-P011",
+              "C70-P014"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "提利昂在法官面前站好位置，另一群金袍卫士把雪伊带了进来。\n\n“他俩在一起密谋，”雪伊说，“他想得到王位。”\n\n“你如何知道这么多？”奥柏伦亲王询问，“小恶魔为什么要向妻子的侍女泄露计划？”\n\n“我听见了，大人。他说只要没有挡路的人，他也可以坐上王座。”"
+          },
+          {
+            "when": {
+              "shae_testimony": "truthful"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "雪伊被带到法官面前。\n\n“他是说过很多气话，大人。”她说，“可我没听说什么毒药。他也没有说过要杀托曼。”\n\n瑟曦让她再想一想，她仍摇头。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN03-S05",
+      "parent": "FIN03",
+      "part": 4,
+      "part_scene": 5,
+      "title": "提利昂的反击",
+      "location": "审判厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003"
+      ],
+      "default_next": "FIN03-S06",
+      "script_ref": "终章固定场景与逐幕台词.md#fin03-s05",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN03-S06",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 5,
+      "scheduled_clock": "10:00",
+      "possible_targets": [
+        "FIN03-S06"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN03-S05",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P024",
+              "C70-P025",
+              "C70-P026",
+              "C70-P027",
+              "C70-P028",
+              "C70-P029"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted"
+            ],
+            "text": "提利昂抬头望向父亲那双有着冷傲的金黄眼瞳的大绿眼。“我认罪，”他说，“很可怕的罪。您想听吗？”\n\n泰温公爵保持沉默。梅斯·提利尔点点头。奥柏伦亲王稍有失望。“你承认自己毒害王子？”\n\n“对此我无话可说，”提利昂道，“关于托曼的死，我是清白的。我犯的是更可怕的罪。”他朝父亲跨近一步。“我生了出来。我活在了世上。我的罪就是生为侏儒，我为此忏悔。而且不管我的好老爸原谅我多少次，我继续着自己的丑行。”\n\n“荒谬！提利昂，”泰温公爵宣布。“交待问题就好。这不是一场对侏儒的审判。”\n\n“错，大人，我的一生就是一场对侏儒的审判。”\n\n“你没有为自己辩护的吗？”"
+          },
+          {
+            "when": {
+              "tyrion_attitude": "trusted"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“陛下听过我的忠告，也肯用我办事。”提利昂望向王座，“我不求您信我每一句话，只求您别把他们的恨当成证据。”"
+          },
+          {
+            "when": {
+              "tyrion_attitude": "cautious"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我没有毒死托曼。”提利昂说，“我替这座城做过什么，诸位忘得倒快。”"
+          },
+          {
+            "when": {
+              "tyrion_attitude": "resentful"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C70-P030"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "他把脸转向大厅，面对一片由刷白的脸组成的汪洋。“我希望自己备下足够的毒药来对付你们所有人，你们唯一让我感到遗憾的是，我还不能成为你们想象中的怪物。”"
+          },
+          {
+            "when": {
+              "combat_request": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C70-P030",
+              "C70-P031",
+              "C70-P032"
+            ],
+            "source_modes": [
+              "adapted",
+              "verbatim"
+            ],
+            "text": "“我是清白的，在这里却得不到正义。你们让我别无选择，只能求助于天上诸神。我要求比武审判。”\n\n“你失去理智了吗？”父亲喝道。\n\n“不，我终于找到了它。我要求比武审判！”"
+          },
+          {
+            "when": {
+              "combat_request": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“我没有杀人，”提利昂说，“我要的不是宽恕，是公道。”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN03-S06",
+      "parent": "FIN03",
+      "part": 4,
+      "part_scene": 6,
+      "title": "国王的裁决",
+      "location": "红堡 · 王座厅",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003",
+        "P002"
+      ],
+      "default_next": "FIN04-S01",
+      "script_ref": "终章固定场景与逐幕台词.md#fin03-s06",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "FIN03-01",
+        "FIN03-03",
+        "FIN03-04",
+        "T06-B",
+        "FIN03-05",
+        "FIN03-PARDON"
+      ],
+      "route_note": "正常比武或暗助比武→FIN04；无罪、赦免、复核、未决→对应收束。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 5,
+      "scheduled_clock": "10:15",
+      "possible_targets": [
+        "FIN04-S01",
+        "FIN07-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "ending_resolver": "已实际结束时读取finale_exit_contract；拒绝或原执行未完成先继续，不提前入尾声",
+      "playback": {
+        "id": "FIN03-S06",
+        "blocks": [
+          {
+            "when": {
+              "last_choice": "FIN03-01"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C70-P033",
+              "C70-P036"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "“准许比武审判。”乔佛里说。\n\n亲爱的老姐简直不能再开心了。“他有那个权利，大人们，”她提醒法官，“让天上诸神作出裁判。格雷果·克里冈爵士将成为托曼的代理骑士。他刚于前天晚上回城，好用剑为我服务。”\n\n“审判明日进行，”他对着王座厅宣布，"
+          },
+          {
+            "when": {
+              "last_choice": "FIN03-05"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "乔佛里公开准许比武。奥柏伦接受代斗，瑟曦选中了魔山。\n\n退庭后，乔佛里叫住自己的亲信，等旁人走远才低声下令：“我要奥柏伦赢。让格雷果上场时使不出力气，别留下能追到我们身上的东西。”\n\n亲信俯首应命，退出房间。\n\n奥柏伦只接到一句提醒——取胜后立刻结束，不要为了逼供靠近倒地的敌人。"
+          },
+          {
+            "when": {
+              "last_choice": "T06-B"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“证词不足，暂不判罪。继续看管，查明以后再审。”\n\n瑟曦愤怒地转过身。泰温命书记记下裁决，守卫把提利昂带离大厅。他仍未自由，但今天不会有人宣判他死。"
+          },
+          {
+            "when": {
+              "reply_version": "REVIEW_CLEARED"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "国王命人重新核对关键证词。分别受审的侍从终于把时辰说清：提利昂碰杯子时，托曼已经倒下。\n\n“这些指控不能成立。”主持审理的人合起证词。\n\n释放的命令随即传下。守卫让开道路，提利昂当着全厅宾客的面走出看管。"
+          },
+          {
+            "when": {
+              "reply_version": "REVIEW_UNCLEAR"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "侍从被重新带进厅里，几份证词一一核对。有人改口，有人坚持原话，最后仍说不清是谁动了那杯酒。\n\n国王宣布暂缓判决。提利昂继续被看管，比武和处刑一并停止。\n\n他离开时走得很慢。瑟曦转身离席，没有向王座行礼。"
+          },
+          {
+            "when": {
+              "reply_version": "ACQUIT"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“针对提利昂的指控不能成立。释放他。”\n\n瑟曦猛地站起。“托曼就这样白死了？”\n\n“还要查的是凶手。”主持审理的官员收起判书，“不是再审一个已经被释放的人。”\n\n守卫解开提利昂的束缚。他活动了一下手腕，抬头向乔佛里行礼。这一次，他可以自己走出大厅。"
+          },
+          {
+            "when": {
+              "reply_version": "PARDON"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“以国王的名义，赦免提利昂在本案中的罪责，立即释放。”\n\n“我没有认罪。”提利昂说。\n\n他等到门边的守卫让路，才转向王座。“但我知道，是谁让我还能活着说这句话。”\n\n瑟曦没有看他。直到他的脚步声消失，她才将手中的帕子扔在空椅上。"
+          },
+          {
+            "when": {
+              "combat_request": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C70-P034",
+              "C70-P035"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "最后是梅斯·提利尔询问提利昂，“你有为你的清白而战的代理骑士吗？”\n\n“他有的，大人。”奥柏伦亲王站起来。“侏儒十分信任我。”"
+          },
+          {
+            "when": {
+              "combat_request": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "提利昂的答辩已经说完，法官们望向王座。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P036"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "为了让大厅再度安静，不得不让一百个金袍卫士一起用矛重击地板。"
+          },
+          {
+            "when": {
+              "can_fix_duel": true,
+              "combat_request": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "一名亲信侍从留在王座后。他低头等候吩咐：国王若肯暗中相助，他能把削弱体力的药送进魔山的饮食。此事只会传给执行的人。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN04-S01",
+      "parent": "FIN04",
+      "part": 5,
+      "part_scene": 1,
+      "title": "代斗者",
+      "location": "红堡 · 代斗者居所",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003",
+        "R001",
+        "P002",
+        "P001"
+      ],
+      "default_next": "FIN04-S02",
+      "script_ref": "终章固定场景与逐幕台词.md#fin04-s01",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN04-S02",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 6,
+      "scheduled_clock": "09:00",
+      "possible_targets": [
+        "FIN04-S02"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN04-S01",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P045",
+              "C70-P046",
+              "C70-P047",
+              "C70-P048",
+              "C70-P049",
+              "C70-P050",
+              "C70-P051",
+              "C70-P052",
+              "C70-P053",
+              "C70-P054",
+              "C70-P055",
+              "C70-P074"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch",
+              "verbatim"
+            ],
+            "text": "乔佛里到来时，奥柏伦亲王正边喝红酒边穿盔甲，由四名年轻的多恩贵族服务。“早上好，大人，”亲王悠哉游哉地说，“来杯葡萄酒吗？”\n\n提利昂也获准来到这里。他看了看亲王的酒杯。\n\n“战斗之前你都会喝酒吗？”\n\n“我通常在战斗之前喝酒。”\n\n“这会让你送命的。更糟的是，连累我也送命。”\n\n奥柏伦亲王微微一笑，“反正天上诸神会保佑清白的人。我相信你是清白的吧？”\n\n“只在托曼被杀这件事上。”提利昂承认。“我相信你明白格雷果·克里冈是个——”\n\n“——大块头？我早听说了。”\n\n“他几乎有八尺高，三十石重，浑身肌肉。他的武器是把双手巨剑，但他只凭单手使用，一击就能把人劈成两半。他的铠甲是那样沉重，除他之外没人穿得上，甚至搬不动。”\n\n奥柏伦亲王无动于衷。“我宰过比他更大的块头。关键技巧是让他们失去重心，倒下去就万事皆休。”多恩人讲得自信满满，使提利昂几乎放下心来，直到他转过身去说，“戴蒙，我的矛！”戴蒙爵士把矛扔给他，红毒蛇在空中接住。\n\n“你想用长矛对付‘魔山’？”这让提利昂再度不安起来。在战争中，整齐的长矛队可以阻挡骑兵，但在一对一决斗里面对经验丰富的剑客是完全不同的状况。\n\n“我们多恩人喜欢用矛。况且这是唯一能抵消他庞大身躯的办法。过来看看，小恶魔大人。注意，绝不能碰它。”此矛长达八尺，矛柄由芩树制成，平滑、粗厚而沉重，最后两尺是钢铁：苗条的树叶状矛头最后缩成一个邪恶的尖端，看上去锐利得可以用来刮胡子。\n\n“伊莉亚和她的孩子们等待正义已经很久了，”奥柏伦亲王戴上柔软的红皮革手套，再度提起长矛，“今天，他们将得到它。”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN04-S02",
+      "parent": "FIN04",
+      "part": 5,
+      "part_scene": 2,
+      "title": "开战之前",
+      "location": "决斗场",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "R001",
+        "P078",
+        "P003",
+        "P002"
+      ],
+      "default_next": "FIN04-S03",
+      "script_ref": "终章固定场景与逐幕台词.md#fin04-s02",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN04-S03",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 6,
+      "scheduled_clock": "09:30",
+      "possible_targets": [
+        "FIN04-S03"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN04-S02",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P075",
+              "C70-P076",
+              "C70-P077",
+              "C70-P080",
+              "C70-P083"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted",
+              "branch"
+            ],
+            "text": "外院被选做决斗场。\n\n天气灰暗多风，太阳竭力想从云端中露头。\n\n观众在城墙走道上站成一排，还肩并肩地挤在堡垒和塔楼的阶梯上。马房门内，拱桥窗户中，阳台和屋顶上到处都有人。而广场本身更挤得满满的，迫使金袍卫士和御林铁卫弹压驱赶，以为决斗留出空间。为了能舒舒服服地看，很多人搬凳子来，有的则抬来木桶。\n\n格雷果爵士身边的瑟曦看起来就像小孩。穿上铠甲的魔山则是个庞然巨物，绣有克里冈家三黑狗徽记的长长黄袍下，锁甲外罩全身重铠，暗灰色钢铁密布战斗留下的凹槽和划痕，这下面还有煮沸皮甲和棉衬垫，平顶巨盔紧扣咽喉，只给口鼻留下呼吸孔道，眼旁还有一道用来观察的窄孔，盔顶的装饰是一只石拳。\n\n红毒蛇轻装上阵，除护胫、臂铠、护喉、甲衣、战裙之外，只穿了柔软皮衣和平滑丝内衣。锁甲外罩一层闪闪发亮的铜鳞片，但两者加起来也不及克里冈那全身重铠四分之一的防护。移去护脸甲之后，亲王的头盔只剩一半，甚至连护鼻都没有。他圆形的钢盾打磨得十分耀眼，上面有用红金、黄金、白金和黄铜混合铸成的长枪贯日纹章。\n\n乔佛里在月台上落座，泰温与凯冯分坐两旁。\n\n一打号手立即吹奏，好让人群安静。总主教戴着高大的水晶宝冠曳步上前，祈求天父为他们的清白作出决断，祈求战士赐予正义的一方以力量。"
+          },
+          {
+            "when": {
+              "duel_fixed": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "那名亲信侍从在月台下停步，低头碰了碰袖口，随即退开。只有国王明白这是什么回报。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN04-S03",
+      "parent": "FIN04",
+      "part": 5,
+      "part_scene": 3,
+      "title": "长枪与巨剑",
+      "location": "决斗场",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "R001",
+        "P078"
+      ],
+      "default_next": "FIN04-S04",
+      "script_ref": "终章固定场景与逐幕台词.md#fin04-s03",
+      "minutes": 10,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN04-S04",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 6,
+      "scheduled_clock": "09:45",
+      "possible_targets": [
+        "FIN04-S04"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN04-S03",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P085",
+              "C70-P086",
+              "C70-P087",
+              "C70-P088",
+              "C70-P089",
+              "C70-P090",
+              "C70-P091",
+              "C70-P092",
+              "C70-P093",
+              "C70-P095",
+              "C70-P096",
+              "C70-P099"
+            ],
+            "source_modes": [
+              "adapted",
+              "verbatim"
+            ],
+            "text": "两人之间有五十码的距离。奥柏伦亲王大步上前，魔山迅速回应。只剩十码时，红毒蛇停下来发话，“他们告诉你我是谁了吗？”\n\n格雷果爵士轻蔑地哼了一声，“某个死人。”他继续上前，毫不动容。\n\n多恩人滑向一旁。“我是奥柏伦·马泰尔，多恩领亲王。”魔山跟着转向，以便把对方保持在视野中。“伊莉亚公主是我的姐姐。”\n\n“谁？”格雷果·克里冈问。\n\n奥柏伦长矛突刺，但格雷果爵士用盾抵住矛头，推向一旁，接着猛地挥动巨剑砍向亲王。多恩人毫发无伤地避开。长矛再次突刺。克里冈砍向长矛，不过马泰尔迅速缩了回去，接着又是另一次突刺。这回矛尖在魔山胸膛上划过，发出刺耳的金属刮割声，它切开外套，在钢甲上留下一条长而明亮的划痕。“伊莉亚·马泰尔，多恩的公主，”红毒蛇嘶叫道，“你奸了她。你杀了她。你害了她孩子。”\n\n克里冈爵士咕哝着。他步履沉重地冲锋，砍向多恩人的头颅。奥柏伦亲王轻易地避开了这一击。“你奸了她。你杀了她。你害了她孩子。”\n\n“你是来打架还是来废话的？”\n\n“我是来听你忏悔的。”红毒蛇敏捷地刺中魔山的腹部。没有任何效果。克里冈的回砍也告落空。长矛在巨剑周围晃动，如毒蛇分岔的舌头伸进缩出，佯攻下盘而实取上身，分别刺中腹股沟、盾牌和眼眶。奥柏伦亲王几乎每一击都不落空，但每一击都不能穿透克里冈爵士的全身重铠。多恩人继续转圈，戳刺，急退，牵引着魔山的行动。由于头盔只有一道窄眼缝，严重束缚了观察能力，克里冈始终不能将他保持在视野中。凭借长矛与速度，奥柏伦很好地利用了这点。\n\n就这样僵持了很长时间。他们在院子里来来往往，不断转圈。格雷果爵士的剑一次又一次地落空，而奥柏伦的矛刺中他手臂、大腿，甚至两次击中天灵盖。克里冈的大木盾同样多次中矛，到后来一只狗头已在星星下若隐若现，橡木也有几处撕裂。魔山时而咕哝，提利昂还听到他低沉地咒骂了一声，但大多数时间他沉闷地专注于战斗。\n\n“奥柏伦在耍他呢。”艾拉莉亚·沙德评论。\n\n“谁都不能耍弄该死的魔山。”提利昂说。\n\n“安静。”格雷果爵士的动作似乎慢下来了，巨剑也没有比武刚开始时举得那样高。“闭上臭嘴。”"
+          },
+          {
+            "when": {
+              "duel_fixed": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "这一次，他没能马上举起巨剑。手臂还在发力，肩膀却已垂下去；沉重的呼吸在头盔里响着。奥柏伦不再后退。"
+          },
+          {
+            "when": {
+              "duel_fixed": false
+            },
+            "kind": "body",
+            "source_refs": [
+              "C70-P101",
+              "C70-P102",
+              "C70-P104",
+              "C70-P105",
+              "C70-P106"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted"
+            ],
+            "text": "“够了！”格雷果爵士迈上两大步，砍向奥柏伦的头颅。多恩人再次后退。“你杀了她，”他说。\n\n“闭嘴！！！！！”格雷果用尽全力，面对长矛冲锋，矛头猛然撞上他右胸，发出震耳欲聋的噪音后滑向一旁。魔山冲进了打击范围，他的巨剑随即划出一片模糊光影。人群尖叫起来。奥柏伦避开头一击，同时松手放开长矛，格雷果爵士冲到这儿，矛已然无用。第二击多恩人用盾接下，金属与金属碰撞，人们耳鸣不止，红毒蛇摇晃着后退。格雷果爵士紧追不舍，咆哮怒吼。奥柏伦的后退变成溃逃，巨剑在离他胸部、手臂和头颅仅几寸的地方划过。\n\n但多恩的红毒蛇重新站了起来，长矛在手。“伊莉亚，”他朝格雷果爵士喊，“你奸了她。你杀了她。你害了她孩子。说出她的名字。”\n\n魔山转过身子。头盔、盾牌、长剑、外套……他从头到脚溅满血水。“你太多废话了，”他咕哝道，“你让我心烦意乱。”\n\n“我要听你说出她的名字。她是多恩的伊莉亚。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P107",
+              "C70-P109",
+              "C70-P110",
+              "C70-P113"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "魔山嗤之以鼻，继续前进……这时，太阳头一次穿过低矮的云层露出来。\n\n红毒蛇蜷缩，瞄准，再次突刺。格雷果爵士砍向长矛，但这一刺仅仅是虚晃。魔山失去平衡后，向前踉跄了一步。\n\n奥柏伦亲王举起被打凹的金属盾牌，一束强烈眩目的阳光反射在磨亮的金和铜上，窜入敌人头盔里那道窄缝。克里冈举起自己的盾来对抗耀眼的光芒。奥柏伦亲王的矛顺势窜出，犹如闪电，扎进厚重板甲的缝隙，进入手臂下方的接口。尖头穿过锁甲和皮甲。当多恩人转动长矛，猛抽而出时，格雷果发出几声窒息的哼叫。“伊莉亚。说出来！多恩的伊莉亚！”他缓缓转圈，准备下一击，“说出来！”\n\n奥柏伦亲王转到他后面。“多恩的伊莉亚！”他高喊。格雷果爵士跟着转身，但太慢也太迟。这次矛头刺进膝盖后方，穿过大小腿之间的缝隙，穿过锁甲和皮甲。魔山摇晃了几晃，便头朝下倒下去。巨剑从手中松脱。他缓缓地、沉沉地，翻过身来。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN04-S04",
+      "parent": "FIN04",
+      "part": 5,
+      "part_scene": 4,
+      "title": "他要的不是胜利",
+      "location": "决斗场",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "R001",
+        "P078"
+      ],
+      "default_next": "FIN04-S05",
+      "script_ref": "终章固定场景与逐幕台词.md#fin04-s04",
+      "minutes": 5,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "FIN04-01",
+        "FIN04-03"
+      ],
+      "route_note": "已选FIN03-05：自动演出奥柏伦杀死魔山，无第二次选择。否则保留继续/中止。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 6,
+      "scheduled_clock": "09:55",
+      "possible_targets": [
+        "FIN04-S05"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN04-S04",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C70-P114",
+              "C70-P115",
+              "C70-P116"
+            ],
+            "source_modes": [
+              "adapted",
+              "verbatim"
+            ],
+            "text": "多恩人扔掉烂盾牌，双手擎起长矛，慢步走开。在他后面，魔山发出一声呻吟，试图用手肘爬动。奥柏伦像灵猫一样转身，冲向倒下的对手。“伊伊伊伊伊莉莉莉莉莉亚亚亚亚亚！！！！！”他高声呼叫，把全身重量压在长矛上捅进去。芩树矛柄折断的劈啪声伴着瑟曦狂怒的嚎叫，刹那间奥柏伦亲王似乎长出了翅膀。毒蛇压垮了魔山。四尺断裂长矛从克里冈腹部穿出，奥柏伦亲王翻滚、起立、拍拍灰尘，掷出断矛，捡起敌人的巨剑。“如果你在说出她名字之前就死，爵士，我会到七层地狱去追你。”他承诺。\n\n格雷果爵士想起来，但断裂的长矛穿透了躯体，把他牢牢钉在地上。他用双手握住矛柄，闷哼着使劲，却拔不出来。一滩红色血池在他身下不断延伸。“我觉得自己更清白了。”提利昂告诉身边的艾拉莉亚·沙德。\n\n奥柏伦亲王走上前去。“说出她的名字。”他一只腿踏在魔山的胸膛，双手高高举起巨剑。"
+          },
+          {
+            "when": {
+              "duel_fixed": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "格雷果猛地抬起手，想抓住多恩人的腿。那只铁手却只升到半途，便重重落回胸甲上。\n\n“多恩的伊莉亚。”奥柏伦说。\n\n巨剑落下。魔山没有再动。\n\n亲王拔出剑，又等了片刻，才把它扔在格雷果身旁。艾拉莉亚首先叫出他的名字。随后，庭院另一侧的多恩人全都站了起来。"
+          },
+          {
+            "when": {
+              "can_stop_duel": true,
+              "duel_fixed": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "魔山的手指仍在动。月台下，国王的军官握紧了剑柄。"
+          },
+          {
+            "when": {
+              "last_choice": "FIN04-01"
+            },
+            "kind": "reply",
+            "source_refs": [
+              "C70-P117",
+              "C70-P118"
+            ],
+            "source_modes": [
+              "verbatim",
+              "branch"
+            ],
+            "text": "克里冈猛地抬手，抓住多恩人膝盖后部。红毒蛇的巨剑疯狂下砍，但由于失去平衡，剑尖只在魔山铠甲上留下另一道凹痕。格雷果的手扭转收紧，巨剑随之滑落，多恩人被拉倒在他身上。接着他们在尘土和血泊中撕打，断裂的长矛来回晃动。提利昂惊恐地发现魔山用一支巨手环住亲王，将他紧紧抱在前胸，犹如一对恋人。\n\n“多恩的伊莉亚。”两人近到可以接吻时，格雷果爵士终于说话了。他低沉的嗓音在头盔中隆隆作响。“我杀了她那些尖叫不休的小兔崽子。”他用自由的那只手戳向奥柏伦毫无防备的脸，铁指抠出眼珠。“接着我操了她。”克里冈的拳头猛锤多恩人的嘴巴，后者的牙齿成为碎片。“再下来我打碎了她下贱的头颅。就像这样。”他收紧巨拳，钢甲上的血在黎明的寒气中结霜。一阵令人昏晕的嘎扎嘎扎声。艾拉莉亚·沙德惊惧地嚎哭，而提利昂的早餐涌了出来。他跪倒在地，呕出咸肉、血肠和苹果蛋糕，以及那两份用洋葱及多恩火胡椒粉煎的鸡蛋。\n\n卫兵赶到时，奥柏伦已经没有呼吸。格雷果仍活着，却再也站不起来。"
+          },
+          {
+            "when": {
+              "last_choice": "FIN04-03"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“住手！把他们分开！”\n\n号角再度吹响。卫兵举盾隔开两人，奥柏伦握着巨剑不肯后退。\n\n“他还没说出名字。”\n\n“他会受审。”乔佛里说，“不是在这里杀了你之后。”\n\n亲王终于松手，剑砸进地里。他看着魔山被抬走。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN04-S05",
+      "parent": "FIN04",
+      "part": 5,
+      "part_scene": 5,
+      "title": "胜负与判决",
+      "location": "红堡 · 比武场",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P003",
+        "R001",
+        "P078",
+        "P002",
+        "P001"
+      ],
+      "default_next": "FIN05-S01",
+      "script_ref": "终章固定场景与逐幕台词.md#fin04-s05",
+      "minutes": 20,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "奥柏伦胜利宣告并实际释放→FX02；中止→FX05；原败局→FIN05。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 6,
+      "scheduled_clock": "10:00",
+      "possible_targets": [
+        "FIN05-S01",
+        "FIN07-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "ending_resolver": "已实际结束时读取finale_exit_contract；拒绝或原执行未完成先继续，不提前入尾声",
+      "playback": {
+        "id": "FIN04-S05",
+        "blocks": [
+          {
+            "when": {
+              "duel_fixed": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P027"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "“奥柏伦·马泰尔亲王获胜。”总主教宣布，“诸神已经裁断，提利昂·兰尼斯特无罪。”\n\n守卫让开了路。提利昂走向多恩亲王，先看一眼地上的格雷果，才伸出手。\n\n“谢谢，亲王，”提利昂说，“我一辈子都感激你的恩情。”\n\n奥柏伦握住他的手，随后向王座行礼。魔山的尸体被盖上披风。"
+          },
+          {
+            "when": {
+              "duel_stopped": false,
+              "duel_fixed": false
+            },
+            "kind": "body",
+            "source_refs": [
+              "C70-P120"
+            ],
+            "source_modes": [
+              "branch",
+              "verbatim"
+            ],
+            "text": "泰温宣读判词。王室的代斗者获胜，提利昂被判有罪，等候处决。\n\n金袍卫士把他带出庭院。提利昂走了几步，才发现那不是回塔楼的路。\n\n“我将被送入黑牢。”他说。无人回应。"
+          },
+          {
+            "when": {
+              "duel_stopped": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "总主教收起双手，退到月台前。没有哪位斗士获胜，也没有判决。\n\n“他还欠我一个名字。”奥柏伦说。\n\n提利昂在卫士之间站着。他没有死，但仍不能随亲王离开。案件暂缓，等候国王再次审理。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN05-S01",
+      "parent": "FIN05",
+      "part": 6,
+      "part_scene": 1,
+      "title": "夜间呈报",
+      "location": "国王书房",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001"
+      ],
+      "default_next": "FIN05-S02",
+      "script_ref": "终章固定场景与逐幕台词.md#fin05-s01",
+      "minutes": 30,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "decision",
+      "planned_options": [
+        "FIN05-01",
+        "FIN05-02",
+        "FIN05-03-A",
+        "FIN05-03-B"
+      ],
+      "route_note": "先按入场选定夜报版本宣读；无报告仅继续。读冻结菜单；安全离开/全部阻断→FIN07，其余按已编营救安排→FIN05-S02或FIN07。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 6,
+      "scheduled_clock": "21:00",
+      "possible_targets": [
+        "FIN05-S02",
+        "FIN07-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "ending_resolver": "已实际结束时读取finale_exit_contract；拒绝或原执行未完成先继续，不提前入尾声",
+      "playback": {
+        "id": "FIN05-S01",
+        "blocks": [
+          {
+            "when": {
+              "last_choice": "FIN05-01"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“不要改动今晚的守卫安排。有新消息再来报。”\n\n军官行礼退出。走廊里的脚步渐渐远了，乔佛里面前仍摊着未看完的公文。"
+          },
+          {
+            "when": {
+              "last_choice": "FIN05-03-A"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“拦住他们，不许任何人带走提利昂。”\n\n军官带人赶到监押处，扣下了冒名探视的人，重新封住门口。半个时辰后，他回报提利昂仍在房中，接应已被截断。"
+          },
+          {
+            "when": {
+              "last_choice": "FIN05-03-B"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“加强首相住处的守卫，把通向他房间的暗门也封住。牢里的安排暂且不动。”\n\n军官领命。稍后，首相住处送来回报：门和通道都已有人值守，没有国王的许可，任何人不得进入。"
+          },
+          {
+            "when": {
+              "reply_version": "DEPARTURE_ACCEPTED"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "放行的命令先送到提利昂面前。离京的条件写得清楚：退出朝廷，由国王的人护送出城，途中不得改道。\n\n“我答应。”他说，“这次别等我走到门口，又多添一条。”\n\n守卫打开房门。车马从侧门离开红堡，护送的军官一路随行，直到提利昂登上约定的船。"
+          },
+          {
+            "when": {
+              "reply_version": "DEPARTURE_REFUSED"
+            },
+            "kind": "reply",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "使者回来时，手里的文书还没有签名。\n\n“提利昂大人不肯接受。”他说，“他问，活着离开是不是还得承认自己有罪。然后就让我们回来了。”\n\n看管照旧，今晚的危险也没有因此消失。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "深夜，值夜军官来见国王。"
+          },
+          {
+            "when": {
+              "night_report": "NIGHT_KNOWN_LEAD"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“陛下，您叫我们留意的人来了。他们要去监押处，没有带准许探视的命令。”"
+          },
+          {
+            "when": {
+              "night_report": "NIGHT_AUTHORED_ALERT"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“有人要在夜里进去，陛下。守门人查过，没有这样的命令。我们没有惊动他们。”"
+          },
+          {
+            "when": {
+              "night_report": "NIGHT_AUTHORED_PROPOSAL"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“有人愿意护送提利昂离京，陛下。他退出朝廷，今后不再插手政务。只等您点头。”"
+          },
+          {
+            "when": {
+              "night_report": "NIGHT_NO_ALERT"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“各处换岗完毕，没有异状。”军官行礼告退。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN05-S02",
+      "parent": "FIN05",
+      "part": 6,
+      "part_scene": 2,
+      "title": "开门的人",
+      "location": "红堡 · 牢房与暗道",
+      "viewpoint": "observer",
+      "participant_candidates": [
+        "P015",
+        "P004",
+        "P003"
+      ],
+      "default_next": "FIN06-S01",
+      "script_ref": "终章固定场景与逐幕台词.md#fin05-s02",
+      "minutes": 20,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "实际营救发生且仍可接近泰温→FIN06-S01；营救受阻/已无危险→FIN07-S01。",
+      "knowledge": "spectator_only_no_character_memory",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 7,
+      "scheduled_clock": "00:00",
+      "possible_targets": [
+        "FIN06-S01",
+        "FIN07-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN05-S02",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P002",
+              "C77-P005",
+              "C77-P006"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "厚重木门外传来声响，提利昂·兰尼斯特明白自己死期已至。\n\n钥匙转动，牢门“咯”地一声，猛然掀开。提利昂背靠潮湿的墙壁，渴望手中有武器。\n\n火光照向脸庞，他举手遮挡。“来啊，连侏儒都怕吗？来杀我啊，烂婊子养的野种！”由于长期未说话，他声音很嘶哑。"
+          },
+          {
+            "when": {
+              "jaime_present": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P007",
+              "C77-P014",
+              "C77-P015",
+              "C77-P016",
+              "C77-P019",
+              "C77-P020",
+              "C77-P021",
+              "C77-P022",
+              "C77-P023",
+              "C77-P024",
+              "C77-P025",
+              "C77-P027",
+              "C77-P028",
+              "C77-P029",
+              "C77-P030",
+              "C77-P031",
+              "C77-P032",
+              "C77-P033",
+              "C77-P034",
+              "C77-P035",
+              "C77-P036",
+              "C77-P040",
+              "C77-P041",
+              "C77-P043",
+              "C77-P044",
+              "C77-P045",
+              "C77-P046",
+              "C77-P047",
+              "C77-P048",
+              "C77-P049",
+              "C77-P050",
+              "C77-P051",
+              "C77-P057",
+              "C77-P059",
+              "C77-P060",
+              "C77-P061",
+              "C77-P062",
+              "C77-P063"
+            ],
+            "source_modes": [
+              "verbatim",
+              "adapted",
+              "branch"
+            ],
+            "text": "“如此评价咱们的母亲大人？”对方左手握火炬走进来，“奔流城的黑牢没这么湿冷，但阴森多了。”\n\n“你来杀我吗？”提利昂问。\n\n“啧啧，这张嘴，三句不离本行。再没礼貌，小心我把你扔在这里烂掉。”\n\n“瑟曦不会让我烂掉。”\n\n“你无须做忏悔，我是来搭救你的。”詹姆的声音异样地庄重。\n\n“谁说我需要搭救？”\n\n“瞧，我已忘了你是个多么讨人厌的小东西。再废话，我就支持瑟曦砍你的头。”\n\n“噢，这可不行，”提利昂快步走出牢房，“现在是白天还是晚上？我没了感觉。”\n\n“午夜过后三点，全城都在熟睡。”詹姆将火炬放回牢房之间墙上的壁台中。\n\n走廊昏暗，提利昂几乎被狱卒的身体绊倒——此人四肢张开，躺在冰冷的石地板上。他踢了狱卒一脚，“死了？”\n\n“睡着了。其他三个也一样。太监往他们的酒里下了甜睡花，剂量没到致死的地步——至少他如此保证。他就等在楼梯上，穿着修士的袍子，待会带你通过下水道，前往黑水河畔，河边有条划桨船。放心，瓦里斯在自由贸易城邦不缺朋友和眼线，能让你衣食无缺……但你自己得多个心眼，瑟曦肯定会派出杀手。你最好连名字都改掉。”\n\n“谢谢，哥哥，”提利昂说，“我一辈子都感激你的恩情。”\n\n“我只是……还债。”詹姆的声音愈发异样。\n\n“还债？”他昂头望着哥哥，“我不明白。”\n\n“不明白就好，有的事，最好永远埋葬。”\n\n“噢，太棒了，”提利昂道，“什么丑事恶行？哪位大人背后搞小动作？说吧，我不会哭的。”\n\n“提利昂……”\n\n詹姆在害怕。“说吧。”提利昂重复。\n\n哥哥转头不看他。“泰莎。”最后他轻声道。\n\n“泰莎？”他心里一紧，“她……她怎么了？”\n\n“她不是妓女，我没有买她。一切都是父亲命我讲述的谎言。泰莎……泰莎就是泰莎，农夫的女儿，与你在路上偶遇。”\n\n提利昂向后退了一步。多年来，他以为唯一对自己说实话的人，原来也曾听从父亲，毁掉他的婚姻。\n\n“我真不知他会那样做，请你相信我。”\n\n“噢，相信你？”提利昂咆哮道，“你还值得我相信吗？我还能够相信你吗？去你妈的。她是我老婆！”\n\n他打了哥哥。反手一掌，用尽全身力气，蕴涵着所有的恐惧、怒火和痛苦。詹姆踉跄退步，失去平衡，最后倒在地上，“我……我很抱歉。”\n\n“噢，抱歉就行了吗，詹姆？你，还有我亲爱的老姐和慈祥的老爸，不错，我还没想清楚，但总有一天会狠狠报复你们，我指天发誓！兰尼斯特有债必还。”提利昂蹒跚走远，几乎又绊在狱卒身上，但不出十几码，便被一道铁门拦住。噢，老天！他只想尖叫。\n\n詹姆靠过来，“我有钥匙。”\n\n“那快开门。”提利昂向外避开。\n\n詹姆插进钥匙，将门推开，当先走出去，接着回头道，“你来吗？”\n\n“咱们各走各的路，”提利昂踱出门外，“钥匙给我，我自己去找瓦里斯。”他昂起头，用那双大小不一的眼睛打量哥哥。“詹姆，你左手能打吗？”\n\n“至少不比你差。”詹姆苦涩地说。\n\n“那好，下次见面，咱们就可以好好对上手，就你我两个——残废与侏儒。”\n\n詹姆将一串钥匙递给他，“我给你说了真话，你也该对我坦诚。是不是你干的？是不是你下的毒？”\n\n“你也以为是我？”提利昂问。\n\n詹姆没有回答。\n\n“那就信他们去吧。”弟弟夺过钥匙，“门已经开了，不劳你再送。”\n\n詹姆转身走开，一句话也没有说。\n\n太监隐藏在弯曲阶梯间的黑暗角落，穿一袭虫蛀的棕色长袍，用兜帽遮掩苍白的面容。“迟到啦，大人，我还以为出了差错呢。”他对提利昂说。\n\n“差错？噢，不，”提利昂恶毒地反诘，“能有什么差错？”他抬头盯着对方，“审判时，我召你过来。”\n\n“我不能过来。太后日日夜夜监视着，我不敢帮您。”\n\n“你如今倒肯帮我。”\n\n“是吗？哈哈，”瓦里斯咯咯轻笑，在这片黑暗和坚石中，回音分外诡异，“是您哥哥有说服力。”"
+          },
+          {
+            "when": {
+              "jaime_present": false
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P024",
+              "C77-P025"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "“轻一点，大人。”瓦里斯举着火把走进来，“再喊下去，便得换别人来开门了。”\n\n他把钥匙收进袖子，示意提利昂跟上。\n\n走廊昏暗，提利昂几乎被狱卒的身体绊倒——此人四肢张开，躺在冰冷的石地板上。他踢了狱卒一脚，“死了？”\n\n“睡着了。其他三个也一样。他们喝过的酒里有甜睡花，我只用了让人睡着的分量。”\n\n“河边有船。”瓦里斯说，“我们得赶在天亮前过去。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P064",
+              "C77-P065",
+              "C77-P066"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "“瓦里斯，你这狡猾无情的家伙，千方百计要置我于死地，或许我们之间该来个了断。”\n\n太监叹道，“好人没好报，我就知道，不管蜘蛛怎么努力编织，还是不受欢迎。算了，如果这就杀我，那可不成，大人，待会您多半走不出去。”摇曳的火光下，他眼睛闪烁不定，黑暗而湿润，“这些隧道对不经意的人而言，可是布满陷阱，非常危险哟。”\n\n提利昂嗤之以鼻，“不经意？我是世上最小心的人——尤其在结识你之后！”"
+          },
+          {
+            "when": {
+              "sansa_departed": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P067"
+            ],
+            "source_modes": [
+              "branch",
+              "adapted"
+            ],
+            "text": "“珊莎呢？”提利昂问。\n\n“很遗憾，搜遍君临也没发现珊莎夫人的线索，唐托斯·霍拉德爵士也消失无踪，我猜他此刻多半在哪里喝得大醉吧。珊莎失踪当晚，有人看见他俩一同走下蜿蜒楼梯，从此便好似蒸发了。那晚事态混乱，我的小小鸟儿们也说不上来。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P068",
+              "C77-P069",
+              "C77-P073"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "鞋子刮过粗石地板，发出声响。楼梯井内寒冷彻骨，让他不禁打啰嗦，“这究竟是什么地方？”\n\n“残酷的梅葛为红堡修了四层地牢，”瓦里斯回答，“第一层是大房间，用来关押普通犯人，他们挤在一起，墙壁高处有窄窗。第二层为小号，用来看守贵族囚犯，那里没有窗户，但走廊的火炬终年不熄。第三层牢房最小，门乃木制——人称‘黑牢’，也是您和之前艾德·史塔克的所在。不为人知的是，在这下面，还有一层，谁一旦被带进第四层，意味着将不能再见天日、再听人声，而永远在折磨中受苦。梅葛地牢的第四层乃刑讯间。”他们走到楼梯底部，一道门在面前默然敞开，“这就是第四层。来，握住我的手，大人，这样才好。黑暗中有些东西会吓着您的。”\n\n前方出现一道光芒，过于昏暗，不像太阳，但随着他们快步接近，却逐渐变得亮起来。过了一会，他看清那原是拱梁下锁紧的铁门，瓦里斯用钥匙打开。他们来到一个圆形小房间，房间内除了来路，还有别的五道门，每道皆被铁门封锁。屋顶是个天井，墙壁间从上到下有串铁环，用来攀爬。角落里有个华丽的火盆，塑造成龙头形状，张开的口中炭火已烧成灰烬，却仍旧放出一点晕黄的光。虽然微弱，但与隧道的黑暗相比，已是难能可贵。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN06-S01",
+      "parent": "FIN06",
+      "part": 6,
+      "part_scene": 3,
+      "title": "岔路",
+      "location": "红堡 · 暗道",
+      "viewpoint": "observer",
+      "participant_candidates": [
+        "P003",
+        "P004"
+      ],
+      "default_next": "FIN06-S02",
+      "script_ref": "终章固定场景与逐幕台词.md#fin06-s01",
+      "minutes": 10,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "首相通路已被隔离或关键冲突消失→FIN07-S01；实际接近与冲突仍成立→FIN06-S02。",
+      "knowledge": "spectator_only_no_character_memory",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 7,
+      "scheduled_clock": "00:20",
+      "possible_targets": [
+        "FIN06-S02",
+        "FIN07-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "ending_resolver": "已实际结束时读取finale_exit_contract；拒绝或原执行未完成先继续，不提前入尾声",
+      "playback": {
+        "id": "FIN06-S01",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P074",
+              "C77-P075",
+              "C77-P076",
+              "C77-P077"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch",
+              "verbatim"
+            ],
+            "text": "除此以外，房内别无他物。地板上，红砖与黑砖拼出一副三头龙的马赛克图案。\n\n“我们在首相塔下。”提利昂说。\n\n“不错，”瓦里斯打开一道铁门，久未开启的链条发出“嘎嘎吱吱”的抗议声，灰尘片片洒落，“来，这条路直通河流。”\n\n提利昂缓缓走到天梯下，抓住最底部一只铁环，“上面是我的卧室。”\n\n“您父亲大人的卧室。”"
+          },
+          {
+            "when": {
+              "can_reach_tywin": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "上方传来铁门合拢的声响，随后是卫士的脚步。\n\n瓦里斯拉住提利昂。“那边走不通了，大人。”\n\n提利昂握了一会儿铁环，才松开手。“带我去船上。”"
+          },
+          {
+            "when": {
+              "can_reach_tywin": true
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P078",
+              "C77-P079",
+              "C77-P080",
+              "C77-P081",
+              "C77-P082",
+              "C77-P083",
+              "C77-P084",
+              "C77-P085",
+              "C77-P086",
+              "C77-P087",
+              "C77-P088",
+              "C77-P090",
+              "C77-P091"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "他向上看去，“有多长？”\n\n“大人，您还虚弱，不能干蠢事，再说，我们也没有时间，必须马上出发。”\n\n“我有事情要上去解决。有多长？”\n\n“一共二百三十只铁环，您是想——”\n\n“二百三十只铁环之后呢？”\n\n“向左有条隧道，听我说——”\n\n“隧道离卧室有多远？”提利昂抬脚登上第一只铁环。\n\n“不到六十步。边走边摸，您就能发现出口。卧室是第三个。”太监叹口气，“您糊涂了，大人，令兄费尽心机挽回您的性命，怎可就此轻易放弃——还搭上我一条命？”\n\n“瓦里斯，若世上还有什么东西我看得比自己的命还要轻，那就是你的命。在这里等着。”他转头攀登，不再关心太监，边爬边默默数数。\n\n一环接一环，他深入黑暗。起初还能看见铁环的模糊轮廓和墙面的粗糙灰石，随着黑暗渐长，便伸手难窥五指。十三、十四、十五、十六……爬上第三十环，手臂已开始颤抖，不得不停下来休息。他向下看去，只见很深的底部有一圈微弱的光，被两脚所遮蔽。提利昂继续前进，三十九、四十、四十一……待到第五十环，腿脚已不听使唤，梯子却还无止无尽地延伸。六十八、六十九、七十……到得第八十环，背开始酸痛，但他坚持不懈，自己也说不出其中缘由。一百一十三、一百一十四、一百一十五……\n\n走到两百三十环时，周围黑得像掉进了沥青桶。他感觉到左边有暖风吹出，犹如巨兽的呼吸，便小心翼翼地伸腿试探，离开了铁环梯子。隧道极其促狭，若是正常体形的人来走，非得跪下，手脚并用不可，对提利昂倒刚好合适。\n\n他来到第三个出口的所在，摸索许久，才在石头之间找到一个小小的铁勾。用力一拧，周围传来细微的隆隆声，但在寂静中听来犹如山崩，接着左边不到一尺的地方出现方形孔洞，桔黄的光透进来。\n\n这里满是通红的灰烬，一根黑柴在愉悦地燃烧，发出炽热的辉芒。他小心翼翼地绕开去，快步疾行，以免烧到鞋子。温暖的炭渣踩在脚下咯吱作响。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN06-S02",
+      "parent": "FIN06",
+      "part": 6,
+      "part_scene": 4,
+      "title": "父与子",
+      "location": "泰温住处",
+      "viewpoint": "observer",
+      "participant_candidates": [
+        "P003",
+        "P002",
+        "P044"
+      ],
+      "default_next": "FIN06-S03",
+      "script_ref": "终章固定场景与逐幕台词.md#fin06-s02",
+      "minutes": 15,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "实际对峙结束→FIN06-S03；不允许旁观者遥控，不补刺客。",
+      "knowledge": "spectator_only_no_character_memory",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 7,
+      "scheduled_clock": "00:30",
+      "possible_targets": [
+        "FIN06-S03"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN06-S02",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P102",
+              "C77-P104",
+              "C77-P105",
+              "C77-P106",
+              "C77-P107",
+              "C77-P108",
+              "C77-P109",
+              "C77-P110"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "墙上依次挂着狮头杖、战斧和十字弓——斧头嫌施展不开，锤杖够不着，只有十字弓下恰好摆了个大铁木箱。他爬上去，取下武器和一只满载箭矢的皮箭简，接着用脚踩住弓镫，拉满弓弦，搭好一只箭。\n\n他踱到门边，听了一会儿，接着慢慢推开。石烛台中点了一盏灯，淡黄的光照亮空旷的走廊。光芒摇曳，提利昂闪出门外，十字弓抵紧大腿。\n\n不出所料，他在用作厕所的小塔里找到了父亲。泰温公爵将睡袍卷在臀部，听见脚步声，立刻抬起眼睛。\n\n提利昂嘲弄地半鞠躬，“大人安好。”\n\n“提利昂，”假如泰温·兰尼斯特也会害怕，至少没露出半点痕迹，“谁放你的？”\n\n“我倒很想向您坦白，只可惜有神圣的誓言约束。”\n\n“是太监，”父亲认定，“我要砍了他的头。你拿着我的十字弓做什么？快放下。”\n\n“如果我拒绝，您要怎么对付我呢，父亲？”"
+          },
+          {
+            "when": {
+              "tyrell_attitude": "hostile"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P111"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "“越狱太荒唐了。老实告诉你，你明天是不会死的。我会送你去长城，但首先必须疏通提利尔大人。把弓放下，我们回卧室好好谈。”"
+          },
+          {
+            "when": {
+              "tyrell_attitude": "bargaining"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P111"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "“越狱太荒唐了。老实告诉你，你明天是不会死的。我会送你去长城，但首先必须把朝廷的事情安排妥当。把弓放下，我们回卧室好好谈。”"
+          },
+          {
+            "when": {
+              "tyrell_attitude": "committed"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P111"
+            ],
+            "source_modes": [
+              "adapted"
+            ],
+            "text": "“越狱太荒唐了。老实告诉你，你明天是不会死的。我会送你去长城，但首先必须说服太后。把弓放下，我们回卧室好好谈。”"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [
+              "C77-P112",
+              "C77-P113",
+              "C77-P114",
+              "C77-P115",
+              "C77-P116",
+              "C77-P117",
+              "C77-P118",
+              "C77-P119",
+              "C77-P120",
+              "C77-P121",
+              "C77-P122",
+              "C77-P123",
+              "C77-P124",
+              "C77-P125",
+              "C77-P126",
+              "C77-P127",
+              "C77-P128",
+              "C77-P129",
+              "C77-P130",
+              "C77-P131"
+            ],
+            "source_modes": [
+              "verbatim"
+            ],
+            "text": "“我们就在这里谈。我在想，或许我不怎么愿意去长城呢，父亲。那里真他妈的冷，而冷酷这样东西，从您身上，我已经受够了。告诉我一件事，我立刻拍屁股走人，一个简单的问题，至少您欠我这个。”\n\n“我什么也不欠你。”\n\n“不，在我一生中，你给我的伤害难以尽数。我要你回答：你到底把泰莎怎样了？”\n\n“泰莎？”\n\n“我老婆。”\n\n“噢，我想起来了。你的头一个妓女。”\n\n提利昂瞄准父亲的胸膛，“再说这个词，我就杀了你！”\n\n“你不敢。”\n\n“我不敢？说啊，就一个词两个字，你说啊，”提利昂挥舞十字弓，“泰莎。在给我上了那小小的一课之后，你把她怎样了？”\n\n“我不记得了。”\n\n“努力想想！你杀了她？”\n\n父亲抿抿嘴唇，“杀她做甚？那番经历正好让她摆正自己的位置……何况我记得，她收入颇丰。似乎后来总管把她赶出去了，我没工夫询问。”\n\n“上哪儿去了？”\n\n“妓女还能上哪儿去？”\n\n提利昂指头一紧，十字弓正好在泰温公爵起立瞬间“哐”地一声，射出飞矢，插进公爵膀胱之上，他闷哼一声，又坐回去。箭插得很深，直没到羽翎。鲜血顺着箭柄，不住渗透，流过父亲的阴毛，顺着光光的大腿，滴到地板上。“你放箭！”父亲难以置信地说，他眼睛朦胧中充满惊骇。\n\n“您总能迅速把握形势，父亲，”提利昂评论，“难怪是永远的国王之手。”\n\n“你……你……你不是……我儿子。”\n\n“这您就错了，就我看来，我是小一号的您。发发慈悲，快点死吧，我急着赶船呢。”\n\n这一回，父亲总算遂了提利昂的愿。厕所里猛然散发出一阵恶臭，死亡的公爵肠肚彻底松弛。\n\n泰温·兰尼斯特公爵到死也没有拉出黄金来。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN06-S03",
+      "parent": "FIN06",
+      "part": 6,
+      "part_scene": 5,
+      "title": "黎明前的消息",
+      "location": "国王寝居",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001"
+      ],
+      "default_next": "FIN07-S01",
+      "script_ref": "终章固定场景与逐幕台词.md#fin06-s03",
+      "minutes": 20,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "继续→FIN07-S01",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "scheduled_day_offset": 7,
+      "scheduled_clock": "05:00",
+      "possible_targets": [
+        "FIN07-S01"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "ending_resolver": "已实际结束时读取finale_exit_contract；拒绝或原执行未完成先继续，不提前入尾声",
+      "playback": {
+        "id": "FIN06-S03",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "天亮前，首相住处的卫兵来敲国王的门。\n\n泰温·兰尼斯特死了。学士已验看过伤口；那支弩箭仍留在尸体里。\n\n提利昂不在牢中，瓦里斯也找不到了。\n\n“太后已经知道了。”军官说，“凯冯大人请陛下过去。”"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN07-S01",
+      "parent": "FIN07",
+      "part": 7,
+      "part_scene": 1,
+      "title": "空下的位置",
+      "location": "红堡",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P002",
+        "P001"
+      ],
+      "default_next": "FIN07-S05",
+      "script_ref": "终章固定场景与逐幕台词.md#fin07-s01",
+      "minutes": 0,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "读唯一实际出口，播放一幕；特殊线→FIN07-S04，否则直接FIN07-S05保存，无额外画面。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN07-S04",
+        "FIN07-S05"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "prose_selector": "finale_exit_contract.entries[].main_prose",
+      "no_extra_world_time": true,
+      "playback": {
+        "id": "FIN07-S01",
+        "blocks": [
+          {
+            "when": {
+              "exit": "FX01"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "詹姆交还白袍的那天，提利昂走出了看管的房间。兄弟俩在院子里站了很久，泰温没有来送行。"
+          },
+          {
+            "when": {
+              "exit": "FX01",
+              "last_choice": "FIN03-02"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "提利昂按约离开君临，暂不再任职。上车前，他向乔佛里欠身：“陛下，愿你下一次需要忠告时，身边还有人敢说真话。”"
+          },
+          {
+            "when": {
+              "exit": "FX01",
+              "last_choice": "T03-B"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "提利昂保住了原有的差事。他重新拿到办公房间的钥匙时，看了一眼乔佛里。“我会把这份工作做好。免得他们说，你只是白白留住了一个麻烦。”"
+          },
+          {
+            "when": {
+              "exit": "FX01"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "泰温得到了继承人的承诺，詹姆保住了弟弟。国王为这份交换付出了什么，宫里每个人都看得清楚。"
+          },
+          {
+            "when": {
+              "exit": "FX02"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "提利昂获释后，第一次不必由守卫陪着来到国王面前。奥柏伦也来了，长枪已经交给门外的侍从。"
+          },
+          {
+            "when": {
+              "exit": "FX02",
+              "reason": "oberyn_victory_release_completed"
+            },
+            "kind": "body",
+            "source_refs": [
+              "C77-P027",
+              "C70-P074"
+            ],
+            "source_modes": [
+              "adapted",
+              "branch"
+            ],
+            "text": "“谢谢，陛下，”提利昂说，“我一辈子都感激你的恩情。”\n\n提利昂向乔佛里行礼，又转向奥柏伦。\n\n“伊莉亚和她的孩子们等待正义已经很久了，”奥柏伦说，“今天，他们得到了它。”\n\n亲王放下酒杯。“此后，陛下若有话要带到多恩，我愿做这个信使。”"
+          },
+          {
+            "when": {
+              "exit": "FX02",
+              "reason": "acquittal_release_completed"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“他们想让我带着罪名死去。”提利昂说，“陛下没有让他们如愿。这份恩情，我不会忘。”\n\n奥柏伦点头。“今日我看见了国王敢为自己的判决负责。多恩愿意听一听，陛下接下来有什么打算。”"
+          },
+          {
+            "when": {
+              "exit": "FX02",
+              "reason": "review_cleared_release_completed"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "“能让那些人把证词说全，比我想的还难。”提利昂说，“陛下做到了。我不会忘。”\n\n奥柏伦将手搭在椅背上。“那我们也许可以谈谈别的旧案。有些人等公道，等得比提利昂更久。”"
+          },
+          {
+            "when": {
+              "exit": "FX02"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "乔佛里让人关上门，三人在桌旁坐下。提利昂愿继续为国王效力，奥柏伦愿为国王与多恩的交涉出力。他们各有所求，却都知道，这场审判之后，彼此有了共同的敌人。\n\n窗外钟声响起。朝廷里的其他人还在争论刚才的胜负，国王已经有了愿意坐在自己这一边的人。"
+          },
+          {
+            "when": {
+              "exit": "FX03"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "赦令救下了提利昂，却没能说服瑟曦。她拒绝与弟弟同席，也不肯收回指控。\n\n提利昂出门时停下脚步。“我不是凶手，陛下。总有一天，所有人都会知道。”\n\n他活着走出了红堡。王室没有再失去一个儿子，这桩案子留下的裂痕却仍在。"
+          },
+          {
+            "when": {
+              "exit": "FX04"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "审判暂时停了。提利昂仍住在有人看守的房间，每天问一次有没有新的消息。"
+          },
+          {
+            "when": {
+              "exit": "FX04",
+              "reason": "review_unclear_disposition_completed"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "侍从的说法未能互相印证，国王拒绝据此判死。有人称赞谨慎，也有人说他下不了决心。"
+          },
+          {
+            "when": {
+              "exit": "FX04",
+              "reason": "lawful_pending_disposition_completed"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "没有新的证据，案件便不能再往下推进。牢门没有打开，刽子手也没有得到召唤。"
+          },
+          {
+            "when": {
+              "exit": "FX04"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "瑟曦仍在等一个凶手，提利昂仍在等自由。国王让这一天停在了判决之前。"
+          },
+          {
+            "when": {
+              "exit": "FX05"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "比武停了，奥柏伦活着走出围栏。他经过乔佛里身旁时，仍忍不住回头看那副被抬走的担架。\n\n“他知道是谁下的令。”他说，“陛下别让这个答案也跟着他埋掉。”\n\n格雷果仍在救治，提利昂仍被看管。乔佛里救下了一个人，却还得面对两个没有结案的谋杀。"
+          },
+          {
+            "when": {
+              "exit": "FX06"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "送提利昂出城的军官在黎明前回来。他亲眼看着船离岸，才把回报交到国王手中。\n\n提利昂留下的信很短：“我照约离开了。愿陛下不必靠离开君临，才能保住自己。”\n\n泰温仍在首相塔里处理政务。那一夜，没有人从暗道走进他的房间。"
+          },
+          {
+            "when": {
+              "exit": "FX07",
+              "rescue_blocked": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "接应被截断，牢门仍然紧闭。提利昂听见门外换岗的声音，却没有等到答应救他的人。"
+          },
+          {
+            "when": {
+              "exit": "FX07",
+              "rescue_blocked": false
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "这一夜没有人来。提利昂躺在窄床上，听着卫兵经过门口，直到天亮。"
+          },
+          {
+            "when": {
+              "exit": "FX07"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "看管继续，已经作出的判决也仍然有效。瑟曦催促尽快处置，泰温没有立即给出日子。\n\n国王保住了宫里的秩序。至于牢里那个人还剩多少时间，没有人肯说。"
+          },
+          {
+            "when": {
+              "exit": "FX08"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "幕间旁观：船在天亮前离港。提利昂坐在舱里，听着水拍击船身。君临的城墙渐渐远去，他没有回到父亲的房门前。\n\n红堡里，泰温照常召见来客。监押处迟早会发现空房，但此刻，逃亡还没有变成送到国王面前的消息。"
+          },
+          {
+            "when": {
+              "exit": "FX08",
+              "tywin_protected": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "首相住处的卫兵整夜守着封闭的通道。国王先前下达的命令，保住了泰温的性命。"
+          },
+          {
+            "when": {
+              "exit": "FX09"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "泰温的尸体被抬离首相塔时，宫里已经传遍了消息。瑟曦失去儿子后，又失去了父亲。提利昂不知所踪。\n\n原本要等泰温批准的文书送到了乔佛里面前。将领问谁来接掌军令，河湾的使者问盟约是否照旧，亲族则忙着打听凯岩城的继承。\n\n没有人再替国王回答这些问题。他拥有了更多决定的机会，也失去了那个常常替他挡住诸侯的人。"
+          },
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "托曼的房间仍关着。仆人收走了送给他的点心，却没人动过窗边那匹小木马。"
+          },
+          {
+            "when": {
+              "sansa_attitude": "trust",
+              "sansa_present": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "珊莎在走廊里等他。“陛下，您若不想一个人用餐，我可以留下。”她说完，没有急着离开。"
+          },
+          {
+            "when": {
+              "sansa_attitude": "complex_affection",
+              "sansa_present": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "珊莎走近，似乎有许多话要说，最后只轻声问：“今晚，我能陪着您吗？”"
+          },
+          {
+            "when": {
+              "sansa_attitude": "extreme_fear",
+              "sansa_present": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "珊莎见他走近，立即站好。“我一直在这里，陛下。”她说得很急，仿佛首先要证明自己没有违背命令。"
+          },
+          {
+            "when": {
+              "sansa_attitude": "controlled",
+              "sansa_present": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "珊莎等在指定的地方，听见脚步便低下头。“陛下，接下来要我做什么？”"
+          },
+          {
+            "when": {
+              "sansa_present": true,
+              "sansa_engagement": "tyrion"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "她与提利昂的婚约仍然有效。如今提到未来，她不得不把他的处境也算进去。"
+          },
+          {
+            "when": {
+              "sansa_present": true,
+              "sansa_engagement": "other"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "别家提出的婚约仍压在她心上。没有人能只凭今晚的一句安慰，便让那份约定消失。"
+          },
+          {
+            "when": {
+              "sansa_present": true,
+              "sansa_engagement": "none"
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "她没有另订婚约。至少此刻，不会有人立刻把她交给另一个丈夫。"
+          },
+          {
+            "when": {
+              "sansa_departed": true,
+              "sansa_report_known": true
+            },
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "送来的消息说，珊莎已经不在房中。守卫还在查问她去了哪里，乔佛里暂时没有得到答案。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN07-S02",
+      "parent": "FIN07",
+      "part": 7,
+      "part_scene": 2,
+      "title": "国王能够决定什么",
+      "location": "结局场景",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P002"
+      ],
+      "default_next": null,
+      "script_ref": "终章固定场景与逐幕台词.md#fin07-s02",
+      "minutes": 0,
+      "script_status": "written",
+      "runtime_registered": false,
+      "interaction": "fragment_source",
+      "planned_options": [],
+      "route_note": "保留编号与原段作为片段来源，不作为连续播放器中的一幕，不单独点击。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playable": false,
+      "playback": null
+    },
+    {
+      "id": "FIN07-S03",
+      "parent": "FIN07",
+      "part": 7,
+      "part_scene": 3,
+      "title": "留下与离开的人",
+      "location": "结局场景",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001",
+        "P012",
+        "P061",
+        "P032",
+        "P015"
+      ],
+      "default_next": null,
+      "script_ref": "终章固定场景与逐幕台词.md#fin07-s03",
+      "minutes": 0,
+      "script_status": "written",
+      "runtime_registered": false,
+      "interaction": "fragment_source",
+      "planned_options": [],
+      "route_note": "保留编号与原段作为片段来源，不作为连续播放器中的一幕，不单独点击。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playable": false,
+      "playback": null
+    },
+    {
+      "id": "FIN07-S04",
+      "parent": "FIN07",
+      "part": 7,
+      "part_scene": 4,
+      "title": "一封不入档的消息",
+      "location": "国王书房",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001"
+      ],
+      "default_next": "FIN07-S05",
+      "script_ref": "终章固定场景与逐幕台词.md#fin07-s04",
+      "minutes": 0,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "continue",
+      "planned_options": [],
+      "route_note": "读取已送达的科本私信，随后无额外画面保存；不增加资格或走时。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "FIN07-S05"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "playback": {
+        "id": "FIN07-S04",
+        "blocks": [
+          {
+            "when": {},
+            "kind": "body",
+            "source_refs": [],
+            "source_modes": [
+              "branch"
+            ],
+            "text": "侍从等其他人退下，才把一封没有封蜡的短信交到乔佛里手中。\n\n纸上只有几行字，是科本的笔迹：\n\n“陛下，托曼尚有呼吸。我仍在救治，不敢向您保证他会醒来。请让外面继续以为他已经死了。知道的人越少，他现在就越安全。”\n\n信里包着托曼那天佩戴的一枚小别针。\n\n乔佛里把信重新折起。门外的人还在等候，谁也不知道国王手里多了一个尚未熄灭的希望。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FIN07-S05",
+      "parent": "FIN07",
+      "part": 7,
+      "part_scene": 5,
+      "title": "王座之外",
+      "location": "结局场景",
+      "viewpoint": "king",
+      "participant_candidates": [
+        "U001"
+      ],
+      "default_next": "END_CONTINUE",
+      "script_ref": "终章固定场景与逐幕台词.md#fin07-s05",
+      "minutes": 0,
+      "script_status": "written",
+      "runtime_registered": true,
+      "interaction": "automatic_save",
+      "planned_options": [],
+      "route_note": "保存与落幕合入最后可见场景，不单独暂停，不新增按钮。",
+      "knowledge": "actual_seen_or_heard_only",
+      "settlement": "按本幕既成动作一次保存；执行为自动镜头，不追加确认；中断恢复同一镜头，父节点不重复结算。",
+      "possible_targets": [
+        "END_CONTINUE"
+      ],
+      "political_variant_source": "finale_freeze：入场固定；本幕只读取已选choice_id和实际结果",
+      "visible_scene": false,
+      "playback": null
+    }
+  ],
+  "freeze_contract": {
+    "version": "FIN-FREEZE-0.2",
+    "design_only": false,
+    "runtime_registered": true,
+    "checkpoint": {
+      "before": "FIN01-S01",
+      "time": "第一次进入终章时的实际游戏时刻；不把世界时钟重置为D36018:00",
+      "reads_once": true,
+      "model_calls": false,
+      "random_rolls": false
+    },
+    "input_policy": {
+      "aliases_only": true,
+      "world_source": "当前gameData.got.finale.entry持有带来源的婚礼前测试快照；正式前五章成果汇总适配仍待主线接入",
+      "sources": {
+        "power_levels": {
+          "type": "四项三档",
+          "source": "finale_decision_contract.criteria的已保存成果与来源，取FIN01前当前有效记录"
+        },
+        "prestige": {
+          "type": "已有三档",
+          "source": "personal_prestige，黑水河贡献与既有交涉结果"
+        },
+        "authority_scopes": {
+          "type": "具体事项是否已有有效授权",
+          "source": "既有组织/职位/授权/政治协议；按保护、交换、复核、无罪裁决、赦免、中止、警戒分别查询，不新增权力分"
+        },
+        "court_role_available": {
+          "type": "bool",
+          "source": "提利昂在婚礼前真实保有的一项有限职责；没有则false，不临时授职"
+        },
+        "cast_plan": {
+          "type": "人物真实状态与已写到场安排",
+          "source": "存活、已知位置、行程、作者既有固定场景安排。詹姆可以婚礼后按已有排程到场，不要求婚礼前已经站在红堡"
+        },
+        "jaime_offer_available": {
+          "type": "bool",
+          "source": "詹姆存活且有已写到场安排，并仍有未兑现的退职/继承交换筹码；无新筹码false，未覆盖行程为兼容缺口"
+        },
+        "combat_request_planned": {
+          "type": "bool",
+          "source": "本案未解决时提利昂的已写比武请求版本；既有有效撤回/相反承诺取false，尚未发生的请求只是作者计划"
+        },
+        "evidence_basis": {
+          "type": "supports_exclusion / contradicts_exclusion / not_determined",
+          "source": "婚礼前已有真实材料的结论或明确未形成结论；此为读取别名，不建立调查进度。既有反证不能被情报档位抹去"
+        },
+        "prior_npc_constraints": {
+          "type": "已明确拒绝/冲突承诺列表",
+          "source": "有关人物保存的有效决定与承诺，按标准交换、保留有限职责、受控离开三个条款分别读取。记录查询完整且无冲突才视为未拒绝；资料未审清为兼容缺口"
+        },
+        "prior_night_lead": {
+          "type": "bool",
+          "source": "婚礼前已实际获知的相关异常或接应线索；没有false"
+        },
+        "controlled_departure_proposal_planned": {
+          "type": "bool",
+          "source": "有关人物已有具体保命/退出朝廷的安排或作者已写当面提案；没有false，未来提案不是现有承诺"
+        },
+        "rescue_route_available": {
+          "type": "bool",
+          "source": "既有营救安排、固定出场和真实接应条件；已被有效命令截断则false，不为原著强开路"
+        },
+        "tywin_access_possible": {
+          "type": "bool",
+          "source": "首相存活、必要实际接近条件与已有冲突；旧命令或有效缓和消除条件则false"
+        },
+        "culprit_route": {
+          "type": "ROSE / VARYS",
+          "source": "沿用D350已冻结路线和来源版本，不在FIN01重评或重抽"
+        },
+        "ceremony": {
+          "type": "MARGAERY_WEDDING / ROYAL_CELEBRATION",
+          "source": "已生效婚约、婚礼筹备和拒婚分支"
+        },
+        "sansa_route": {
+          "type": "stay_voluntarily / escape_not_completed / escaped / not_applicable",
+          "source": "C5-25已存态度与婚约保护经历；other按婚礼前实际接应和接受安排确定演出路线；已离开者not_applicable，不带回。未覆盖不留到终章临判"
+        },
+        "tommen_hook_qualified": {
+          "type": "bool",
+          "source": "亲近经历、科本真实接触、实际任用与到场。器具和转送由固定场景自动承接"
+        },
+        "source_refs": {
+          "type": "来源记录编号",
+          "source": "冻结资料所引用的成果、经历、权限、消息、人物安排和作者版本；秘密来源标作者层"
+        },
+        "tywin_attitude": {
+          "type": "overbearing / bargaining / recognizes_king",
+          "source": "婚礼前既有泰温态度；仅文本，不影响选项"
+        },
+        "tyrion_attitude": {
+          "type": "trusted / cautious / resentful",
+          "source": "婚礼前既有提利昂态度；仅文本，不随终章一句话重评分"
+        },
+        "sansa_engagement": {
+          "type": "none / tyrion / other",
+          "source": "婚礼前共用婚约记录；仅文本"
+        },
+        "tyrell_attitude": {
+          "type": "hostile / bargaining / committed",
+          "source": "婚礼前已有家族态度；只决定文本；最终参与投毒与否仍为独立的幕后路线"
+        }
+      },
+      "unknown": "必需资料未知记author_compatibility_gap；未知不当作false、失败或成功，不由模型临场补齐",
+      "chronology": "未来报告、NPC请求与到场属于作者演出计划，不能在冻结时提交为已发生事实"
+    },
+    "snapshot_fields": {
+      "identity": [
+        "freeze_id",
+        "campaign_id",
+        "branch_id",
+        "source_world_version",
+        "frozen_at",
+        "freeze_rule_version",
+        "source_refs"
+      ],
+      "baseline": [
+        "power_levels",
+        "authority_rank",
+        "prestige",
+        "scoped_authorities",
+        "cast_versions",
+        "ceremony",
+        "culprit_route",
+        "sansa_route",
+        "tommen_hook_qualified"
+      ],
+      "choices": "24个选项按ID保存；每幕最多四项。资格只按四项成果汇总的王权阶段；人物态度只选台词与回应。",
+      "reports": [
+        "evidence_report_version",
+        "review_result_version",
+        "night_report_version",
+        "private_care_version"
+      ],
+      "progress": "另保存玩家已选choice_id、已完成幕及实际结果；不写回冻结资格"
+    },
+    "unavailable_option_policy": "hide",
+    "locked_option_hint": false,
+    "proposal_and_reply": "eligible只决定有无资格提出这一项；有资格的真实交换可按已冻结答复被拒绝。没有资格的越权试点隐藏，不演追加准备。",
+    "compile_rules": {
+      "authority_rank": "严格复用finale_decision_contract.rank_rules；威望不进入组合",
+      "can_protect": "rank != constrained_king",
+      "can_bargain": "rank != constrained_king",
+      "can_review": "rank != constrained_king",
+      "report_version": "evidence_basis=supports_exclusion→EXCLUSION_EXISTING；contradicts_exclusion→CONTRADICTORY_EXISTING；否则按情报未形成/初步/稳固选择REPORT_UNFORMED/REPORT_INITIAL/REPORT_STABLE",
+      "review_result": "EXCLUSION_EXISTING或REPORT_STABLE→REVIEW_CLEARED；其他→REVIEW_UNCLEAR；不得把已有反证转换为免责",
+      "release_mode": "rank=independent_king 时可选择无罪裁决或赦免，二者为独立按钮；报告不改变按钮资格",
+      "can_stop_duel": "rank != constrained_king",
+      "night_report": "prior_night_lead→NIGHT_KNOWN_LEAD；否则intelligence>=initial→NIGHT_AUTHORED_ALERT；否则controlled_departure_proposal_planned→NIGHT_AUTHORED_PROPOSAL；否则NIGHT_NO_ALERT",
+      "can_controlled_departure": "rank != constrained_king",
+      "can_intervene_night": "rank != constrained_king",
+      "exchange_reply": "逐人检查prior_npc_constraints中该条款的有效拒绝/冲突→该人REFUSE；否则按现有作者版本ACCEPT。未知拒绝状态不是默认同意",
+      "prestige_clause": "important_political_capital采用既有较小让步/减少回报限制版本，其他用通常条款；不改资格组合、不自动授职",
+      "controlled_departure_reply": "提利昂已有有效拒绝该条款→DEPARTURE_REFUSED；否则DEPARTURE_ACCEPTED。本人答复在FIN05-S01才播放",
+      "sansa_and_hook": "只复制婚礼前已形成的路线与资格，后续宴会话语不追溯补亲近或重抽去留",
+      "can_fix_duel": "rank = independent_king",
+      "cast_and_knowledge": "人物缺席或未得到夜报可以跳过无前提的场景；不重新评王权、不生成秘密知识",
+      "authority_only": "所有新版本eligible仅取rank（由财政军权行政情报生成）；威望、权限额外字段、报告、人物态度、婚约不参与资格公式"
+    },
+    "result_policy": "只选定演出与后果版本；在玩家选择、对应报告送达、NPC发言和动作实际发生后才写入世界。冻结不是取得证据、达成承诺或提前出监。",
+    "story_filters": [
+      {
+        "when": "actual_release_or_safe_exchange_completed",
+        "skip": [
+          "FIN03后续审理",
+          "FIN04",
+          "FIN05",
+          "FIN06"
+        ],
+        "target": "FIN07-S01"
+      },
+      {
+        "when": "duel_stopped_without_death_sentence",
+        "skip": [
+          "FIN05",
+          "FIN06"
+        ],
+        "target": "FIN07-S01"
+      },
+      {
+        "when": "actual_rescue_blocked",
+        "skip": [
+          "FIN05-S02",
+          "FIN06"
+        ],
+        "target": "FIN07-S01"
+      },
+      {
+        "when": "actual_controlled_departure_completed",
+        "skip": [
+          "FIN05-S02",
+          "FIN06"
+        ],
+        "target": "FIN07-S01"
+      },
+      {
+        "when": "tywin_access_blocked_by_selected_choice_or_frozen_history",
+        "skip": [
+          "FIN06-S02",
+          "FIN06-S03"
+        ],
+        "target": "FIN07-S01"
+      }
+    ],
+    "scene_entry_policy": "逐幕只过滤已完成、已跳过、前提因此前选择消失的场景，并在实际宣读报告后开放相应菜单；不查当前权力/关系，不重新决定NPC意愿。",
+    "presentation_policy": {
+      "all_variants_compiled": true,
+      "previous_choices": "入场时预先保存此前选择对应的台词替换表；终章内按choice_id挑段，未编的组合是作者缺口，不临场生成",
+      "one_option": "保留唯一真实选择，不补查看依据作为政治选项",
+      "no_decision": "只有继续；不得假称玩家已同意",
+      "secret_view": "完整冻结包仅作者/程序读取，前台只取本幕可见文字，隐藏锁定选项及其秘密原因",
+      "observer": "旁观不追加国王知识、不开放发令",
+      "four_options": "独立国王裁决菜单为正常比武、暗助比武、判无罪、赦免；协商者可复核；无比武请求时隐藏不成立的比武行为。只是剧情前提过滤。"
+    },
+    "save_policy": {
+      "generate": "终章首次入场只生成一次，生成完整后同父版本提交并绑定分支；半份包不开始播放",
+      "reuse": [
+        "刷新",
+        "继续",
+        "失败重试",
+        "载入含冻结包的终章存档"
+      ],
+      "recompute": "载入婚礼前另一存档且确实重新进入终章时，按该分支重新生成；同版本重复入场复用原包",
+      "rules_updated": "已进入终章的存档沿保存的规则包，不用新规则重评；未来需显式迁移才替换",
+      "missing_mid_finale": "旧未携冻结包的中途存档保留并标未覆盖，不拿现在的世界回填婚礼前结果",
+      "metadata_mismatch": "分支/来源身份不符不得混用旧包；不默默采用迟到结果",
+      "runtime_implemented": true
+    },
+    "does_not_add": [
+      "调查进度",
+      "安保力量",
+      "忠诚值",
+      "总权力分",
+      "新的培养指标",
+      "额外玩家操作",
+      "终章LLM请求"
+    ],
+    "next_batch": "作者重新试玩修订版；旧123项检查不能证明文字质量合格",
+    "npc_reply_variants": {
+      "EXCHANGE_STANDARD_ACCEPTED": {
+        "lines": [
+          "詹姆：“我会履行我答应的那一部分。”",
+          "泰温：“让他退出朝廷。本案不再追究他的死刑。”",
+          "提利昂：“把暂不任职和离京的条款写明白。我答应的是这份。”"
+        ],
+        "result": "交换接受后自动履行→FIN07-S01；不是预先接受事实"
+      },
+      "EXCHANGE_LIMITED_ACCEPTED": {
+        "lines": [
+          "詹姆：“只要他活着，职责可以写清。”",
+          "泰温：“不再扩大职掌，所办事项须有回报。”",
+          "提利昂：“把范围写下来，别等我答应后再改。”"
+        ],
+        "result": "保留婚礼前已有有限职责的交换履行→FIN07-S01；不赠新职位"
+      },
+      "EXCHANGE_REFUSED_P015": {
+        "lines": [
+          "詹姆：“这一份不是我答应的条件。”"
+        ],
+        "result": "不记退职或继承同意，返回FIN03-S04"
+      },
+      "EXCHANGE_REFUSED_P002": {
+        "lines": [
+          "泰温：“我没有接受这样的处置。审理继续。”"
+        ],
+        "result": "不记交换，返回FIN03-S04"
+      },
+      "EXCHANGE_REFUSED_P003": {
+        "lines": [
+          "提利昂：“我已经拒绝过这种安排。不要把它写成我现在答应了。”"
+        ],
+        "result": "不替提利昂同意，返回FIN03-S04"
+      },
+      "REVIEW_CLEARED": {
+        "lines": [
+          "核查者：“分送与接触的前后已经核过。现有指控不能成立。”",
+          "主持者读明本案结论，监押者接令开门。"
+        ],
+        "result": "有效程序解除本案看管→FIN07-S01；不认证所有往事无罪"
+      },
+      "REVIEW_UNCLEAR": {
+        "lines": [
+          "核查者：“还不能确认最后是谁动了手。矛盾已经列明，不能拿它当作有罪的证明。”",
+          "主持者：“比武与死刑推进暂缓，现有合法看管保留。”"
+        ],
+        "result": "未决、无新死刑→FIN07-S01；没有新调查计时项目"
+      },
+      "ACQUIT": {
+        "label": "判提利昂无罪，立即释放。",
+        "lines": [
+          "书记读明核查结论。",
+          "提利昂：“这一次，总算有人把前后都念完了。”"
+        ],
+        "result": "自动实际出监后FIN07-S01"
+      },
+      "PARDON": {
+        "label": "以国王名义赦免提利昂，立即释放。",
+        "lines": [
+          "瑟曦若在：“你要让他走？”",
+          "泰温若在：“这不会让所有人忘记今天。”",
+          "提利昂：“我不会把它叫作认罪。”"
+        ],
+        "result": "赦免并自动离监后FIN07-S01；疑案与政治反对保留"
+      },
+      "DEPARTURE_ACCEPTED": {
+        "lines": [
+          "负责人复述已冻结的合法处置与路线。",
+          "提利昂：“把路写明白，出了门就不要再加条件。”"
+        ],
+        "result": "自动安全交付后FIN07-S01；不接秘密越狱"
+      },
+      "DEPARTURE_REFUSED": {
+        "lines": [
+          "提利昂：“那份条件我没有接受。现在还是同一个回答。”"
+        ],
+        "result": "保持原看管；只在冻结的营救计划尚成立时接FIN05-S02，否则FIN07-S01"
+      },
+      "EXCHANGE_STANDARD_REFUSED_P015": {
+        "lines": [
+          "詹姆：“这一份不是我答应的条件。”"
+        ],
+        "result": "不记退职或继承同意，返回FIN03-S04"
+      },
+      "EXCHANGE_LIMITED_REFUSED_P015": {
+        "lines": [
+          "詹姆：“这一份不是我答应的条件。”"
+        ],
+        "result": "不记退职或继承同意，返回FIN03-S04"
+      },
+      "EXCHANGE_STANDARD_REFUSED_P002": {
+        "lines": [
+          "泰温：“我没有接受这样的处置。审理继续。”"
+        ],
+        "result": "不记交换，返回FIN03-S04"
+      },
+      "EXCHANGE_LIMITED_REFUSED_P002": {
+        "lines": [
+          "泰温：“我没有接受这样的处置。审理继续。”"
+        ],
+        "result": "不记交换，返回FIN03-S04"
+      },
+      "EXCHANGE_STANDARD_REFUSED_P003": {
+        "lines": [
+          "提利昂：“我已经拒绝过这种安排。不要把它写成我现在答应了。”"
+        ],
+        "result": "不替提利昂同意，返回FIN03-S04"
+      },
+      "EXCHANGE_LIMITED_REFUSED_P003": {
+        "lines": [
+          "提利昂：“我已经拒绝过这种安排。不要把它写成我现在答应了。”"
+        ],
+        "result": "不替提利昂同意，返回FIN03-S04"
+      }
+    },
+    "reply_actor_order": [
+      "P015",
+      "P002",
+      "P003"
+    ],
+    "exchange_party_response": "冻结各人的ACCEPT/REFUSE及台词，允许保存多个拒绝者；任何REFUSE都不履行交换。不能选组接受台词后在现场再问其他人。",
+    "evidence_reply_variants": {
+      "EXCLUSION_EXISTING": "书记：“先前取得的材料已经核验。这些针对提利昂的指控没有成立。”",
+      "CONTRADICTORY_EXISTING": "书记：“有一份既有材料仍与免责说法相矛盾。不能因为另一项报告有利，就把它丢掉。”",
+      "REPORT_UNFORMED": "书记：“这份存根指向提利尔旧筹备。其余只有口述，尚不足以排除提利昂嫌疑，也没有证明是谁投毒。”",
+      "REPORT_INITIAL": "书记：“领班说本来送往国王席，端盘的人说给小殿下补杯。接触发生的先后有矛盾，应该复核。”",
+      "REPORT_STABLE": "书记：“两处独立回报已经核过。他没有参与这次礼仪份的交付，指控把孩子倒下之后的动作算到了之前。”"
+    },
+    "night_reply_variants": {
+      "NIGHT_KNOWN_LEAD": "当值者依已有获知记录呈报该项异常，念出源记录中的具体范围；不推断未被指认的幕后人物。",
+      "NIGHT_AUTHORED_ALERT": "负责人：“今晚有一项探视名目与正式许可不符，值夜的人已经核过。还不知道是谁在后面安排。”",
+      "NIGHT_AUTHORED_PROPOSAL": "使者：“首相仍愿按退出朝廷的条件保全提利昂。这份是具体条款，请陛下裁定。”仅使用入场已编提案，不把它提前写成接受事实。",
+      "NIGHT_NO_ALERT": "负责人：“各处已经换班。没有别的呈报。”"
+    },
+    "tyrell_reply_variants": {
+      "ROSE_ACCOUNTABILITY": "奥莲娜：“请把指控范围写清楚。筹备的印记不等于我们看着每一只杯子。”",
+      "VARYS_ACCOUNTABILITY": "奥莲娜：“把对应的底册拿来。它离开库房之后，还有谁接过，也必须查。”",
+      "ROSE_BOUNDED_EXCHANGE": "奥莲娜：“我们的人可以在场核对，原件共同封存。我没有答应你把所有人都带走。”",
+      "VARYS_BOUNDED_EXCHANGE": "奥莲娜：“底册与经手人的说明都会交来。涉及的班次换掉，这次核对的费用我们承担。现有联盟继续。”只承诺本次已写范围，固定演出实际交付后才入账，不加财政数值。",
+      "ROSE_ALLIANCE_FIRST": "梅斯松开扶手。奥莲娜：“现有约定照办。记录会保留，其他事按正式程序来。”她仍有戒备，不视为认罪。",
+      "VARYS_ALLIANCE_FIRST": "梅斯松开扶手。奥莲娜：“我们会把记录留好，也会补上已经答应的那部分。”这是保全联盟的答复，不证明最后凶手。"
+    },
+    "freeze_formula_table": {
+      "eligible": {
+        "S04-A": "true",
+        "S04-B": "true",
+        "S04-C": "true",
+        "FIN02-01": "true",
+        "FIN02-02": "rank != constrained_king",
+        "CUSTODY-FAMILY": "true",
+        "T02-A": "true",
+        "T02-B": "true",
+        "T02-C": "true",
+        "FIN03-02": "true",
+        "T03-B": "rank != constrained_king",
+        "T03-C": "true",
+        "FIN03-01": "true",
+        "FIN03-03": "rank != constrained_king",
+        "FIN03-04": "rank = independent_king",
+        "T06-B": "true",
+        "FIN04-01": "true",
+        "FIN04-03": "rank != constrained_king",
+        "FIN05-01": "true",
+        "FIN05-02": "rank != constrained_king",
+        "FIN05-03-A": "rank != constrained_king",
+        "FIN05-03-B": "rank != constrained_king",
+        "FIN03-PARDON": "rank = independent_king",
+        "FIN03-05": "rank = independent_king"
+      },
+      "response_version": {
+        "FIN03-02": "EXCHANGE_STANDARD_ACCEPTED / EXCHANGE_STANDARD_REFUSED_<actor>",
+        "T03-B": "EXCHANGE_LIMITED_ACCEPTED / EXCHANGE_LIMITED_REFUSED_<actor>",
+        "FIN03-03": "REVIEW_CLEARED / REVIEW_UNCLEAR",
+        "FIN03-04": "ACQUIT / PARDON",
+        "FIN05-02": "DEPARTURE_ACCEPTED / DEPARTURE_REFUSED",
+        "T02-A": "ROSE_ACCOUNTABILITY / VARYS_ACCOUNTABILITY",
+        "T02-B": "ROSE_BOUNDED_EXCHANGE / VARYS_BOUNDED_EXCHANGE",
+        "T02-C": "ROSE_ALLIANCE_FIRST / VARYS_ALLIANCE_FIRST",
+        "FIN03-PARDON": "PARDON",
+        "FIN03-05": "DUEL_ASSIST_ACCEPTED"
+      },
+      "other_options": "沿现行固定回应复制入冻结包；依入场阵容裁掉缺席者发言",
+      "tyrell": "按已冻结ROSE/VARYS选择固定回应；成员知情和代表权限沿入场已写版本，不透露凶手真值"
+    },
+    "planned_scene_versions": {
+      "FIN01-S04": "婚礼前决定是否有节目/取笑及提利昂出席；已有效制止则只有继续，不制造替代受害者",
+      "FIN02-S02": "探视安排按FIN02-S01的三种可能选择预先编写；现场只按已选choice_id取段",
+      "FIN02-S03": "瑟曦依拘押选择及已播放探视片段使用现有固定句，不重新改变资格",
+      "FIN03-S03": "婚礼后有已写行程的詹姆可以提出交换；没有可成立到场/筹码版本则整幕跳过",
+      "FIN03-S04": "证人是否出席/持有什么来源取入场版本，剧情中仅陈述、拒绝歪曲或作虚假指控，不凭当前关系另抽",
+      "FIN03-S05": "仅读取婚礼前提利昂态度；已选行动记录经历，不再改变资格。",
+      "FIN05-S01": "入场选定夜报版本，本幕先实际宣读，然后按冻结选项显示；先前已出监就跳过全部",
+      "FIN06-S01": "杀父可达性沿冻结计划及本轮已选保护/离开结果，旁观只能继续",
+      "FIN07": "FX02两种无罪途径及奥柏伦胜利统一标题“牢不可破的联盟”；其他命名仍未分配。"
+    },
+    "preceding_choice_dispatch": [
+      {
+        "scene": "FIN02-S02",
+        "keys": [
+          "FIN02-01",
+          "FIN02-02",
+          "CUSTODY-FAMILY",
+          "S04-A",
+          "S04-B",
+          "S04-C"
+        ],
+        "purpose": "提利昂现场情绪的已写替换；不改交换资格或接受表"
+      },
+      {
+        "scene": "FIN02-S03",
+        "keys": [
+          "FIN02-01",
+          "FIN02-02",
+          "CUSTODY-FAMILY"
+        ],
+        "purpose": "瑟曦对所选看管方式的固定反应"
+      },
+      {
+        "scene": "FIN03-S05",
+        "keys": [
+          "S04-A",
+          "S04-B",
+          "S04-C",
+          "FIN02-01",
+          "FIN02-02",
+          "CUSTODY-FAMILY"
+        ],
+        "purpose": "提利昂反击对象的固定替换；不重新评分"
+      },
+      {
+        "scene": "FIN04-S05",
+        "keys": [
+          "FIN04-01",
+          "FIN04-03"
+        ],
+        "purpose": "死亡或中止结果"
+      },
+      {
+        "scene": "FIN06-S01",
+        "keys": [
+          "FIN05-01",
+          "FIN05-02",
+          "FIN05-03-A",
+          "FIN05-03-B"
+        ],
+        "purpose": "秘密逃亡、保护首相或受控离开的既成结果过滤"
+      }
+    ],
+    "runtime_scope": "同主工程got-finale.html独立测试存档；非完整年度主线"
+  },
+  "exit_contract": {
+    "version": "FIN-EXIT-0.2",
+    "design_only": false,
+    "runtime_registered": true,
+    "authority": "用户批准九类出口、一幕主收束及可选科本私信",
+    "entries": [
+      {
+        "id": "FX01",
+        "title": "交换履行",
+        "finish_scenes": [
+          "FIN03-S03"
+        ],
+        "ending_reasons": [
+          "exchange_standard_completed",
+          "exchange_limited_completed"
+        ],
+        "requires_actual_results": [
+          "各方固定接受答复已说出",
+          "本场必需的保命和处置条款实际履行，后续义务照实保留",
+          "提利昂已脱离本案看管并完成约定安全交付"
+        ],
+        "skip_story": [
+          "FIN03-S04—S06",
+          "FIN04",
+          "FIN05",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx01",
+        "variants": {
+          "standard": "退出朝廷的限制与离京实际结果",
+          "limited": "保留一项已有职责，不授新职，不自动取得凯岩城"
+        },
+        "secondary_actor": "P015",
+        "saved_outcomes": [
+          "标准/有限职责交换类别",
+          "各方已接受并实际履行的条款",
+          "詹姆实际白袍/继承状态",
+          "提利昂实际位置及仍有效职责",
+          "泰温截至此刻的真实状态"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "exchange_parties_accepted": true,
+          "exchange_essential_terms_completed": true,
+          "safe_handover_completed": true,
+          "tyrion_detained": false
+        }
+      },
+      {
+        "id": "FX02",
+        "title": "本案指控排除",
+        "finish_scenes": [
+          "FIN03-S06",
+          "FIN04-S05"
+        ],
+        "ending_reasons": [
+          "acquittal_release_completed",
+          "review_cleared_release_completed",
+          "oberyn_victory_release_completed"
+        ],
+        "requires_actual_results": [
+          "本案免责结论由有效程序确认",
+          "解除看管实际完成"
+        ],
+        "skip_story": [
+          "FIN04",
+          "FIN05",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx02",
+        "variants": {
+          "direct": "国王依冻结权限作无罪裁决",
+          "review": "正式复核的有效程序排除指控；不额外授予国王全部司法权",
+          "combat": "FIN03-05秘密安排→比武中魔山死亡、奥柏伦生还获胜→依法无罪释放；不证明物证查清，不演营救与杀父。"
+        },
+        "secondary_actor": "P003",
+        "saved_outcomes": [
+          "本案无罪/复核排除的具体依据",
+          "实际释放和出监",
+          "仍未查明的最后投毒者",
+          "提利昂真实去向",
+          "魔山当场死亡（仅胜利分支）",
+          "奥柏伦存活获胜（仅胜利分支）",
+          "国王与提利昂、奥柏伦的实际合作承诺",
+          "牢不可破的联盟标题，不作为永久忠诚分值"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": false,
+        "actual_fact_checks": {
+          "case_exclusion_confirmed": true,
+          "release_completed": true,
+          "tyrion_detained": false
+        },
+        "display_title": "牢不可破的联盟"
+      },
+      {
+        "id": "FX03",
+        "title": "本案赦免",
+        "finish_scenes": [
+          "FIN03-S06"
+        ],
+        "ending_reasons": [
+          "pardon_release_completed"
+        ],
+        "requires_actual_results": [
+          "国王赦令按冻结版本发出",
+          "实际解除本案看管"
+        ],
+        "skip_story": [
+          "FIN04",
+          "FIN05",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx03",
+        "variants": {},
+        "secondary_actor": "P001",
+        "saved_outcomes": [
+          "本案赦免范围",
+          "实际出监",
+          "疑案与政治反对",
+          "提利昂没有认罪"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "pardon_effective": true,
+          "release_completed": true,
+          "tyrion_detained": false
+        }
+      },
+      {
+        "id": "FX04",
+        "title": "依法保留未决案",
+        "finish_scenes": [
+          "FIN03-S06"
+        ],
+        "ending_reasons": [
+          "review_unclear_disposition_completed",
+          "lawful_pending_disposition_completed"
+        ],
+        "requires_actual_results": [
+          "正式处置已宣布",
+          "当前本案没有新增死刑推进"
+        ],
+        "skip_story": [
+          "FIN04",
+          "FIN05",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx04",
+        "variants": {
+          "review_unclear": "有正式复核但结论不足",
+          "no_combat_request": "没有有效比武请求，依法保留；不能据此创造复核已完成"
+        },
+        "secondary_actor": "P003",
+        "saved_outcomes": [
+          "本案未决",
+          "现行合法看管或活动范围",
+          "已有报告缺项",
+          "没有因缺材料判有罪"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "case_pending": true,
+          "disposition_announced": true,
+          "case_death_sentence_active": false
+        }
+      },
+      {
+        "id": "FX05",
+        "title": "决斗中止",
+        "finish_scenes": [
+          "FIN04-S05"
+        ],
+        "ending_reasons": [
+          "duel_stopped_disposition_completed"
+        ],
+        "requires_actual_results": [
+          "暂停号令和实际分隔完成",
+          "未完成比武，不作胜负定罪"
+        ],
+        "skip_story": [
+          "FIN05",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx05",
+        "variants": {},
+        "secondary_actor": "R001",
+        "saved_outcomes": [
+          "奥柏伦生还与已有不满",
+          "格雷果实际伤毒和后续待办",
+          "提利昂本案未决",
+          "没有新的比武死刑判决"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "duel_stopped": true,
+          "separation_completed": true,
+          "oberyn_alive": true,
+          "case_new_death_sentence": false
+        }
+      },
+      {
+        "id": "FX06",
+        "title": "受控离开",
+        "finish_scenes": [
+          "FIN05-S01"
+        ],
+        "ending_reasons": [
+          "controlled_departure_handover_completed"
+        ],
+        "requires_actual_results": [
+          "本人固定接受答复实际说出",
+          "合法安全交付完成",
+          "未接近泰温"
+        ],
+        "skip_story": [
+          "FIN05-S02",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx06",
+        "variants": {},
+        "secondary_actor": "P001",
+        "saved_outcomes": [
+          "受控离开而非秘密越狱",
+          "已接受限制与后续义务",
+          "实际安全交接点/后续在途",
+          "泰温未遭本链接近"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "departure_accepted": true,
+          "safe_handover_completed": true,
+          "tyrion_detained": false,
+          "accessed_tywin": false
+        }
+      },
+      {
+        "id": "FX07",
+        "title": "看管继续",
+        "finish_scenes": [
+          "FIN05-S01"
+        ],
+        "ending_reasons": [
+          "rescue_block_confirmed",
+          "prior_rescue_block_confirmed",
+          "custody_continues_no_rescue"
+        ],
+        "requires_actual_results": [
+          "阻断执行或没有接应的结果已经明确",
+          "提利昂仍在押"
+        ],
+        "skip_story": [
+          "FIN05-S02",
+          "FIN06"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx07",
+        "variants": {
+          "new_block": "本轮确实执行阻断",
+          "prior_block": "既有命令有效，不重复交功",
+          "no_rescue": "没有营救计划，不伪造阻断胜利"
+        },
+        "secondary_actor": "P001",
+        "saved_outcomes": [
+          "阻断由本轮选择/此前命令/没有营救计划分别记录",
+          "真实看管与现行判决",
+          "仍存在的本案死亡危险",
+          "没有实际处决或无罪释放"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "tyrion_detained": true,
+          "custody_outcome_known": true,
+          "tyrion_alive": true
+        }
+      },
+      {
+        "id": "FX08",
+        "title": "离监而未接近首相",
+        "finish_scenes": [
+          "FIN06-S01"
+        ],
+        "ending_reasons": [
+          "secret_departure_without_tywin_access"
+        ],
+        "requires_actual_results": [
+          "秘密离监实际发生",
+          "冻结历史或本轮保护使杀父前提消失",
+          "已成立离城路线"
+        ],
+        "skip_story": [
+          "FIN06-S02",
+          "FIN06-S03"
+        ],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx08",
+        "variants": {
+          "selected_protection": "本轮保护首相产生的结果",
+          "frozen_barrier": "既有隔离/缓和使前提消失，不免费登记新的国王功劳"
+        },
+        "secondary_actor": "P002",
+        "saved_outcomes": [
+          "提利昂秘密离监及最后实际位置",
+          "首相未被本链接近",
+          "阻断/缓和的真实原因",
+          "国王实际收到的报告及未获知事实"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "secret_escape_completed": true,
+          "tyrion_detained": false,
+          "tyrion_alive": true,
+          "accessed_tywin": false,
+          "exit_route_established": true
+        }
+      },
+      {
+        "id": "FX09",
+        "title": "首相死亡的余波",
+        "finish_scenes": [
+          "FIN06-S03"
+        ],
+        "ending_reasons": [
+          "tywin_death_verified_and_report_received"
+        ],
+        "requires_actual_results": [
+          "致命冲突实际发生",
+          "死亡查验完成且报告送达国王"
+        ],
+        "skip_story": [],
+        "main_scene": "FIN07-S01",
+        "prose_ref": "终章固定场景与逐幕台词.md#fx09",
+        "variants": {},
+        "secondary_actor": "P001",
+        "saved_outcomes": [
+          "泰温真实死亡与报告来源",
+          "提利昂实际去向与国王所知分别保存",
+          "首相职位空缺未自动任命",
+          "未知幕后和父子私谈不进入证词"
+        ],
+        "do_not_rejudge": true,
+        "new_player_choices": false,
+        "internal_title_only": true,
+        "actual_fact_checks": {
+          "tywin_death_confirmed": true,
+          "death_report_received": true
+        }
+      }
+    ],
+    "selector": {
+      "source": "已提交的本轮处置、动作和报告记录；不得重新看当前权力或人物态度",
+      "reason_aliases": "ending_reasons是实际记录的读取别名，不向世界添加进度或成功分",
+      "entry": "在对应finish_scenes实际完成后取唯一出口；NPC拒绝/命令未执行不产生成功出口",
+      "unknown": "必要真实结果未知或自相矛盾标作者兼容缺口，不默认死亡/幸存/完成",
+      "no_double_matching": "按当前停止幕及真实结束原因匹配，EXCHANGE、ACQUIT、PARDON不得同时发生；同一幕多条冲突结果为作者缺口而非任选一条",
+      "release_pending": "恢复原自动执行镜头，不进入收束，不转回决斗/越狱",
+      "fact_aliases": "actual_fact_checks的值从actual_result_refs引用的已提交记录读取；不是单独维护的第二份事实。缺失不是false。",
+      "custody_reason": "rescue_block_confirmed/prior_rescue_block_confirmed还须实际rescue_blocked；custody_continues_no_rescue须已有明确没有营救计划的记录，不把未知当没有"
+    },
+    "non_end_reasons": {
+      "exchange_refused": "FIN03-S04",
+      "controlled_departure_refused": "按原已编营救与真实看管继续",
+      "release_pending": "恢复同一执行镜头",
+      "safe_handover_pending": "恢复同一执行镜头",
+      "candidate_not_committed": "不产生结束记录"
+    },
+    "presentation": {
+      "sequence": [
+        "FIN07-S01:对应出口主收束",
+        "FIN07-S04:资格与实际秘密送交成立时",
+        "FIN07-S05:无独立画面的保存动作"
+      ],
+      "max_visible_scenes": 2,
+      "new_political_choices": 0,
+      "main_composition": "出口正文＋一段冻结政治姿态＋最多一段珊莎已知去留；对应出口正文内最多一名相关人物回应。缺席删段或只用已经到达的消息，不增加另一人凑数。",
+      "rank_fragments": {
+        "constrained_king": "呈报者把已有窄授权的文书单独放好。其他几份仍等着交涉，王冠没有使它们自行得到答复。",
+        "negotiating_ally": "已经谈成的范围继续有效。文书按各方约定分开，下一项要求仍有自己的价钱。",
+        "independent_king": "属于国王已掌握范围的文书被直接送到案前。呈报者退后，等候决定；没有替国王预先落笔。"
+      },
+      "sansa_fragments": {
+        "trust": "【本人按已编安排在场】珊莎在门边停下，望了一眼桌上的文书。“今天若没有别的安排，我想再坐一会儿。”不附新的婚约决定。",
+        "complex_affection": "【本人按已编安排在场】“我以为到今天，会有些事情容易说一点。”珊莎看着窗边，“还是没有。不过我想亲口来。”",
+        "extreme_fear": "【本人按已编安排在场】珊莎把手收在身前。“我没有离开规定的地方。”她说得很快，随后才问是否还有安排。没有把恐惧留下写成爱情。",
+        "controlled": "【本人按已编安排在场】“今日没有人给我别的安排。我等您的吩咐。”珊莎坐下前仍停着。顺从并不清除其他经历。",
+        "other": "【本人按已编安排在场】珊莎只问已有安排是否变化。读冻结版本，不在收束时再评一次态度。",
+        "departed_known": "呈报只显示最后可靠见到她的地点与时刻；正式离京和逃离沿真实记录，不在画面里把她带回。",
+        "departure_unknown": "只能展示国王最后获知的安排与时间。她的真实去向保存在作者状态，画面没有新增秘密路线。",
+        "absent": "没有实际接触或可靠消息时省略，不补一场见面。"
+      },
+      "fragment_source_scenes": [
+        "FIN07-S02",
+        "FIN07-S03"
+      ],
+      "main_title": "内部路线描述不作为命名结局标题；前台最后仅显示第一部终章",
+      "common_close": "旧名单、已签的命令与尚待答复的信各留在原处。远处传来换岗的声音。画面渐暗：第一部终章。",
+      "four_dimension_details": "完整四项成果与个人记录可在既有只读状态工具查看，不另播四份汇报"
+    },
+    "clock": {
+      "display_and_save_minutes": 0,
+      "no_generic_50_55_minute_epilogue": true,
+      "no_jump_to_default_day": true,
+      "actual_actions": "报告或交付若实际需要时间，已经计入出口前所属自动镜头；尾声仅显示完成的事，不补计一次"
+    },
+    "knowledge": {
+      "view": "乔弗里已看见/听见/收到的材料；旁观另存",
+      "late_report": "保存真实结果但前台沿最近获知状态，不从观众镜头补出知识",
+      "future_events": "没有发生或没有送达的决斗、伤情、死亡、婚约与远方事件留待续作，不快进"
+    },
+    "private_hook": {
+      "eligibility": "沿当前冻结包的tommen_hook_qualified，不增加门槛",
+      "actual_requirement": "FIN01-S10特殊线已真实完成秘密送交；收束前已有对应私人报告送达",
+      "delivery": "科本在FIN01特殊照护段形成短笺，既定宫内渠道在首日/随后固定等待时段完成送达；所有本版出口都晚于该段。此事由作者自动安排，无额外交办或等待按钮。收到封件不等读懂秘密，FIN07-S04实际阅读才建立国王获知。",
+      "contradiction": "资格成立但既有事实有效阻断送交/送信且尚无兼容段时记作者缺口，不偷偷改普通死亡线或免费瞬移",
+      "result": "公开declared_dead保持，实际secret_emergency_care_outcome_unknown，不确认治愈或未来形态"
+    },
+    "save": {
+      "single_world_state": true,
+      "ending_record": [
+        "exit_id",
+        "last_story_scene",
+        "ending_reason_variant",
+        "actual_result_refs",
+        "closure_fragment_ids",
+        "last_completed_closure",
+        "freeze_id",
+        "branch_id",
+        "source_world_version",
+        "continuation_state_ref"
+      ],
+      "preserve": [
+        "冻结包与各人知情",
+        "案件判决/疑案/现行看管/死亡危险",
+        "人物真实位置与在途行程",
+        "公开死讯与秘密照护分开",
+        "婚约共用记录",
+        "既有资源/义务/项目/未决事件"
+      ],
+      "technical_end": "END_CONTINUE",
+      "repeat": "同分支和唯一提交编号保存一次；恢复已完成收束片段不重放执行、发送报告或推进时间",
+      "new_authority_reward": false,
+      "next_game": "终章结束后不恢复自由地图，不启动第二部，不把未决事务都结清"
+    },
+    "named_endings": "FX02已按作者指定绑定牢不可破的联盟；其他既有命名标题继续待定",
+    "source_scope": "原稿和本卡原创短段，未新增原著考据或逐字引文",
+    "runtime_scope": "同主工程got-finale.html独立测试存档；非完整年度主线"
+  },
+  "labels": {
+    "S04-A": "制止羞辱：“不许拿我叔父取乐。”",
+    "S04-B": "让乐师换曲，结束这场表演。",
+    "S04-C": "不出面制止，让表演继续。",
+    "FIN02-01": "将提利昂收押候审，禁止私刑。",
+    "FIN02-02": "交给我的近卫保护性看管，任何人不得伤他。",
+    "CUSTODY-FAMILY": "把看管提利昂的事交给泰温。",
+    "T02-A": "要求提利尔交代毒物和旧信的来路。",
+    "T02-B": "要求交出账簿和经手人，作为继续合作的条件。",
+    "T02-C": "暂不公开追责，先维持联盟；保留证据。",
+    "FIN03-02": "准许詹姆退职继承凯岩城，换提利昂安全离京。",
+    "T03-B": "同意詹姆退职，但让提利昂保留原有差事。",
+    "T03-C": "拒绝以继承权换判决，继续审案。",
+    "FIN03-01": "准许比武，由奥柏伦为提利昂代斗。",
+    "FIN03-03": "暂缓判决，重新核对矛盾的证词。",
+    "FIN03-04": "释放提利昂（按本幕显示的无罪或赦免措辞）。",
+    "T06-B": "暂不判罪，继续看管，留待查明。",
+    "FIN04-01": "让比武继续，不命人干预。",
+    "FIN04-03": "立即叫停比武，派近卫把两人分开。",
+    "FIN05-01": "不改动今晚的安排，等待后续消息。",
+    "FIN05-02": "准许提利昂退出朝廷，由我的人护送离京。",
+    "FIN05-03-A": "拦截接应，不许带走提利昂。",
+    "FIN05-03-B": "封住首相住处的通道，防止有人接近泰温。",
+    "FIN03-05": "准许比武，暗中给魔山下毒削弱体力，帮助奥柏伦获胜。",
+    "FIN03-PARDON": "以国王名义赦免提利昂，立即释放。"
+  }
+}

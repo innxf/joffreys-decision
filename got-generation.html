@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>权游：乔弗里 · 生成设置</title><link rel="stylesheet" href="module/got/state-panel.css"><link rel="stylesheet" href="module/got/generation-dialog-base.css"><link rel="stylesheet" href="ui/settings-dialogs.css"><link rel="stylesheet" href="module/got/generation-panel.css"><link rel="stylesheet" href="module/got/folio-theme.css?v=1">
+</head>
+<body data-responsive-page="start"><main><p><a href="got-state.html">返回游戏检查页</a> · <a href="got-finale.html">终章试玩</a></p>
+<header><h1>API与提示词</h1><p>沿用姬侠传的设置与正文显示。这里生成的内容只保存为检查草稿，不改变游戏人物、时间和资源。</p></header>
+<nav class="buttons"><button id="prose-api">正文API</button><button id="middle-api">中间层API</button><button id="prompts">提示词与预设</button></nav>
+<p id="generation-status" role="status">正在载入……</p><p id="service-mode"></p><p id="connection-status"></p>
+<section id="prompt-section" class="panel" hidden><h2>提示词与预设</h2><div id="gs-prompt-manager-root"></div></section>
+<section class="panel"><h2>隔离生成检查</h2><label>本次任务 <select id="task"><option value="prose">正文</option><option value="pre">前置认知</option><option value="post">后置解析</option></select></label>
+<p>固定资料：桑铎与国王讨论护卫职责，尚未任命或交接。不是正式T0历史。</p>
+<label for="generation-input">本次输入</label><textarea id="generation-input" rows="4"></textarea>
+<div class="buttons"><button id="preview">发送前预览（不请求）</button><button id="generate">生成一次（会请求）</button><button id="cancel" disabled>停止生成</button><button id="regenerate">重新生成一次</button><button id="continue-draft">续写草稿</button></div>
+<details id="preview-container"><summary>实际发送内容与兼容说明</summary><pre id="request-preview"></pre></details>
+<p id="draft-status"></p><article id="story-text" data-got-draft="true" aria-live="polite"></article>
+<details><summary>本次用量与保存记录</summary><pre id="metrics"></pre></details><button id="export-draft">导出检查草稿</button>
+</section></main>
+<script src="module/idb-storage.js"></script><script src="module/idb-snapshot.js"></script><script src="module/storage-service.js"></script>
+<script src="module/template-engine.js"></script><script src="module/prompt-builder.js"></script><script src="module/api-service.js"></script>
+<script src="module/markdown-it.min.js"></script><script src="module/game-ui.js"></script>
+<script src="ui/config-modal.js"></script><script src="ui/prompt-manager-modal.js"></script><script type="module" src="module/got/generation-panel.mjs"></script></body></html>

@@ -1,0 +1,50 @@
+{
+  "version": "joffrey-v2-20261018",
+  "character_id": "U001",
+  "tool": "built-in image_gen",
+  "reference": "用户本轮提供的两张剧照；旧U001-v1仅作像素风参考。新版礼服常态作为同组脸部依据。",
+  "scope": "仅美术素材，尚未接入场合自动切换。旧版及现有映射保留。",
+  "approval": "待作者审美确认",
+  "portraits": [
+    {
+      "key": "court",
+      "file": "U001-court-neutral-v2.png",
+      "label": "礼服·常态",
+      "suggested_use": "御前会议、正式接见、婚礼与庆典",
+      "prompt": "Use case: stylized-concept. Create ONE square head-and-shoulders pixel-art game portrait of Joffrey Baratheon, formal court attire, composed royal expression. The first two recent images are USER PHOTO REFERENCES: gold-and-black armour and crowned ceremonial purple/gold clothing. The third is the OLD PIXEL PORTRAIT, style reference only, improve its face. Preserve recognizable Joffrey identity from the photos: youthful clean-shaven face, short golden blond hair with neat fringe, straight narrow nose, pale skin, subtly aristocratic disdain. Make him distinctly MORE HANDSOME: harmonious facial proportions, elegant defined cheekbones and jaw, beautiful green eyes, poised gaze and restrained confident mouth; still youthful, not a muscular adult, no beard, no generic anime hero. His beauty should feel proud and slightly dangerous, not kind or goofy. Clothing faithful to user's ceremonial reference: fine gold patterned high-collar brocade doublet, rich deep plum-purple velvet drape over one shoulder, delicately worked GOLD ANTLER CROWN, entire crown visible with ample top margin. Crisp deliberate square pixel clusters, fine 16-bit RPG portrait craftsmanship, no blur or photo filter; retain texture and clarity of the old portrait. Dark desaturated teal #18282b background, upper-left soft light. Centered shoulders, head nearly frontal slight three-quarter turn, eyes toward viewer, consistent framing for a four-portrait expression set. No text, no border, no props, no extra people. 1024x1024 square.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "47f1b58acc09d093b308a917305a746f7a9e1442f133eb002af0735bca8b7af5"
+    },
+    {
+      "key": "court-cold",
+      "file": "U001-court-cold-v2.png",
+      "label": "礼服·冷酷",
+      "suggested_use": "威胁、审问、蔑视及强硬裁决",
+      "prompt": "Use case: identity-preserve. Edit this single pixel-art game portrait into an EXPRESSION VARIANT ONLY. Preserve the exact same recognizable handsome youthful Joffrey face identity, age, golden hairstyle, head position, framing, dark teal background, upper-left lighting, pixel size and square dimensions. Do not redesign clothes or headgear. Only make small changes to eyes, brows and mouth. Keep the entire gold antler crown, purple velvet drape, gold brocade high collar and every clothing ornament unchanged. Expression: a restrained cruel half-smile on only one corner of his closed mouth, slightly narrowed piercing green eyes, brow lowered subtly, regal contempt. His handsome face is still beautiful, but his gaze suggests he calmly holds another person's fate. No snarling, no exaggerated villain eyebrows. Crisp 16-bit pixel portrait, no text, no border, no new objects. One image.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "fdf4a04780325c12a8b638ab0ecb47ecc140329973197f9ec8116620b08945df"
+    },
+    {
+      "key": "armour",
+      "file": "U001-armour-neutral-v2.png",
+      "label": "盔甲·常态",
+      "suggested_use": "巡阅、军务及城防准备",
+      "prompt": "Use case: stylized-concept. Create ONE square pixel-art game dialogue portrait of Joffrey Baratheon in his gold-and-black ARMOUR, no crown and no helmet. Of the four latest images, first two are user TV photographs, third is old pixel portrait and fourth newest is the NEW handsome crowned portrait. Precisely use the handsome youthful FACE and green eyes from the NEWEST generated portrait as the shared identity; do not revert to the old face. Outfit must follow the FIRST USER PHOTOGRAPH of his armour: high smooth black gorget, riveted gold engraved upper breastplate, dark steel and gold lion ornamentation, rounded articulated dark pauldrons with gold trim, restrained heraldic ornament rather than fantasy spikes. Short golden blond fringe, pale skin, handsome elegant cheekbones and defined youthful jaw, clean-shaven. Expression composed, aloof and vigilant, slight royal arrogance, closed mouth, eyes toward viewer. Preserve nearly frontal slight three-quarter head orientation, same head-and-shoulders framing, same upper-left light, same dark teal #18282b background, same rich crisp square-pixel 16-bit RPG portrait style as NEWEST image. Whole hair visible, head and shoulders fill square, no text, border, weapon or other people. This is the neutral armoured companion to the new ceremonial portrait. One single 1024x1024 image, not a grid.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "e49d46ba7b8d76d08360aeea5bc329c4925402b4c82c98a591c631466952f28f"
+    },
+    {
+      "key": "armour-cold",
+      "file": "U001-armour-cold-v2.png",
+      "label": "盔甲·威压",
+      "suggested_use": "临战指挥及严厉军令",
+      "prompt": "Use case: identity-preserve. Edit this single pixel-art game portrait into an EXPRESSION VARIANT ONLY. Preserve the exact same recognizable handsome youthful Joffrey face identity, age, golden hairstyle, head position, framing, dark teal background, upper-left lighting, pixel size and square dimensions. Do not redesign clothes or headgear. Only make small changes to eyes, brows and mouth. Keep the black gorget, engraved gold breastplate, all rivets and lion motifs, shoulder armour completely unchanged. No crown. Expression: cold intimidating command, narrowed focused green eyes, subtly lowered brow, lips held firm with the faintest contempt, a calm merciless young king rather than screaming anger. No grin, no snarl. Crisp 16-bit pixel portrait, no text, no border, no new objects. One image.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "b051b044d3fee271ef0cc33a08d8ec11f7073cd1e5ae28e6554d5245e811d1a2"
+    }
+  ]
+}

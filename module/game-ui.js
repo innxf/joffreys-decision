@@ -1,0 +1,1340 @@
+/**
+ * game-ui.js - UI更新和显示函数
+ * 
+ * 文件概述：
+ * 负责所有用户界面的更新和显示逻辑，包括状态栏、属性面板、关系界面等。
+ * 处理弹窗显示、文本渲染和动态内容更新。
+ * 
+ * 主要功能：
+ * 1. 更新各种显示元素（日期、体力、行动点、属性等）
+ * 2. 管理弹窗和提示框
+ * 3. 处理Markdown文本渲染
+ * 4. 管理悬浮提示框
+ * 
+ * 对外暴露的主要函数：
+ * - updateDateDisplay(): 更新日期显示（年/月/周）
+ * - updateMoodDisplay(): 更新体力值显示
+ * - updateActionPointsDisplay(): 更新行动点显示并控制按钮状态
+ * - updateAllDisplays(): 一次性更新所有显示内容
+ * - updateStatsDisplay(): 更新角色属性面板（天赋、数值、战斗属性等）
+ * - updateRelationshipsDisplay(): 更新人际关系界面
+ * - updateStoryText(text): 使用Markdown渲染并更新故事文本
+ * - updateStoryDisplay(): 刷新故事区域（分页/展开、页码指示、SLG图层）
+ * - doGoToPage(pageNum) / doPrevPage() / doNextPage(): 文本翻页
+ * - doToggleStoryExpand(): 展开/收起全文
+ * - showModal(text): 显示普通弹窗
+ * - showConfirmModal(title, message, onConfirm): 显示确认弹窗
+ * - showTooltip(event, text): 显示悬浮提示框
+ * - hideTooltip(): 隐藏悬浮提示框
+ * - fitModalToViewport(modal) / bindModalAutoFit(modal): 弹窗适配当前视口
+ * - closeAllSpecialModals(): 一键关闭背包/装备/难度/金手指/交易等弹窗
+ * - updateEquipmentSlot(slotId, itemName): 刷新装备槽UI
+ * - showItemDetail(itemName) / getItemEffectText(item) / closeItemDetailModal(): 道具详情
+ * - updateSLGReturnButton(): 根据模式切换显示“返回天山派/跳过一周”
+ * 
+ * 依赖关系：
+ * - 依赖 game-state.js 中的状态变量
+ * - 依赖 game-config.js 中的配置数据
+ * - 依赖 game-utils.js 中的计算函数
+ * - 依赖外部库 markdown-it 进行文本渲染
+ */
+
+// 在文件开头添加翻页相关的状态变量
+let storyPages = [];  // 存储分页后的文本
+let currentPage = 0;  // 当前页码
+let isStoryExpanded = false;  // 是否展开显示全文
+let slgModeData = [];  // 新增：存储SLG模式的数据
+
+// 新增：将 SLG 主体文本按“正文|npc|scene|emotion|cg”解析为 slgModeData（支持流式未完文本）
+function parseSlgMainText(mainText) {
+    if (!mainText || typeof mainText !== 'string') return [];
+
+    const lines = mainText.trim().split('\n');
+    const result = [];
+
+    const cleanToken = (str) => (str || '').replace(/[^\u4e00-\u9fff\u3400-\u4dbfa-zA-Z0-9]/g, '').trim();
+    const normalizeNone = (str) => {
+        const cleaned = cleanToken(str);
+        if (!cleaned) return 'none';
+        if (cleaned === '无') return 'none';
+        if (cleaned.toLowerCase && cleaned.toLowerCase() === 'none') return 'none';
+        return cleaned;
+    };
+
+    // 使用模糊匹配获取标准化的NPC名称
+    const getNormalizedNpc = (npcNameOrId) => {
+        if (npcNameOrId === 'none') return 'none';
+        return (typeof matchNPC === 'function') ? matchNPC(npcNameOrId) : npcNameOrId;
+    };
+    
+    // 使用模糊匹配获取标准化的场景名称
+    const getNormalizedScene = (scene) => {
+        if (scene === 'none') return 'none';
+        return (typeof matchScene === 'function') ? matchScene(scene) : scene;
+    };
+    
+    // 使用模糊匹配获取标准化的表情名称
+    const getNormalizedEmotion = (emo) => {
+        if (emo === 'none') return 'none';
+        if (/^特殊CG\d+$/.test(emo)) return emo;  // 特殊CG格式直接返回
+        return (typeof matchEmotion === 'function') ? matchEmotion(emo) : emo;
+    };
+    
+    // 使用模糊匹配获取标准化的CG名称
+    const getNormalizedCG = (cg) => {
+        if (cg === 'none') return 'none';
+        return (typeof matchCG === 'function') ? matchCG(cg) : (slgCGOptions.includes(cg) ? cg : 'none');
+    };
+
+    // 检查NPC是否在随行列表中（使用标准化后的名称）
+    const isNpcAllowed = (normalizedNpc) => {
+        if (normalizedNpc === 'none') return true;
+        const pool = new Set(companionNPC || []);
+        if (pool.has(normalizedNpc)) return true;
+        const id = npcNameToId[normalizedNpc];
+        if (id && (pool.has(id) || pool.has(npcs[id]?.name))) return true;
+        if (npcs[normalizedNpc]?.name && pool.has(npcs[normalizedNpc].name)) return true;
+        return false;
+    };
+    
+    // 检查场景是否有效（标准化后的场景必须不为none）
+    const isSceneAllowed = (normalizedScene) => normalizedScene !== 'none' || normalizedScene === 'none';
+    
+    // 检查表情是否有效
+    const isEmotionAllowed = (normalizedEmo) => normalizedEmo !== 'none' || normalizedEmo === 'none';
+
+    let currentTextBlock = [];
+    let lastValidDisplay = null;
+
+    for (let i = 0; i < lines.length; i++) {
+        const rawLine = lines[i];
+        if (!rawLine || !rawLine.trim()) continue;
+
+        const parts = rawLine.split('|');
+
+        // 需要恰好5段（正文|npc|scene|emotion|cg）
+        if (parts.length !== 5) {
+            const textOnly = (parts[0] || rawLine).trim();
+            if (textOnly) currentTextBlock.push(textOnly);
+            continue;
+        }
+
+        const textPart = (parts[0] || '').trim();
+        const npcRaw = normalizeNone(parts[1]);
+        const sceneRaw = normalizeNone(parts[2]);
+        const emotionRaw = normalizeNone(parts[3]);
+        const cgRaw = normalizeNone(parts[4]);
+
+        // 使用模糊匹配获取标准化的值
+        const normalizedNpc = getNormalizedNpc(npcRaw);
+        const normalizedScene = getNormalizedScene(sceneRaw);
+        const normalizedEmotion = getNormalizedEmotion(emotionRaw);
+        const normalizedCG = getNormalizedCG(cgRaw);
+
+        // 验证各字段
+        const npcOk = isNpcAllowed(normalizedNpc);
+        const sceneOk = normalizedScene !== 'none'; 
+        const emoOk = true;
+        //const emoOk = normalizedEmotion !== 'none' || emotionRaw === 'none' || emotionRaw === '无';  // 原始值为none时允许
+        const cgOk = cgRaw !== '';
+
+        if (!(npcOk && sceneOk && emoOk && cgOk)) {
+            if (textPart) currentTextBlock.push(textPart);
+            continue;
+        }
+
+        // 合并前面累积的正文为同一页
+        let mergedText = textPart;
+        if (currentTextBlock.length > 0) {
+            mergedText = currentTextBlock.join('\n\n') + (textPart ? '\n\n' + textPart : '');
+            currentTextBlock = [];
+        }
+
+        // 使用标准化后的值构建结果
+        result.push({
+            text: mergedText,
+            npc: normalizedNpc,
+            scene: normalizedScene,
+            emotion: normalizedEmotion,
+            cg: normalizedCG
+        });
+
+        lastValidDisplay = { npc: normalizedNpc, scene: normalizedScene, emotion: normalizedEmotion, cg: normalizedCG };
+    }
+
+    // 末尾残留：用上一次有效展示配置兜底，否则全 none
+    if (currentTextBlock.length > 0) {
+        const tailText = currentTextBlock.join('\n\n');
+        if (lastValidDisplay) {
+            result.push({
+                text: tailText,
+                npc: lastValidDisplay.npc,
+                scene: lastValidDisplay.scene,
+                emotion: lastValidDisplay.emotion,
+                cg: lastValidDisplay.cg
+            });
+        } else {
+            result.push({
+                text: tailText,
+                npc: 'none',
+                scene: 'none',
+                emotion: 'none',
+                cg: 'none'
+            });
+        }
+    }
+
+    return result;
+}
+
+// 更新日期显示
+function updateDateDisplay() {
+    const year = Math.floor((currentWeek - 1) / 48) + 1;
+    const remainingWeeks = (currentWeek - 1) % 48;
+    const month = Math.floor(remainingWeeks / 4) + 1;
+    const week = remainingWeeks % 4 + 1;
+    
+    document.getElementById('date-display').textContent = `第${year}年第${month}月第${week}周`;
+}
+
+// 更新体力显示
+function updateMoodDisplay() {
+    const container = document.getElementById('mood-display');
+    if (!container) return;
+    const over = playerMood > 100;
+    const base = Math.max(0, Math.min(100, playerMood));
+    const overcap = over ? playerMood - 100 : 0;
+    const fillWidth = base;
+
+    container.innerHTML = `
+        <span class="mood-text">体力 ${playerMood}</span>
+        <div class="mood-bar${over ? ' overcap' : ''}">
+            <div class="mood-fill" style="width: ${fillWidth}%;"></div>
+        </div>
+        ${over ? `<span class="mood-badge">+${overcap}</span>` : ''}
+    `;
+}
+
+// 更新行动点显示
+function updateActionPointsDisplay() {
+    document.getElementById('action-points-display').textContent = `行动点: ${actionPoints}`;
+    
+    const allSceneBtns = document.querySelectorAll('.scene-btn');
+    allSceneBtns.forEach(btn => {
+        btn.disabled = actionPoints < 1;
+    });
+}
+
+// 更新所有显示
+function updateAllDisplays() {
+    updateDateDisplay();
+    updateMoodDisplay();
+    updateActionPointsDisplay();
+    updateStatsDisplay();
+    updateSLGReturnButton();  // 确保这个函数被调用
+    
+    // 删除或注释掉这部分
+    // if (GameMode === 0) {
+    //     const backBtns = document.querySelectorAll('.back-btn.slg-mode-offset');
+    //     backBtns.forEach(btn => btn.classList.remove('slg-mode-offset'));
+    // }
+}
+
+// 更新属性显示
+function updateStatsDisplay() {
+    const totalTalents = getTotalTalents();
+    const totalCombat = getTotalCombatStats();
+
+    // 更新天赋
+    document.getElementById('talent-gengu').style.width = Math.min(100, totalTalents.根骨) + '%';
+    document.getElementById('talent-gengu-value').textContent = totalTalents.根骨;
+    
+    document.getElementById('talent-wuxing').style.width = Math.min(100, totalTalents.悟性) + '%';
+    document.getElementById('talent-wuxing-value').textContent = totalTalents.悟性;
+    
+    document.getElementById('talent-xinxing').style.width = Math.min(100, totalTalents.心性) + '%';
+    document.getElementById('talent-xinxing-value').textContent = totalTalents.心性;
+    
+    document.getElementById('talent-meili').style.width = Math.min(100, totalTalents.魅力) + '%';
+    document.getElementById('talent-meili-value').textContent = totalTalents.魅力;
+    
+    // 更新人物数值
+    document.getElementById('stat-wuxue-value').textContent = playerStats.武学;
+    document.getElementById('stat-xueshi-value').textContent = playerStats.学识;
+    document.getElementById('stat-shengwang-value').textContent = playerStats.声望;
+    document.getElementById('stat-jinqian-value').textContent = playerStats.金钱;
+    
+    // 更新战斗数值
+    document.getElementById('combat-attack-value').textContent = totalCombat.攻击力;
+    document.getElementById('combat-hp-value').textContent = totalCombat.生命值;
+    document.getElementById('combat-crit-rate-value').textContent = `${totalCombat.暴击率}%`;
+    document.getElementById('combat-crit-damage-value').textContent = `${totalCombat.暴击伤害}%`;
+    document.getElementById('combat-block-value').textContent = totalCombat.格挡;
+    document.getElementById('combat-armor-pen-value').textContent = totalCombat.穿甲;
+    document.getElementById('combat-turnover-value').textContent = Number(totalCombat.回转 || 0).toFixed(2);
+    document.getElementById('combat-lifesteal-value').textContent = `${totalCombat.吸血}%`;
+    document.getElementById('combat-thorns-value').textContent = `${totalCombat.反伤}%`;
+    
+    // 更新剩余点数
+    const remainingPoints = calculateRemainingPoints();
+    document.getElementById('remaining-points-value').textContent = remainingPoints;
+    
+    // 更新加点按钮状态
+    document.getElementById('add-attack-btn').disabled = remainingPoints <= 0;
+    document.getElementById('add-hp-btn').disabled = remainingPoints <= 0;
+    const extraButtons = [
+        'add-crit-rate-btn',
+        'add-crit-damage-btn',
+        'add-block-btn',
+        'add-armor-pen-btn',
+        'add-turnover-btn',
+        'add-lifesteal-btn',
+        'add-thorns-btn'
+    ];
+    extraButtons.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.disabled = remainingPoints <= 0;
+        }
+    });
+    
+    // 更新已学武功列表
+    const skillsContainer = document.getElementById('learned-skills');
+    skillsContainer.innerHTML = '';
+    Object.keys(martialArts).forEach(skill => {
+        if (martialArts[skill] === 1) {
+            const skillDiv = document.createElement('div');
+            skillDiv.className = 'skill-item';
+            skillDiv.textContent = '• ' + skill;
+            skillsContainer.appendChild(skillDiv);
+        }
+    });
+}
+
+// 更新关系显示
+function updateRelationshipsDisplay() {
+    const grid = document.getElementById('relationship-grid');
+    hideTooltip();
+    grid.innerHTML = '';
+    
+    Object.keys(npcs).forEach(npcId => {
+        const npc = npcs[npcId];
+        const favorability = npcFavorability[npcId];
+        const isVisible = npcVisibility[npcId];
+        
+        const card = document.createElement('div');
+        card.className = 'relationship-card';
+        
+        card.innerHTML = `
+            <div class="relationship-portrait">
+                <img src="${npcPortraits[npcId]}" alt="${npc.name}">
+            </div>
+            <div class="relationship-info">
+                <div class="relationship-name">${npc.name}</div>
+                <div class="relationship-bar">
+                    <div class="relationship-fill" style="width: ${Math.max(0, Math.min(100, favorability))}%"></div>
+                </div>
+                <div class="relationship-value">好感度: <span class="relationship-value-number">${favorability}</span></div>
+                <div class="relationship-controls">
+                    <label class="visibility-checkbox">
+                        <input type="checkbox" id="visibility-${npcId}" ${isVisible ? 'checked' : ''} 
+                               onchange="toggleNpcVisibility('${npcId}')">
+                        <span class="checkbox-label">出场</span>
+                    </label>
+                </div>
+            </div>
+        `;
+        
+        card.tabIndex = 0;
+        card.addEventListener('pointerenter', function(e) {
+            if (e.pointerType === 'mouse') showTooltip(e, npc.description);
+        });
+        card.addEventListener('pointerleave', function(e) {
+            if (e.pointerType === 'mouse' && !relationshipTooltipPinned &&
+                !document.getElementById('tooltip').contains(e.relatedTarget)) hideTooltip();
+        });
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('input, label, button')) {
+                hideTooltip();
+                return;
+            }
+            if (relationshipTooltipAnchor === card && relationshipTooltipPinned) {
+                hideTooltip();
+            } else {
+                showTooltip(e, npc.description);
+                relationshipTooltipPinned = true;
+            }
+        });
+        card.addEventListener('keydown', function(e) {
+            if (e.target !== card || !['Enter', ' '].includes(e.key)) return;
+            e.preventDefault();
+            card.click();
+        });
+        
+        grid.appendChild(card);
+    });
+}
+
+
+let relationshipTooltipAnchor = null;
+let relationshipTooltipPinned = false;
+let relationshipTooltipCleanup = null;
+
+// Relationship descriptions use viewport coordinates and an independently scrollable body.
+function showRelationshipTooltip(card, text) {
+    hideTooltip();
+    const tooltip = document.getElementById('tooltip');
+    const viewport = document.getElementById('main-viewport');
+    if (!tooltip || !viewport) return;
+    const bounds = viewport.getBoundingClientRect();
+    const left = Math.max(0, bounds.left) + 8;
+    const top = Math.max(0, bounds.top) + 8;
+    const right = Math.min(window.innerWidth, bounds.right) - 8;
+    const bottom = Math.min(window.innerHeight, bounds.bottom) - 8;
+    if (right <= left || bottom <= top) return;
+    tooltip.classList.add('relationship-tooltip', 'show');
+    tooltip.replaceChildren();
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'relationship-tooltip-close';
+    close.textContent = '\u00d7';
+    close.setAttribute('aria-label', '关闭介绍');
+    close.onclick = hideTooltip;
+    const content = document.createElement('div');
+    content.className = 'tooltip-item';
+    content.textContent = text || '';
+    tooltip.append(close, content);
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.style.cssText = `position:fixed;transform:none;left:${left}px;top:${top}px;width:${Math.min(340, right - left)}px;max-width:${right - left}px;max-height:${bottom - top}px;`;
+    const rect = card.getBoundingClientRect();
+    const tip = tooltip.getBoundingClientRect();
+    tooltip.style.left = Math.max(left, Math.min(right - tip.width, rect.left + (rect.width - tip.width) / 2)) + 'px';
+    const preferredTop = rect.top - tip.height - 8 >= top ? rect.top - tip.height - 8 : rect.bottom + 8;
+    tooltip.style.top = Math.max(top, Math.min(bottom - tip.height, preferredTop)) + 'px';
+    relationshipTooltipAnchor = card;
+    card.setAttribute('aria-describedby', 'tooltip');
+    const outside = e => {
+        if (!tooltip.contains(e.target) && !card.contains(e.target)) hideTooltip();
+    };
+    const scroll = e => {
+        if (!tooltip.contains(e.target)) hideTooltip();
+    };
+    const escape = e => { if (e.key === 'Escape') hideTooltip(); };
+    const observer = new MutationObserver(() => {
+        if (!card.isConnected || !card.closest('.scene.active')) hideTooltip();
+    });
+    observer.observe(document.getElementById('relationships-scene'), { attributes: true, attributeFilter: ['class', 'style'] });
+    document.addEventListener('click', outside);
+    document.addEventListener('scroll', scroll, true);
+    document.addEventListener('keydown', escape);
+    window.addEventListener('resize', hideTooltip);
+    relationshipTooltipCleanup = () => {
+        observer.disconnect();
+        document.removeEventListener('click', outside);
+        document.removeEventListener('scroll', scroll, true);
+        document.removeEventListener('keydown', escape);
+        window.removeEventListener('resize', hideTooltip);
+    };
+}
+
+// 显示悬停提示
+function showTooltip(event, text) {
+    const tooltip = document.getElementById('tooltip');
+    const card = event.currentTarget;
+    if (card.matches('.relationship-card')) {
+        showRelationshipTooltip(card, text);
+        return;
+    }
+    hideTooltip();
+    const rect = card.getBoundingClientRect();
+    const viewportRect = document.querySelector('.viewport').getBoundingClientRect();
+    
+    tooltip.innerHTML = `<div class="tooltip-item">${text}</div>`;
+    tooltip.classList.add('show');
+    
+    let left = rect.left - viewportRect.left + rect.width / 2;
+    let top = rect.top - viewportRect.top - 10;
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+    tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
+    
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    if (tooltipRect.left < viewportRect.left) {
+        tooltip.style.transform = 'translateX(0) translateY(-100%)';
+        tooltip.style.left = '10px';
+    } else if (tooltipRect.right > viewportRect.right) {
+        tooltip.style.transform = 'translateX(-100%) translateY(-100%)';
+        tooltip.style.left = (viewportRect.width - 10) + 'px';
+    }
+    
+    if (tooltipRect.top < viewportRect.top) {
+        tooltip.style.transform = 'translateX(-50%)';
+        tooltip.style.top = (rect.bottom - viewportRect.top + 10) + 'px';
+    }
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('tooltip');
+    if (relationshipTooltipCleanup) relationshipTooltipCleanup();
+    relationshipTooltipCleanup = null;
+    if (relationshipTooltipAnchor) relationshipTooltipAnchor.removeAttribute('aria-describedby');
+    relationshipTooltipAnchor = null;
+    relationshipTooltipPinned = false;
+    if (!tooltip) return;
+    tooltip.classList.remove('show');
+    if (tooltip.classList.contains('relationship-tooltip')) {
+        tooltip.classList.remove('relationship-tooltip');
+        tooltip.removeAttribute('style');
+        tooltip.replaceChildren();
+        tooltip.removeAttribute('role');
+    }
+}
+
+// 显示"属性查看-角色属性"里 7 项属性（根骨/悟性/心性/魅力/武学/学识/声望）当前数值对应的分档文案
+// 取基础值（不含装备加成），与 LLM prompt（040主角属性.txt）看到的数值一致
+function showAttrTooltip(event, attrName) {
+    let value;
+    if (typeof playerTalents !== 'undefined' && playerTalents.hasOwnProperty(attrName)) {
+        value = playerTalents[attrName];
+    } else if (typeof playerStats !== 'undefined' && playerStats.hasOwnProperty(attrName)) {
+        value = playerStats[attrName];
+    } else {
+        return;
+    }
+    const text = (typeof getAttributeTierText === 'function') ? getAttributeTierText(attrName, value) : '';
+    if (text) showTooltip(event, text);
+}
+
+// 渲染主要故事文本（供 pipeline / 开场白调用）
+function renderMainText(text) {
+    if (!text) return;
+    updateStoryText(text);
+}
+
+// 更新故事文本（支持分页）
+function updateStoryText(text) {
+    const storyElement = document.getElementById('story-text');
+    if (storyElement && storyElement.dataset.gotDraft === 'true') {
+        // Same reader, without legacy world or battle side effects.
+        if (!storyElement._reader) storyElement._reader = storyReader.mount(storyElement,text || '');
+        else storyElement._reader.update(text || '');
+        return;
+    }
+    currentStoryText = text;
+
+    // 保存当前页码和展开状态
+    const previousPage = currentPage;
+    const previousExpanded = isStoryExpanded;
+    
+    // 检查是否为SLG模式
+    if (GameMode === 1) {
+        // 流式：每次都根据当前 mainText 重新解析 slgModeData
+        const parsed = parseSlgMainText(text);
+        if (parsed && parsed.length > 0) {
+            slgModeData = parsed;
+
+            const md = window.markdownit({
+                html: true,
+                breaks: true,
+                linkify: true,
+                typographer: true
+            }).disable('strikethrough');
+
+            storyPages = slgModeData.map(data => md.render(data.text || ''));
+        } else {
+            // 解析不到有效页时，回退到普通文本渲染，避免显示空白
+            let processedText = text.replace(/\n+/g, '\n').replace(/(\r\n)+/g, '\n').replace(/\r+/g, '\n');
+            const md = window.markdownit({
+                html: true,
+                breaks: true,
+                linkify: true,
+                typographer: true
+            }).disable('strikethrough');
+            const htmlContent = md.render(processedText);
+            storyPages = [htmlContent];
+        }
+    } else {
+        // 普通模式：按自然段分页，并丢弃每段“|”分隔的补充信息
+        let processedText = text.replace(/\n+/g, '\n');
+        processedText = processedText.replace(/(\r\n)+/g, '\n');
+        processedText = processedText.replace(/\r+/g, '\n');
+        
+        const md = window.markdownit({
+            html: true,
+            breaks: true,
+            linkify: true,
+            typographer: true
+        }).disable('strikethrough');
+        
+        storyPages = storyReader.pages(processedText, {legacy:true, limit:Infinity})
+            .map(p => `<div class="story-paragraph">${md.render(p)}</div>`);
+    }
+    
+    // 智能恢复页码：
+    // 1. 如果之前是展开状态，保持展开
+    if (previousExpanded) {
+        isStoryExpanded = true;
+        currentPage = 0;  // 展开模式不需要页码
+    } 
+    // 2. 如果新的页数能容纳之前的页码，保持原页码
+    else if (previousPage < storyPages.length) {
+        currentPage = previousPage;
+        isStoryExpanded = false;
+    } 
+    // 3. 默认情况
+    else {
+        currentPage = 0;
+        isStoryExpanded = false;
+    }
+    
+    // 在正文后追加“事件描述页”（若存在随机/战斗事件）
+    try {
+        const activeEvent = (typeof currentBattleEvent !== 'undefined' && currentBattleEvent) 
+            ? currentBattleEvent 
+            : ((typeof currentRandomEvent !== 'undefined' && currentRandomEvent) ? currentRandomEvent : null);
+        if (activeEvent && activeEvent.事件描述) {
+            const mdAppend = window.markdownit({ html: true, breaks: true, linkify: true, typographer: true }).disable('strikethrough');
+            const eventHtml = mdAppend.render(activeEvent.事件描述);
+            storyPages.push(`<div class="story-paragraph">${eventHtml}</div>`);
+        }
+    } catch (e) {}
+
+    // 覆盖：当 newWeek===1 时，默认展开全文一次（随后保持用户选择）
+    try {
+        const ls = (typeof getLocalState === 'function') ? getLocalState() : null;
+        if (typeof newWeek === 'number' && newWeek === 1 && ls && !ls.defaultExpandApplied) {
+            isStoryExpanded = true;
+            currentPage = 0;
+            ls.defaultExpandApplied = true;
+        } else if (typeof newWeek === 'number' && newWeek !== 1 && ls && ls.defaultExpandApplied
+                   && typeof isInRenderEnvironment === 'function' && !isInRenderEnvironment()) {
+            // 独立模式 + 非新周：重置展开标记，恢复为翻页模式
+            ls.defaultExpandApplied = false;
+            isStoryExpanded = false;
+            currentPage = 0;
+        }
+    } catch (e) {}
+
+    // 更新显示
+    try {
+        const viewport = document.getElementById('main-viewport');
+        if (GameMode === 1) {
+            try { document.body.classList.add('slg-global'); } catch (e) {}
+            if (viewport && !viewport.querySelector('.slg-loading-layer')) {
+                const loading = document.createElement('div');
+                loading.className = 'slg-loading-layer';
+                const spinner = document.createElement('div');
+                spinner.className = 'slg-loading-spinner';
+                const text = document.createElement('div');
+                text.className = 'slg-loading-text';
+                text.textContent = '场景加载中';
+                loading.appendChild(spinner);
+                loading.appendChild(text);
+                viewport.insertBefore(loading, viewport.firstChild);
+            }
+            // 新文本到达=新场景数据：旧图层（连容器）与交互遮罩一并作废，
+            // 由 updateStoryDisplay 按当前模式重建/补建（修复展开状态下 GameMode 0→1 永远"场景加载中"）
+            if (viewport) {
+                viewport.querySelectorAll('.slg-layer-container').forEach(el => el.remove());
+                const staleMask = viewport.querySelector('.slg-interaction-mask');
+                if (staleMask) staleMask.remove();
+            }
+        } else {
+            try { document.body.classList.remove('slg-global'); } catch (e) {}
+            const old = viewport ? viewport.querySelector('.slg-loading-layer') : null;
+            if (old) old.remove();
+        }
+    } catch (e) {}
+    updateStoryDisplay();
+}
+
+ // emotionImg.src = `https://cdn.jsdelivr.net/gh/Ji-Haitang/char_card_1@main/img/NPC/${pageData.npc}_${pageData.emotion}.webp`;
+// 创建一帧 SLG 图层（场景/NPC表情/CG + 交互遮罩）并挂到 viewport。
+// pageData 为 slgModeData 的某一页；分页分支与展开补建分支复用本函数。
+function _appendSlgLayers(viewport, pageData) {
+    if (!viewport || !pageData) return;
+    // 检查当前场景，只在需要遮罩的场景添加遮罩
+    const activeScene = document.querySelector('.scene.active');
+    const needsMask = activeScene && 
+                    activeScene.id !== 'player-stats-scene' && 
+                    activeScene.id !== 'relationships-scene';
+    
+    if (needsMask) {
+        // 添加遮罩层，阻止场景互动
+        const interactionMask = document.createElement('div');
+        interactionMask.className = 'slg-interaction-mask';
+        viewport.appendChild(interactionMask);
+    }
+    
+    const dayNightCN = (dayNightStatus === 'night') ? '夜' : '昼';
+    const locName = mapLocation || '天山派外堡'; // 当前地图位置（如 天山派） [[11],[14]]
+    const layerContainer = document.createElement('div');
+    layerContainer.className = 'slg-layer-container';
+
+    // 1) 场景图层
+    if (pageData.scene && pageData.scene !== 'none') {
+        const sceneLayer = document.createElement('div');
+        sceneLayer.className = 'slg-layer slg-scene-layer';
+        const sceneImg = document.createElement('img');
+
+        const sceneName = pageData.scene; // 例如 演武场 / 山门 / 公田…
+        // 兜底：命中旧版（普通模式）地点名时，走旧的 img/location/{name}_{昼|夜}.webp 规则
+        const isLegacyScene = (typeof legacySceneOptions !== 'undefined') && legacySceneOptions.includes(sceneName);
+        // https://cdn.jsdelivr.net/gh/Ji-Haitang/char_card_1@main/img/location/scene_webp/{{当前mapLocation}}/{{昼or夜}}/{{pageData.scene}}.webp
+        const sceneUrl = isLegacyScene
+            ? _assetUrl(`img/location/${sceneName}_${dayNightCN}.webp`)
+            : _assetUrl(`img/location/scene_webp/${locName}/${dayNightCN}/${sceneName}.webp`);
+        sceneImg.src = sceneUrl;
+        sceneImg.alt = `${locName}-${dayNightCN}-${sceneName}`;
+        try { window.__lastValidSceneUrl = sceneUrl; } catch (e) {}
+
+        // // 发生 404 时回退到旧的本地背景规则
+        // sceneImg.onerror = function () {
+        //     this.onerror = null;
+        //     this.src = `https://cdn.jsdelivr.net/gh/Ji-Haitang/char_card_1@main/img/location/${sceneName}_${dayNightCN}.webp`;
+        // };
+
+        sceneLayer.appendChild(sceneImg);
+        layerContainer.appendChild(sceneLayer);
+    }
+
+    // 2) NPC表情图层
+    if (pageData.npc && pageData.npc !== 'none') {
+        const npcId = npcNameToId[pageData.npc]; // 名字->ID 映射已在配置里 [[14]]
+        if (npcId) {
+            const emotionLayer = document.createElement('div');
+            emotionLayer.className = 'slg-layer slg-emotion-layer';
+            const emotionImg = document.createElement('img');
+
+            const emotion = (pageData.emotion && pageData.emotion !== 'none') ? pageData.emotion : '平静';
+            
+            // 检查是否为特殊CG格式（特殊CG1、特殊CG15等），添加对应CSS类
+            if (/^特殊CG\d+$/.test(emotion)) {
+                emotionLayer.classList.add('slg-emotion-special-cg');
+            }
+            // 触发 enamor：首次遇到“发情”
+            if (emotion === '发情' && typeof enamor !== 'undefined' && enamor === 0) {
+                enamor = 1;
+            }
+            // https://cdn.jsdelivr.net/gh/Ji-Haitang-setu/card1_setu@main/{{pageData.npc}}/表情差分/{{pageData.emotion}}.png
+            const emoUrl = _assetUrl(`img/表情差分和CG/${pageData.npc}/表情差分/${emotion}.webp`);
+            emotionImg.src = emoUrl;
+            emotionImg.alt = `${pageData.npc}-${emotion}`;
+            try { window.__lastValidNpcEmotionUrl = emoUrl; } catch (e) {}
+
+            // // 404 回退：用原始 NPC 立绘
+            // emotionImg.onerror = function () {
+            //     this.onerror = null;
+            //     this.src = `https://cdn.jsdelivr.net/gh/Ji-Haitang/char_card_1@main/img/NPC/${pageData.npc}.webp`;
+            // };
+
+            emotionLayer.appendChild(emotionImg);
+            layerContainer.appendChild(emotionLayer);
+        }
+    }
+
+    // 3) 特殊CG图层
+    if (cgContentEnabled && pageData.cg && pageData.cg !== 'none' && pageData.npc && pageData.npc !== 'none') {
+        const cgLayer = document.createElement('div');
+        cgLayer.className = 'slg-layer slg-cg-layer';
+        const cgImg = document.createElement('img');
+
+        // https://cdn.jsdelivr.net/gh/Ji-Haitang-setu/card1_setu@main/{{pageData.npc}}/色图/{{pageData.cg + 随机1~4的数字后缀}}.png
+        // const randIdx = Math.floor(Math.random() * 4) + 1; // 1~4
+        const cgUrl = _assetUrl(`img/表情差分和CG/${pageData.npc}/色图/${pageData.cg}${randIdx}.webp`);
+        cgImg.src = cgUrl;
+        cgImg.alt = `${pageData.npc}-${pageData.cg}${randIdx}`;
+        try { window.__lastValidCgUrl = cgUrl; } catch (e) {}
+
+        // // 404 时直接隐藏本层
+        // cgImg.onerror = function () {
+        //     cgLayer.remove();
+        // };
+
+        cgLayer.appendChild(cgImg);
+        layerContainer.appendChild(cgLayer);
+    }
+
+    // 将图层容器添加到viewport
+    viewport.appendChild(layerContainer);
+}
+
+// 修改 updateStoryDisplay 函数
+function updateStoryDisplay() {
+    const storyElement = document.getElementById('story-text');
+    const pageIndicator = document.getElementById('page-indicator');
+    const prevBtn = document.getElementById('story-prev-btn');
+    const nextBtn = document.getElementById('story-next-btn');
+    const expandBtn = document.getElementById('story-expand-btn');
+    const viewport = document.getElementById('main-viewport');
+    // 正文翻页点击区挂在整块故事滚动区上（横屏下文本区较高，正文只占顶部一截，光点正文下半区会点不到）
+    const storyWrapper = storyElement ? storyElement.parentElement : null;
+    
+    // 只在非展开模式或非SLG模式时清除图层
+    if (!isStoryExpanded || GameMode !== 1) {
+        // 清除之前的SLG图层（连容器一起，避免空容器壳累积）
+        const existingLayers = viewport.querySelectorAll('.slg-layer-container');
+        existingLayers.forEach(layer => layer.remove());
+        
+        // 清除之前的SLG遮罩层
+        const existingMask = viewport.querySelector('.slg-interaction-mask');
+        if (existingMask) existingMask.remove();
+
+        // 退出SLG相关全局标记
+        try { if (GameMode !== 1) document.body.classList.remove('slg-global'); } catch (e) {}
+    }
+    
+    storyElement.onclick = null;
+    if (storyWrapper) storyWrapper.onclick = null;
+    
+    if (isStoryExpanded) {
+        // 展开模式
+        storyElement.innerHTML = storyPages.join('');
+        // SLG模式展开：无现存图层容器时按当前页（展开时通常为第0页）补建图层——
+        // 修复展开状态下 GameMode 0→1 切换、或展开中收到新回复时永远"场景加载中"；
+        // 有现存图层（toggle 切入展开）则不重建，保持"展开保持当前页图"的原设计
+        if (GameMode === 1 && slgModeData && slgModeData.length > 0
+            && viewport && !viewport.querySelector('.slg-layer-container')) {
+            const expandIndex = Math.min(currentPage, slgModeData.length - 1);
+            try { window.__lastValidSlgIndex = expandIndex; } catch (e) {}
+            _appendSlgLayers(viewport, slgModeData[expandIndex]);
+        }
+        storyElement.classList.add('expanded');
+        if (expandBtn) expandBtn.innerHTML = '▲ 收起';
+        if (pageIndicator) pageIndicator.style.display = 'none';
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+    } else {
+        // 分页模式
+        storyElement.innerHTML = storyPages[currentPage] || '';
+        storyElement.classList.remove('expanded');
+        if (expandBtn) expandBtn.innerHTML = '▼ 展开全文';
+        
+        // 如果是SLG模式，显示对应的图片（事件页使用“最后验证有效”的图层）
+        if (GameMode === 1 && slgModeData && slgModeData.length > 0) {
+            const effectiveIndex = Math.min(currentPage, slgModeData.length - 1);
+            const pageData = slgModeData[effectiveIndex];
+            // 记录最后一次有效的图层索引，供其他模块使用（如战斗背景）
+            try { window.__lastValidSlgIndex = effectiveIndex; } catch (e) {}
+            _appendSlgLayers(viewport, pageData);
+        }
+        
+        // 翻页控件逻辑
+        if (storyPages.length > 1) {
+            if (storyWrapper) storyWrapper.style.cursor = 'pointer';
+            storyElement.style.cursor = 'pointer';
+            if (storyWrapper) storyWrapper.onclick = function(e) {
+                // 点翻页箭头/页码点/流式按钮时交给自己处理，不再走正文翻页
+                if (e.target && e.target.closest && e.target.closest('.story-nav-btn, .page-indicator, #stream-controls')) return;
+                const rect = storyWrapper.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const width = rect.width;
+                
+                if (clickX < width / 3) {
+                    doPrevPage();
+                } else if (clickX > width * 2 / 3) {
+                    doNextPage();
+                }
+            };
+            
+            if (pageIndicator) {
+                pageIndicator.style.display = 'flex';
+                pageIndicator.innerHTML = '';
+                for (let i = 0; i < storyPages.length; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'page-dot' + (i === currentPage ? ' active' : '');
+                    dot.onclick = (e) => {
+                        e.stopPropagation();
+                        doGoToPage(i);
+                    };
+                    pageIndicator.appendChild(dot);
+                }
+            }
+            
+            if (prevBtn) {
+                prevBtn.style.display = 'block';
+                prevBtn.disabled = currentPage === 0;
+            }
+            if (nextBtn) {
+                nextBtn.style.display = 'block';
+                nextBtn.disabled = currentPage === storyPages.length - 1;
+            }
+        } else {
+            storyElement.style.cursor = 'default';
+            if (storyWrapper) storyWrapper.style.cursor = 'default';
+            if (storyWrapper) storyWrapper.onclick = null;
+            
+            if (pageIndicator) pageIndicator.style.display = 'none';
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
+        }
+    }
+
+    // 确保事件容器位于 main-viewport 下，并按模式控制显示
+    try {
+        const viewportEl = document.getElementById('main-viewport');
+        const randomContainer = document.getElementById('random-event-container');
+        const battleContainer = document.getElementById('battle-event-container');
+
+        if (viewportEl && randomContainer && randomContainer.parentElement !== viewportEl) {
+            viewportEl.appendChild(randomContainer);
+        }
+        if (viewportEl && battleContainer && battleContainer.parentElement !== viewportEl) {
+            viewportEl.appendChild(battleContainer);
+        }
+
+        const hasBattle = (typeof currentBattleEvent !== 'undefined') && !!currentBattleEvent;
+        const hasRandom = !hasBattle && (typeof currentRandomEvent !== 'undefined') && !!currentRandomEvent;
+        const shouldShowByMode = isStoryExpanded 
+            ? (hasBattle || hasRandom) 
+            : ((storyPages && storyPages.length > 0) && currentPage === storyPages.length - 1 && (hasBattle || hasRandom));
+
+        if (randomContainer) {
+            randomContainer.classList.toggle('show', shouldShowByMode && hasRandom);
+        }
+        if (battleContainer) {
+            battleContainer.classList.toggle('show', shouldShowByMode && hasBattle);
+        }
+    } catch (e) {}
+    
+    storyElement.style.opacity = '0';
+    setTimeout(() => {
+        storyElement.style.transition = 'opacity 0.5s ease';
+        storyElement.style.opacity = '1';
+    }, 100);
+}
+
+// 翻页函数（注意函数名改为doXXX避免冲突）
+function doGoToPage(pageNum) {
+    if (pageNum >= 0 && pageNum < storyPages.length) {
+        currentPage = pageNum;
+        updateStoryDisplay();
+    }
+}
+
+function doPrevPage() {
+    doGoToPage(currentPage - 1);
+}
+
+function doNextPage() {
+    doGoToPage(currentPage + 1);
+}
+
+// 切换展开/收起
+function doToggleStoryExpand() {
+    isStoryExpanded = !isStoryExpanded;
+    updateStoryDisplay();
+}
+
+// 显示弹窗
+function showModal(text) {
+    const modal = document.getElementById('modal');
+    const modalText = document.getElementById('modal-text');
+    const modalButtons = document.getElementById('modal-buttons');
+    
+    modalText.innerHTML = text;
+    modalButtons.innerHTML = '<button class="modal-btn" onclick="closeModal()">确定</button>';
+    modal.style.display = 'block';
+}
+
+// 显示确认弹窗
+function showConfirmModal(title, message, onConfirm) {
+    const modal = document.getElementById('modal');
+    const modalText = document.getElementById('modal-text');
+    const modalButtons = document.getElementById('modal-buttons');
+    
+    modalText.innerHTML = `<div style="font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 10px;">${title}</div>${message}`;
+    modalButtons.innerHTML = `
+        <button class="modal-btn" onclick="confirmAction()">确定</button>
+        <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+    `;
+    
+    window.confirmAction = () => {
+        closeModal();
+        onConfirm();
+    };
+    
+    modal.style.display = 'block';
+}
+
+// 更新SLG返回按钮的显示状态
+function updateSLGReturnButton() {
+    // 按钮外层包了 .dock-btn-wrap（与下拉按钮同构，保证等宽），显隐需切到 wrapper 上，
+    // 否则隐藏按钮后空 wrapper 仍占一份 flex 空间
+    const slgReturnWrap = document.getElementById('slg-return-wrap');
+    const skipWeekWrap = document.getElementById('skip-week-wrap');
+    const slgReturnBtn = document.getElementById('slg-return-btn');
+    const skipWeekBtn = document.getElementById('skip-week-btn');
+    
+    if (slgReturnWrap && skipWeekWrap) {
+        if (GameMode === 1) {
+            // SLG模式：显示返回按钮，隐藏跳过按钮
+            slgReturnWrap.style.display = '';
+            skipWeekWrap.style.display = 'none';
+        } else {
+            // 普通模式：隐藏返回按钮，显示跳过按钮
+            slgReturnWrap.style.display = 'none';
+            skipWeekWrap.style.display = '';
+        }
+    } else if (slgReturnBtn && skipWeekBtn) {
+        // 回退：wrapper 不存在时退回旧版按钮级显隐
+        if (GameMode === 1) {
+            slgReturnBtn.style.display = 'block';
+            skipWeekBtn.style.display = 'none';
+        } else {
+            slgReturnBtn.style.display = 'none';
+            skipWeekBtn.style.display = 'block';
+        }
+    }
+}
+
+function fitModalToViewport(modal) {
+    const vp = document.getElementById('main-viewport');
+    if (!vp) return;
+
+    const vpRect = vp.getBoundingClientRect();
+
+    // 缺省：对齐到 #main-viewport，大小=1×viewport
+    let targetLeft = vpRect.left;
+    let targetTop = vpRect.top;
+    let targetWidth = vpRect.width;
+    let targetHeight = vpRect.height;
+    let allowScroll = false;
+
+    // 长内容弹窗：高度改为“container底边 - viewport顶边”，并允许在遮罩内滚动
+    const tallModalIds = ['history-summary-modal', 'skill-library-modal', 'skill-equipment-modal', 'pipeline-log-modal', 'game-settings-modal', 'cheat-modal', 'load-modal', 'api-config-modal', 'prompt-editor-modal', 'wb-editor-modal', 'bounty-modal'];
+    // 横屏（左视窗/右文本）下，文本区在视窗右侧，长弹窗改为“横向突破视窗”——
+    // 从视窗左缘一直铺到 container 右缘，高度仍等于视窗高度。
+    const landscape = !!(document.body && document.body.classList && document.body.classList.contains('layout-landscape'));
+    if (tallModalIds.includes(modal.id)) {
+        const container = document.querySelector('.container') || document.body;
+        const containerRect = container.getBoundingClientRect();
+
+        if (landscape) {
+            // 横向突破：宽度覆盖“视窗左缘 → container 右缘”，高度不超出视窗
+            targetWidth = Math.max(vpRect.width, containerRect.right - vpRect.left);
+            targetHeight = vpRect.height;
+        } else {
+            // 从 #main-viewport 顶边开始，覆盖到整页 container 底边
+            const desiredHeight = Math.max(
+                vpRect.height,                            // 至少不小于viewport
+                containerRect.bottom - vpRect.top        // 覆盖到container底边
+            );
+
+            targetHeight = Math.max(0, Math.floor(desiredHeight));
+        }
+        allowScroll = true;
+
+        // 固定定位的长弹窗必须落在实际可见视口内；页面container可能比屏幕更高。
+        // visualViewport也覆盖缩放/软键盘后的可见区域，内部内容仍通过overflow滚动。
+        const visual = window.visualViewport;
+        const visibleLeft = visual ? visual.offsetLeft : 0;
+        const visibleTop = visual ? visual.offsetTop : 0;
+        const visibleWidth = Math.max(1, visual ? visual.width : window.innerWidth);
+        const visibleHeight = Math.max(1, visual ? visual.height : window.innerHeight);
+        targetWidth = Math.min(Math.max(1, targetWidth), visibleWidth);
+        targetLeft = Math.max(visibleLeft, Math.min(targetLeft, visibleLeft + visibleWidth - targetWidth));
+        targetTop = Math.max(visibleTop, Math.min(targetTop, visibleTop + visibleHeight - 1));
+        targetHeight = Math.max(1, Math.min(targetHeight, visibleTop + visibleHeight - targetTop));
+    }
+
+    // 统一定位（固定定位，锚到#main-viewport在视口中的位置）
+    Object.assign(modal.style, {
+        position: 'fixed',
+        left: targetLeft + 'px',
+        top: targetTop + 'px',
+        width: targetWidth + 'px',
+        height: targetHeight + 'px',
+        margin: '0',
+        transform: 'none',
+        overflow: allowScroll ? 'auto' : 'hidden',
+        zIndex: modal.style.zIndex || 2500
+    });
+
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+        Object.assign(content.style, {
+            width: '100%',
+            height: '100%',
+            maxWidth: 'none',
+            maxHeight: 'none',
+            left: '0',
+            top: '0',
+            transform: 'none',
+            overflow: 'auto' // 内容区域可滚动
+        });
+    }
+}
+
+/* 供窗口大小变化时实时刷新位置 */
+function bindModalAutoFit(modal) {
+    let rafId = null;
+    
+    const refresh = () => {
+        // 使用requestAnimationFrame避免过度更新
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+            fitModalToViewport(modal);
+        });
+    };
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', refresh);
+    
+    // 监听滚动事件
+    window.addEventListener('scroll', refresh, { passive: true });
+    document.addEventListener('scroll', refresh, { passive: true });
+    const visual = window.visualViewport;
+    if (visual) {
+        visual.addEventListener('resize', refresh, { passive: true });
+        visual.addEventListener('scroll', refresh, { passive: true });
+    }
+    
+    // 清理函数
+    modal._unbindFit = () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        window.removeEventListener('resize', refresh);
+        window.removeEventListener('scroll', refresh);
+        document.removeEventListener('scroll', refresh);
+        if (visual) {
+            visual.removeEventListener('resize', refresh);
+            visual.removeEventListener('scroll', refresh);
+        }
+    };
+}
+
+// 关闭所有特殊弹窗（背包、装备、难度、金手指）
+function closeAllSpecialModals() {
+    // 关闭背包
+    const inventoryModal = document.getElementById('inventory-modal');
+    if (inventoryModal.style.display === 'block') {
+        closeInventoryModal();
+    }
+    
+    // 关闭装备
+    const equipmentModal = document.getElementById('equipment-modal');
+    if (equipmentModal.style.display === 'block') {
+        closeEquipmentModal();
+    }
+
+    const skillLibraryModal = document.getElementById('skill-library-modal');
+    if (skillLibraryModal && skillLibraryModal.style.display === 'block' && typeof closeSkillLibraryModal === 'function') {
+        closeSkillLibraryModal();
+    }
+
+    const skillEquipmentModal = document.getElementById('skill-equipment-modal');
+    if (skillEquipmentModal && skillEquipmentModal.style.display === 'block' && typeof closeSkillEquipmentModal === 'function') {
+        closeSkillEquipmentModal();
+    }
+    
+    // 关闭难度设置
+    const difficultyModal = document.getElementById('difficulty-modal');
+    if (difficultyModal.style.display === 'block') {
+        closeDifficultyModal();
+    }
+    
+    // 关闭金手指
+    const cheatModal = document.getElementById('cheat-modal');
+    if (cheatModal.style.display === 'block') {
+        closeCheatModal();
+    }
+    
+    // 关闭物品详情
+    const itemDetailModal = document.getElementById('item-detail-modal');
+    if (itemDetailModal.style.display === 'block') {
+        closeItemDetailModal();
+    }
+
+    // 关闭交易
+    const tradingModal = document.getElementById('trading-modal');
+    if (tradingModal && tradingModal.style.display === 'block') {
+        closeTrading();
+    }
+
+    // 关闭商品详情
+    const shopDetailModal = document.getElementById('shop-detail-modal');
+    if (shopDetailModal && shopDetailModal.style.display === 'block') {
+        closeShopDetailModal();
+    }
+}
+
+// 更新装备槽显示
+function updateEquipmentSlot(slotId, itemName) {
+    const slot = document.getElementById(slotId);
+    if (itemName) {
+        slot.innerHTML = `<div class="equipped-item">${itemName}</div>`;
+    } else {
+        slot.innerHTML = '<div class="empty-slot">空</div>';
+    }
+}
+
+// 显示道具详情
+function showItemDetail(itemName) {
+    const item = item_list[itemName];
+    if (!item) return;
+    
+    // 先关闭可能已经打开的物品详情弹窗
+    const existingDetailModal = document.getElementById('item-detail-modal');
+    if (existingDetailModal.style.display === 'block') {
+        closeItemDetailModal();
+    }
+    
+    document.getElementById('item-name').textContent = itemName;
+    document.getElementById('item-description').textContent = item.描述;
+    
+    let infoHTML = '';
+    if (item.可交易) {
+        infoHTML += `<div class="item-stat"><span class="item-stat-label">买入价格：</span>${item.买入价格} 金</div>`;
+        infoHTML += `<div class="item-stat"><span class="item-stat-label">卖出价格：</span>${item.卖出价格} 金</div>`;
+    }
+    if (item.可装备) {
+        infoHTML += `<div class="item-stat"><span class="item-stat-label">装备类型：</span>${item.装备类型}</div>`;
+        infoHTML += `<div class="item-stat"><span class="item-stat-label">装备属性：</span>${getEquipEffectText(item)}</div>`;
+    }
+    if (item.可使用) {
+        infoHTML += `<div class="item-stat"><span class="item-stat-label">使用效果：</span>${getItemEffectText(item)}</div>`;
+    }
+    document.getElementById('item-info').innerHTML = infoHTML;
+    
+    const actionsDiv = document.getElementById('item-actions');
+    actionsDiv.innerHTML = '';
+    
+    if (item.可使用) {
+        const useBtn = document.createElement('button');
+        useBtn.className = 'modal-btn';
+        useBtn.textContent = '使用';
+        useBtn.onclick = () => useItem(itemName);
+        actionsDiv.appendChild(useBtn);
+    }
+    
+    if (item.可装备) {
+        const isEquipped = Object.values(equipment).includes(itemName);
+        
+        if (isEquipped) {
+            const unequipBtn = document.createElement('button');
+            unequipBtn.className = 'modal-btn unequip-btn';
+            unequipBtn.textContent = '卸下';
+            unequipBtn.onclick = () => unequipItem(itemName);
+            actionsDiv.appendChild(unequipBtn);
+        } else {
+            const equipBtn = document.createElement('button');
+            equipBtn.className = 'modal-btn';
+            equipBtn.textContent = '装备';
+            equipBtn.onclick = () => equipItem(itemName);
+            actionsDiv.appendChild(equipBtn);
+        }
+    }
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'modal-btn cancel';
+    closeBtn.textContent = '关闭';
+    closeBtn.onclick = () => closeItemDetailModal();
+    actionsDiv.appendChild(closeBtn);
+    
+    const modal = document.getElementById('item-detail-modal');
+    modal.style.display = 'block';
+    
+    // 将物品详情弹窗定位在背包弹窗的中心
+    const inventoryModal = document.getElementById('inventory-modal');
+    const inventoryRect = inventoryModal.getBoundingClientRect();
+    const detailContent = modal.querySelector('.modal-content');
+    
+    // 设置物品详情弹窗的位置
+    detailContent.style.position = 'fixed';
+    detailContent.style.left = inventoryRect.left + inventoryRect.width / 2 + 'px';
+    detailContent.style.top = inventoryRect.top + inventoryRect.height / 2 + 'px';
+    detailContent.style.transform = 'translate(-50%, -50%)';
+}
+
+// 获取道具效果文本
+function formatEffectText(effects) {
+    if (!effects || typeof effects !== 'object') return '无';
+    const entries = Object.entries(effects).filter(([, value]) => Number(value) !== 0);
+    if (entries.length === 0) return '无';
+    return entries.map(([attr, value]) => {
+        const label = attr === 'playerMood' ? '体力' : attr;
+        const sign = Number(value) >= 0 ? '+' : '';
+        return `${label} ${sign}${value}`;
+    }).join('，');
+}
+
+function getItemEffectText(item) {
+    return formatEffectText(item.影响属性);
+}
+
+function getEquipEffectText(item) {
+    return formatEffectText(item.装备属性);
+}
+
+function closeItemDetailModal() {
+    document.getElementById('item-detail-modal').style.display = 'none';
+}
+
+// Shared reading portion of updateStoryText/updateStoryDisplay. World/SLG effects
+// stay in their legacy entrypoints; each narrative container owns its own cursor.
+var storyReader = (function () {
+    function text(value, {legacy=false}={}) {
+        var body=Array.isArray(value)?value.join('\n\n'):String(value||'');
+        return (legacy?body.split('\n').map(line=>line.split('|')[0]).join('\n'):body).trim();
+    }
+    function pages(value, {limit=310,legacy=false}={}) {
+        var body=text(value,{legacy}), result=[];
+        for (var paragraph of body.replace(/\r\n?/g,'\n').split('\n').filter(p=>p.trim())) {
+            if(paragraph.length<=limit){result.push(paragraph);continue;}
+            var sentences=paragraph.match(/[^。！？!?]+[。！？!?]+[”」’』）)]*|[^。！？!?]+$/g)||[paragraph], block='';
+            for(var sentence of sentences){if(block&&block.length+sentence.length>limit){result.push(block);block='';}block+=sentence;}
+            if(block)result.push(block);
+        }
+        return result.length?result:[''];
+    }
+    function mount(main,value,{state={},onChange=()=>{},fontSize=()=>{}}={}) {
+        var source=text(value), list=pages(source), page=Math.min(Math.max(0,state.page||0),list.length-1), full=!!state.expanded;
+        main.replaceChildren();
+        var content=document.createElement('div');content.className='folio-text';main.append(content);
+        var nav=document.createElement('nav');nav.className='folio-navigation';nav.setAttribute('aria-label','正文阅读');
+        var button=(label,action)=>{var b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=action;nav.append(b);return b;};
+        var save=()=>onChange({page,expanded:full,version:2});
+        var prev=button('上一页',()=>{page=Math.max(0,page-1);save();draw();});
+        var count=document.createElement('span');count.setAttribute('aria-live','polite');nav.append(count);
+        var next=button('下一页',()=>{page=Math.min(list.length-1,page+1);save();draw();});
+        var expand=button('展开全文',()=>{full=!full;save();draw();});button('字号',fontSize);
+        main.append(nav);
+        function draw(){
+            var body=full?source:list[page];content.dataset.format=globalThis.markdownit?'markdown':'plain';
+            if(globalThis.markdownit)content.innerHTML=globalThis.markdownit({html:false,breaks:true,linkify:false}).render(body);else content.textContent=body;
+            count.textContent=`${page+1} / ${list.length}`;prev.disabled=page===0;next.disabled=page===list.length-1;
+            prev.hidden=next.hidden=count.hidden=full||list.length===1;expand.hidden=list.length===1;expand.textContent=full?'收起分页':'展开全文';
+        }
+        draw();return {update(value){source=text(value);list=pages(source);page=Math.min(page,list.length-1);draw();},getState:()=>({page,expanded:full,version:2})};
+    }
+    return {text,pages,mount};
+})();
+globalThis.storyReader=storyReader;
+
+// Extracted from index.html showHistorySummary: a read-only history modal with
+// supplied records instead of global wuxia summaries. No history is written here.
+globalThis.historyReader={async open(load){
+ var previous=document.activeElement,modal=document.getElementById('history-summary-modal');
+ if(modal)modal.remove();
+ modal=document.createElement('dialog');modal.id='history-summary-modal';modal.className='court-dialog';
+ var title=document.createElement('h2');title.textContent='宫廷纪事';
+ var close=document.createElement('button');close.className='court-close';close.textContent='关闭';close.onclick=()=>modal.close();
+ var content=document.createElement('div');content.id='history-summary-content';content.textContent='正在取出记录……';modal.append(close,title,content);document.body.append(modal);
+ modal.addEventListener('close',()=>{if(previous?.isConnected)previous.focus();});modal.showModal();
+ try{
+  var rows=await load();if(!modal.isConnected||!modal.open)return;
+  var filter=document.createElement('select');filter.setAttribute('aria-label','纪事类型');
+  for(var type of ['全部',...new Set(rows.map(r=>r.type))]){var option=document.createElement('option');option.value=type;option.textContent=type;filter.append(option);}
+  modal.insertBefore(filter,content);
+  var draw=()=>{content.replaceChildren();var selected=rows.filter(r=>filter.value==='全部'||r.type===filter.value);
+   if(!selected.length){content.textContent='尚无这类正式记录。';return;}
+   for(var row of selected){var item=document.createElement('details'),head=document.createElement('summary');
+    var minute=(row.at||0)+360;head.textContent=`第${Math.floor(minute/1440)+1}日 ${String(Math.floor(minute%1440/60)).padStart(2,'0')}:${String(minute%60).padStart(2,'0')} · ${row.type}`+(row.viewpoint&&row.viewpoint!=='king'&&row.viewpoint!=='joffrey'?' · '+row.viewpoint:'')+' · '+row.text.replace(/\s+/g,' ').slice(0,38)+(row.text.length>38?'…':'');item.append(head);item.dataset.recordId=row.id;
+    if(row.related?.length){var links=document.createElement('p');links.textContent='同一事项的其他记录：';for(var related of row.related){let target=rows.find(r=>r.id===related),link=document.createElement('button');link.textContent=target.type+' · '+target.text.slice(0,16);link.onclick=()=>{filter.value='全部';draw();var dest=[...content.children].find(n=>n.dataset.recordId===target.id);if(dest){dest.open=true;dest.scrollIntoView({block:'nearest'});}};links.append(link);}item.append(links);}
+    var body=document.createElement('div');item.append(body);item.addEventListener('toggle',()=>{if(item.open&&!body.childNodes.length)storyReader.mount(body,row.text,{state:{expanded:true}});});content.append(item);
+   }
+  };filter.onchange=draw;draw();
+ }catch(error){content.textContent='记录暂未读出：'+error.message;}
+}};

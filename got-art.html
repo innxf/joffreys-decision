@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>君临 · 像素场景图册</title><link rel="stylesheet" href="module/got/state-panel.css"><style>
+main{max-width:1300px}.art-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}.art-nav a{color:#ebd39b;padding:8px;border:1px solid #665a42;text-decoration:none}figure{margin:0 0 35px;scroll-margin-top:12px}figure img{width:100%;height:auto;display:block;image-rendering:pixelated}figcaption{padding:12px 0}.room-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}a{color:#ebd39b}.gallery-map button{cursor:pointer}@media(max-width:800px){.room-grid{grid-template-columns:1fr}}
+</style></head><body><main><header><p class="eyebrow">KING'S LANDING · PIXEL SCENES</p><h1>君临场景图册</h1><p>点击建筑，查看对应房间。图册只看图，不读取或改变游戏存档。</p><p><a href="got-state.html">返回游戏</a></p></header><nav class="art-nav" aria-label="图册目录"></nav><section id="maps"></section><section class="room-grid" id="rooms"></section></main>
+<script type="module">
+import {sceneArt,regionArt,artForPeriod,lightingLabels} from './module/got/scene-art.mjs';
+const el=(tag,text,parent)=>{const e=document.createElement(tag);if(text)e.textContent=text;parent.append(e);return e;};
+const nav=document.querySelector('.art-nav');
+const lighting=document.createElement('nav');lighting.className='art-nav';lighting.setAttribute('aria-label','预览光照');nav.before(lighting);
+for(const [period,label] of Object.entries(lightingLabels)){
+ const b=el('button',label,lighting);b.type='button';b.dataset.period=period;b.setAttribute('aria-pressed',String(period==='day'));
+ b.onclick=()=>{for(const img of document.images){if(!img.dataset.base)continue;const a=artForPeriod({file:img.dataset.base},period);img.src=a.file;img.dataset.period=period;if(img.parentElement.tagName==='A')img.parentElement.href=a.file;}for(const child of lighting.children)child.setAttribute('aria-pressed',String(child===b));};
+}
+for(const [id,r]of Object.entries(regionArt)){
+ const f=el('figure',null,document.getElementById('maps'));f.id=id;const h=el('h2',r.name,f);
+ const board=el('div',null,f);board.className='region-board gallery-map';const img=el('img',null,board);img.dataset.base=r.file;img.dataset.period='day';img.src=artForPeriod(r,'day').file;img.alt=r.name+'总览';img.width=1672;img.height=941;
+ for(const x of r.hotspots){const b=el('button',null,board);b.className='map-hotspot';b.type='button';b.setAttribute('aria-label',sceneArt[x.place].name);const [left,top,w,height]=x.box;Object.assign(b.style,{left:left*100+'%',top:top*100+'%',width:w*100+'%',height:height*100+'%'});el('span',sceneArt[x.place].name,b);b.onclick=()=>{document.getElementById(x.place).scrollIntoView();document.getElementById(x.place+'-heading').focus({preventScroll:true});};}
+ const a=el('a',r.name,nav);a.href='#'+id;el('figcaption','建筑位置作导航示意，不按画面比例计算路程。',f);
+}
+for(const [id,a]of Object.entries(sceneArt)){
+ const f=el('figure',null,document.getElementById('rooms'));f.id=id;const h=el('h2',a.name,f);h.id=id+'-heading';h.tabIndex=-1;
+ const link=el('a',null,f);link.href=artForPeriod(a,'day').file;link.target='_blank';link.rel='noopener';const img=el('img',null,link);img.dataset.base=a.file;img.dataset.period='day';img.src=link.href;img.alt=a.name;img.loading='lazy';img.width=1672;img.height=941;
+ el('figcaption',id+' · 点击图片查看原尺寸',f);const n=el('a',a.name,nav);n.href='#'+id;
+}
+</script></body></html>

@@ -1,0 +1,11 @@
+{
+  "portraits": 118,
+  "png_crc_and_decompression_passed": 118,
+  "unique_files": 118,
+  "local_references": 91,
+  "size": "1254x1254",
+  "mapping": "118/118",
+  "gallery_js_syntax": "passed",
+  "browser_interaction": "not_verified_ERR_BLOCKED_BY_CLIENT",
+  "game_avatar_integration": false
+}

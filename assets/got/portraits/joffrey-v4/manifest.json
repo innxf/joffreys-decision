@@ -1,0 +1,29 @@
+{
+  "version": "joffrey-v4-20261018",
+  "character_id": "U001",
+  "reference": "仅以用户最新多视角参考图为外貌、发型及礼服依据；盔甲为同角色原创服装，不引用前三版图片。新生成礼服图只辅助同组像素表现。",
+  "tool": "built-in image_gen",
+  "scope": "两张自然神态像素头像；无额外表情版，未修改游戏绑定。",
+  "portraits": [
+    {
+      "key": "court",
+      "file": "U001-court-v4.png",
+      "label": "礼服与王冠",
+      "original": "exec-18a2951f-2063-4549-bc77-c5f926116b68.png",
+      "prompt": "Create exactly ONE square PIXEL ART head-and-shoulders game avatar. Use ONLY the most recent user-attached character reference sheet as your visual reference; ignore all earlier pictures and generated versions. This is NOT a reference sheet output and NOT photorealistic. Carefully translate the face from the bottom-row front and three-quarter face studies and the large face studies: young handsome man with softly defined elegant cheekbones, straight fine nose, natural full lips, balanced jaw, calm blue-gray eyes, medium-length honey-blond hair swept back in loose natural waves, layered sides and nape. Preserve THIS face and hairstyle faithfully without exaggerating hollow cheeks or making a villain. Expression natural, composed, dignified, closed relaxed mouth, brows relaxed, no sneer, no cruel smile, no angry scowl, head level (not chin thrust up), gentle three-quarter angle toward viewer. CEREMONIAL VERSION: finely worked golden antler crown, entirely inside frame with breathing room; burgundy high-collared doublet densely woven with gold heraldic/floral motifs, deep wine-red velvet drape over one shoulder, exactly matching this sheet's materials and colour palette. Head and upper shoulders only, avatar face clearly legible at small sizes. Genuine crisp pixel-art rendering: deliberate visible square pixel clusters, limited cohesive palette, carefully stepped edges and controlled dithering, approximately 160x160 native pixel-art aesthetic shown at larger size, no smooth airbrushed skin, no photo-mosaic filter. Plain dark desaturated teal background, soft upper-left light. Single portrait, no text, no labels, no border, no sword, no hands, no collage. Output square 1024x1024.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "0b11831ea86441dccbbc3f7e7f7cffceaad6918dc87413dc1f10e07626ec06ab"
+    },
+    {
+      "key": "armour",
+      "file": "U001-armour-v4.png",
+      "label": "盔甲",
+      "original": "exec-9b800ce7-63ee-4fcd-955e-bda28ea4b62d.png",
+      "prompt": "Create exactly ONE square PIXEL ART head-and-shoulders game avatar, ARMOUR VERSION of the character in the latest USER ATTACHED REFERENCE SHEET. Of the two included images, the multi-panel photographic character sheet is the sole authority for face and hairstyle; the newly made crowned pixel portrait is only for consistent pixel style and framing. Ignore ALL earlier references and old portrait sets. Preserve the new sheet's young handsome face, balanced defined jaw, fine straight nose, natural lips, blue-gray eyes, medium honey-blond hair swept back loosely with natural wavy layered sides and nape. Natural composed expression, relaxed closed mouth, no smirk, no sinister face, no frowning. Head level, eyes looking toward viewer, modest three-quarter angle. Remove crown, no helmet. Armour design for a young king: fitted dark burnished steel breastplate with restrained antique-gold engraved heraldic details and rivets, curved articulated shoulder armour with gold edging, polished dark high gorget, glimpse of burgundy padding. Practical elegant royal armour, no spikes, no excessive fantasy decorations; don't reuse earlier generated costume images. Plain dark desaturated teal background, soft upper-left light. Face is dominant; crop head and upper shoulders with whole hair visible and top margin. Same crisp pixel-art treatment as latest portrait: deliberate visible square clusters, stepped edges, controlled dithering, 160x160 native pixel-art aesthetic shown larger, no airbrush, no photographic output or automatic mosaic filter. One single square 1024x1024 portrait, no text, border, weapons, hands, extra people or collage.",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "da7664384841e00dd0ce25116b3542c4d3fd00cf26e720fc2c601efcca692d64"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "default": "",
+  "contexts": {
+    "council": "",
+    "blackwater": "",
+    "finale": ""
+  },
+  "regions": {
+    "Z01": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    },
+    "Z02": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    },
+    "Z03": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    },
+    "Z04": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    },
+    "Z05": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    },
+    "Z06": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    },
+    "Z07": {
+      "day": "",
+      "dusk": "",
+      "night": ""
+    }
+  },
+  "places": {}
+}

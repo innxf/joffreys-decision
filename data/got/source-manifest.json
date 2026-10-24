@@ -1,0 +1,14 @@
+{
+  "source_version": "1.1.0",
+  "files": {
+    "opening.json": {
+      "source": "第一阶段开局状态.json",
+      "sha256": "6dfda6c699818be4dc47781d0f7006358e7afac11ad288d9dc90c7674a68c0fe"
+    },
+    "opening.schema.json": {
+      "source": "第一阶段状态模型.schema.json",
+      "sha256": "2cccf32bb7e290a3a5a98ad06fd4f5837a02a82340d890d112abd033bf3722fc"
+    }
+  },
+  "note": "只读初始化发行副本；运行事实只有gameData.got，不回写作者基线。"
+}

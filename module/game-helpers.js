@@ -1,0 +1,1483 @@
+/**
+ * game-helpers.js - 辅助函数库
+ * 
+ * 文件概述：
+ * 提供游戏逻辑的辅助功能，包括消息处理、游戏界面显示、NPC管理、场景切换等。
+ * 这些函数连接了游戏的各个系统，提供中间层的功能支持。
+ * 
+ * 主要功能：
+ * 1. 处理消息输出（支持SillyTavern环境和普通弹窗）
+ * 2. 管理小游戏iframe（21点、战斗、农场、炼丹）
+ * 3. NPC相关功能（位置、显示、交互、选择遮罩）
+ * 4. 场景切换和地点管理
+ * 5. 季节和昼夜背景更新
+ * 
+ * 对外暴露的主要函数：
+ * - handleMessageOutput(message): 智能处理消息输出（自动判断环境）
+ * - showBlackjackGame(): 显示21点赌场游戏
+ * - showBattleGame(battleData): 显示回合制战斗游戏
+ * - showFarmGame(): 显示农场游戏
+ * - showAlchemyGame(): 显示炼丹游戏
+ * - showInteractionInput(npcId, location): 显示NPC互动输入框
+ * - getNpcsAtLocation(location): 获取指定地点的NPC列表
+ * - getRandomLocation(npcId): 根据概率获取NPC的随机位置
+ * - displayNpcs(location): 在指定地点显示NPC立绘
+ * - isClickOnOpaquePixel(event, img): 检测点击是否在图片不透明区域
+ * - showNpcInfo(npcId, location, event): 显示NPC信息弹窗（简版）
+ * - showNpcSelectionOverlay(npcId, location, event): 显示NPC选择遮罩（全屏交互）
+ * - closeNpcSelectionOverlay(): 关闭NPC选择遮罩
+ * - showNpcInfoPopup(npcId, location, event): 显示NPC信息弹窗（详细版）
+ * - switchScene(sceneName): 切换到指定场景
+ * - showLocationInfo(locationId, event): 显示地点信息弹窗
+ * - setupLocationEvents(): 初始化地点的鼠标/触摸事件
+ * - updateLocationHeadcountLabels(): 更新地点NPC人数标签
+ * - calculateSeason(week): 根据周数计算当前季节
+ * - updateSceneBackgrounds(): 根据季节和昼夜更新场景背景
+ * 
+ * 内部函数：
+ * - closeNpcInfo(e): 关闭NPC信息弹窗
+ * - closeLocationInfo(e): 关闭地点信息弹窗
+ * - handleNpcOverlayOutsideClick(e): 处理遮罩外点击
+ * - npcActionFromOverlay(npcId, action): 从遮罩执行NPC动作
+ * 
+ * 依赖关系：
+ * - 依赖 game-state.js 中的状态变量和保存函数
+ * - 依赖 game-config.js 中的配置数据
+ * - 依赖 game-utils.js 中的环境检测函数
+ * - 依赖 game-ui.js 中的显示函数
+ */
+
+// 处理消息输出
+async function handleMessageOutput(message) {
+    // 保存原始未处理的消息（用于弹窗展示）
+    const unprocessed_message = message;
+    
+    // 处理消息：先去除"属性变化"及其后面的部分
+    const attrChangeIndex = message.indexOf('属性变化');
+    if (attrChangeIndex !== -1) {
+        message = message.substring(0, attrChangeIndex).trim();
+        // 移除末尾可能残留的<br>标签
+        message = message.replace(/(<br>\s*)+$/gi, '');
+        console.log('已移除属性变化部分，处理后消息:', message);
+    }
+
+    // 再去除"计算过程"及其后面的部分
+    const calcProcessIndex = message.indexOf('计算过程');
+    if (calcProcessIndex !== -1) {
+        message = message.substring(0, calcProcessIndex).trim();
+        // 移除末尾可能残留的<br>标签
+        message = message.replace(/(<br>\s*)+$/gi, '');
+        console.log('已移除计算过程部分，处理后消息:', message);
+    }
+
+    if (isInRenderEnvironment()) {
+        const renderFunc = getRenderFunction();
+        
+        // 保存处理后的消息到gameData
+        lastUserMessage = message;
+        console.log('user消息存入变量lastMessage_jxz');
+        await renderFunc(`/setvar key=lastMessage_jxz ${message}`);
+
+    // 新增：检查是否是新的一周的消息（新版：时间/季节/地点/行动选择）
+    const newWeekPattern = /行动选择:新的一周开始了/;
+        const match = message.match(newWeekPattern);
+
+        if (match) {
+            newWeek = 1;
+            // markWeek = currentWeek;
+            // console.log('检测到新的一周开始，newWeek设置为1，markWeek=' + markWeek);
+        } else {
+            newWeek = 0;
+            console.log('非新周消息，newWeek设置为0');
+        }
+        
+        try {
+            // 显示用户输入信息（仅展示，不等待确认）- 使用原始未处理的消息
+            const modalHTML = `
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">
+                    正在发送以下内容
+                </div>
+                <div style="
+                    background: #f5f5f5;
+                    padding: 15px;
+                    border-radius: 8px;
+                    max-height: 400px;
+                    overflow-y: auto;
+                    text-align: left;
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                ">${unprocessed_message}</div>
+                <div style="
+                    margin-top: 15px;
+                    color: #666;
+                    font-size: 14px;
+                    text-align: center;
+                ">自动发送中...</div>
+            `;
+            
+            // 使用普通的showModal显示信息
+            showModal(modalHTML);
+            await saveGameData();
+            
+            // 使用Promise方式延迟，保持在同一个async上下文中
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 确保变量完全同步到SillyTavern
+            await saveGameData();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // 使用inject命令隐式注入user输入（使用处理后的消息）
+            await renderFunc(`/inject id=10 position=chat depth=0 scan=true role=user ${message}`);
+            await renderFunc('/trigger');
+            console.log('Message injected:', message);
+        } catch (error) {
+            console.error('Error injecting message:', error);
+            const message_error = `发生失败降级为弹窗<br>` + unprocessed_message;
+            showModal(message_error);
+        }
+    } else {
+        // 独立模式：委托给 Pipeline
+        if (!getRenderFunction()) {
+            // 检测是否为新周消息
+            var newWeekPattern = /行动选择:新的一周开始了/;
+            var match = message.match(newWeekPattern);
+            if (match) {
+                newWeek = 1;
+                // markWeek = currentWeek;
+            } else {
+                newWeek = 0;
+            }
+
+            var modalHTML = '<div style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">正在发送以下内容</div>' +
+                '<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto; text-align: left; white-space: pre-wrap; word-break: break-word;">' + unprocessed_message + '</div>' +
+                '<div style="margin-top: 15px; color: #666; font-size: 14px; text-align: center;">自动发送中...</div>';
+            showModal(modalHTML);
+
+            // 保存用户消息，供重新生成时复用
+            lastUserMessage = message;
+
+            // 发送时第一阶段：全量同步 + 全量快照（await确保落盘后再发请求）+ 持久化
+            syncGameDataFromVariables();
+            await storageService.saveFullSnapshot();
+            storageService.saveAppState({ gameData: gameData });
+            console.log('[Standalone] 全量快照已落盘，发起 API 请求');
+
+            try {
+                await pipeline.runTurn(message);
+            } catch (e) {}
+            return;
+        }
+        const message_notST = `非酒馆环境以弹窗显示<br>` + unprocessed_message;
+        showModal(message_notST);
+    }
+}
+
+// 显示21点游戏
+function showBlackjackGame() {
+    const modal = document.getElementById('blackjack-modal');
+    const iframe = document.getElementById('blackjack-iframe');
+    
+    const gameUrl = `${_iframeUrl('blackjack.html')}?money=${playerStats.金钱}`;
+    iframe.src = gameUrl;
+    
+    modal.style.display = 'block';
+}
+
+// 显示战斗游戏
+function showBattleGame(battleData) {
+    const modal = document.getElementById('battle-modal');
+    const iframe = document.getElementById('battle-iframe');
+    
+    // 优先使用 SLG 模式下最后验证有效的场景图作为背景（仅 SLG 模式生效，避免跨存档污染）
+    let backgroundUrl = '';
+    if (typeof window !== 'undefined' && window.__lastValidSceneUrl && GameMode === 1) {
+        backgroundUrl = window.__lastValidSceneUrl;
+    } else {
+        const activeScene = document.querySelector('.scene.active');
+        // 兜底为旧逻辑
+        if (activeScene && activeScene.id !== 'map-scene') {
+            const sceneName = activeScene.id.replace('-scene', '');
+            const locationName = locationNames[sceneName];
+            const dayNight = dayNightStatus === 'night' ? '夜' : '昼';
+            
+            if (locationName) {
+                backgroundUrl = _assetUrl(`img/location/${locationName}_${dayNight}.webp`);
+            } else {
+                const seasonMap = { 'spring': '春', 'summer': '夏', 'autumn': '秋', 'winter': '冬' };
+                const season = seasonMap[seasonStatus] || '冬';
+                backgroundUrl = _assetUrl(`img/location/天山派_${season}_${dayNight}.webp`);
+            }
+        } else {
+            const seasonMap = { 'spring': '春', 'summer': '夏', 'autumn': '秋', 'winter': '冬' };
+            const dayNightMap = { 'daytime': '昼', 'night': '夜' };
+            const season = seasonMap[seasonStatus] || '冬';
+            const dayNight = dayNightMap[dayNightStatus] || '昼';
+            backgroundUrl = _assetUrl(`img/location/天山派_${season}_${dayNight}.webp`);
+        }
+    }
+    
+    // 获取当前难度
+    const currentDifficulty = difficulty || 'normal';
+    
+    // 准备道具数据 - 从inventory中读取
+    const itemCounts = {
+        daliwan: inventory['大力丸'] || 0,
+        jingutie: inventory['筋骨贴'] || 0,
+        jinchuangyao: inventory['金疮药'] || 0,
+        piliwan: inventory['霹雳丸'] || 0
+    };
+
+    const totalCombat = getTotalCombatStats();
+    const playerName = battleData.player?.name || '你';
+    const playerAttack = (typeof battleData.player?.attack === 'number') ? battleData.player.attack : totalCombat.攻击力;
+    const playerHealth = (typeof battleData.player?.health === 'number') ? battleData.player.health : totalCombat.生命值;
+    const enemyWuxueRaw = battleData.enemy?.wuxue;
+    const enemyWuxue = Number(enemyWuxueRaw);
+    const hasEnemyWuxue = Number.isInteger(enemyWuxue) && enemyWuxue >= 0 && enemyWuxue <= 9;
+    const equippedSkillsData = {};
+
+    for (const [skillId, level] of Object.entries(equippedSkills || {})) {
+        const skill = skillList?.[skillId];
+        const levelData = getSkillLevelData(skillId, level);
+        if (!skill || !levelData) continue;
+
+        equippedSkillsData[skillId] = {
+            id: skillId,
+            name: skill.name,
+            level: Number(level),
+            triggerTiming: skill.triggerTiming,
+            params: levelData.params || {},
+            effectDesc: levelData.effectDesc || ''
+        };
+    }
+
+    console.groupCollapsed('[SkillTest] showBattleGame 技能传参');
+    console.log('[SkillTest] 已装备技能原始状态:', equippedSkills || {});
+    console.log('[SkillTest] 准备传入战斗的技能数据:', equippedSkillsData);
+    if (Object.keys(equippedSkillsData).length === 0) {
+        console.warn('[SkillTest] 当前没有已装备技能，本场战斗不会收到 equippedSkills 参数');
+    }
+    console.log('[SkillTest] 玩家战斗面板:', {
+        playerName,
+        playerAttack,
+        playerHealth,
+        totalCombat
+    });
+    console.log('[SkillTest] 敌人战斗面板:', battleData.enemy || {});
+    console.groupEnd();
+
+    const params = new URLSearchParams({
+        playerName: playerName,
+        playerAttack: playerAttack,
+        playerHealth: playerHealth,
+        playerCritRate: totalCombat.暴击率,
+        playerCritDamage: totalCombat.暴击伤害,
+        playerBlock: totalCombat.格挡,
+        playerArmorPen: totalCombat.穿甲,
+        playerTurnover: totalCombat.回转,
+        playerLifesteal: totalCombat.吸血,
+        playerThorns: totalCombat.反伤,
+        enemyName: battleData.enemy.name,
+        enemyMaxHealth: battleData.enemy.maxHealth,
+        enemyBasicDamage: battleData.enemy.basicDamage,
+        enemyCategory: battleData.enemy.category || '未知',  // 添加敌人类别
+        backgroundUrl: backgroundUrl,
+        difficulty: currentDifficulty,
+        // 道具数量
+        ...itemCounts
+    });
+
+    if (Object.keys(equippedSkillsData).length > 0) {
+        params.set('equippedSkills', JSON.stringify(equippedSkillsData));
+    }
+
+    if (hasEnemyWuxue) {
+        params.set('enemyWuxue', String(enemyWuxue));
+    }
+    
+    const gameUrl = `${_iframeUrl('turn-based-battle-new.html')}?${params.toString()}`;
+    console.log('[SkillTest] 战斗页面URL:', gameUrl);
+    iframe.src = gameUrl;
+    
+    modal.style.display = 'block';
+    // 战斗开始：切换战斗BGM（SR 链路因 bgmManager 未定义而自动跳过）
+    if (typeof bgmManager !== 'undefined' && typeof bgmManager.onBattleStart === 'function') {
+        bgmManager.onBattleStart();
+    }
+}
+
+// 显示农场游戏
+function showFarmGame() {
+    const modal = document.getElementById('farm-modal');
+    const iframe = document.getElementById('farm-iframe');
+    
+    // 准备种子数据 - 确保从inventory中正确读取
+    const seedCounts = {
+        wheat: inventory['小麦种子'] || 0,
+        eggplant: inventory['茄子种子'] || 0,
+        melon: inventory['甜瓜种子'] || 0,
+        sugarcane: inventory['甘蔗种子'] || 0
+    };
+    
+    // 构建URL参数
+    const params = new URLSearchParams({
+        money: playerStats.金钱,
+        week: currentWeek,
+        lastFarmWeek: lastFarmWeek || 1,  // 传递上次耕种周数
+        farmGrid: JSON.stringify(farmGrid || []),  // 传递农场状态
+        ...seedCounts
+    });
+    
+    const gameUrl = `${_iframeUrl('farm.html')}?${params.toString()}`;
+    iframe.src = gameUrl;
+    
+    modal.style.display = 'block';
+}
+
+// 显示炼丹游戏
+function showAlchemyGame() {
+    // 检查是否已经炼丹过
+    if (alchemyDone) {
+        showModal('本周已经进行过炼丹，请等待下周！');
+        return;
+    }
+    
+    const modal = document.getElementById('alchemy-modal');
+    const iframe = document.getElementById('alchemy-iframe');
+    
+    // 准备药材数据 - 从inventory中读取
+    const herbCounts = {
+        danshen: inventory['丹参'] || 0,
+        danggui: inventory['当归'] || 0,
+        moyao: inventory['没药'] || 0,
+        chenxiang: inventory['沉香'] || 0
+    };
+    
+    // 准备丹药数据 - 从inventory中读取
+    const pillCounts = {
+        daliwan: inventory['大力丸'] || 0,
+        jingutie: inventory['筋骨贴'] || 0,
+        jinchuangyao: inventory['金疮药'] || 0,
+        piliwan: inventory['霹雳丸'] || 0,
+        peiyuan_rootBone: inventory['培元丹-根骨'] || 0,
+        peiyuan_comprehension: inventory['培元丹-悟性'] || 0,
+        peiyuan_nature: inventory['培元丹-心性'] || 0,
+        peiyuan_charm: inventory['培元丹-魅力'] || 0,
+        yijin_rootBone: inventory['易筋丹-根骨'] || 0,
+        yijin_comprehension: inventory['易筋丹-悟性'] || 0,
+        yijin_nature: inventory['易筋丹-心性'] || 0,
+        yijin_charm: inventory['易筋丹-魅力'] || 0,
+        jiuzhuan_rootBone: inventory['九转金丹-根骨'] || 0,
+        jiuzhuan_comprehension: inventory['九转金丹-悟性'] || 0,
+        jiuzhuan_nature: inventory['九转金丹-心性'] || 0,
+        jiuzhuan_charm: inventory['九转金丹-魅力'] || 0
+    };
+    
+    // 调试日志：输出传递的数据
+    console.log('[炼丹] 准备传递数据到alchemy.html:');
+    console.log('[炼丹] 金钱:', playerStats.金钱);
+    console.log('[炼丹] 药材数量:', herbCounts);
+    console.log('[炼丹] 丹药数量:', pillCounts);
+    
+    // 构建URL参数
+    const params = new URLSearchParams({
+        money: playerStats.金钱,
+        // 药材数量
+        ...herbCounts,
+        // 丹药数量
+        ...pillCounts
+    });
+    
+    const gameUrl = `${_iframeUrl('alchemy.html')}?${params.toString()}`;
+    
+    console.log('[炼丹] 完整URL:', gameUrl);
+    
+    iframe.src = gameUrl;
+    modal.style.display = 'block';
+}
+
+// ========== 后台总结类任务：同一请求连续失败达上限后的统一处置 ==========
+// 周总结/事件总结/地点更新等后台 LLM 请求失败后会自动重试；极端情况（额度耗尽/审核拦截/网络波动）
+// 下同一请求会无限「失败→重试」循环。各 runner 计数到上限后调用本函数：
+// 弹窗提示用户（参照自动存档失败的 showModal 形式，标明是哪类请求）
+// + 关闭「系统设置-游戏设置-总结管理」对应开关（实际变量置 false + 同步 checkbox UI + 立即存盘，
+//   防止刷新后开关回弹再次进入无限重试）
+var BG_SUMMARY_TASK_META = {
+    weekly:   { name: '每周总结', toggleId: 'gs-summary-weekly-toggle',   hintId: 'gs-summary-weekly-hint' },
+    event:    { name: '事件总结', toggleId: 'gs-summary-event-toggle',    hintId: 'gs-summary-event-hint' },
+    location: { name: '地点更新', toggleId: 'gs-summary-location-toggle', hintId: 'gs-summary-location-hint' }
+};
+
+function autoDisableSummarySwitch(kind, errMsg, failCount) {
+    var meta = BG_SUMMARY_TASK_META[kind];
+    if (!meta) return;
+    // ① 实际变量置 false（与各 gsOnSummary*Toggle 的手写路径一致）
+    if (typeof gameData !== 'undefined' && gameData) {
+        if (!gameData.summaryConfig) gameData.summaryConfig = {};
+        if (!gameData.summaryConfig[kind]) gameData.summaryConfig[kind] = { enabled: true };
+        gameData.summaryConfig[kind].enabled = false;
+        // 立即存盘（appState 仅承载 gameData，与 storage-service.js 快照回滚处写法一致）
+        if (typeof storageService !== 'undefined' && storageService.saveAppState) {
+            try { storageService.saveAppState({ gameData: gameData }); } catch (e) { console.warn('[BgSummaryTask] 开关状态存盘失败:', e); }
+        }
+    }
+    // ② 同步 UI（设置弹窗未打开时元素仍在 DOM，直接改无妨；打开时用户立刻能看到）
+    var toggle = document.getElementById(meta.toggleId);
+    if (toggle) toggle.checked = false;
+    var hint = document.getElementById(meta.hintId);
+    if (hint) hint.textContent = '关';
+    // ③ 弹窗提示（标明是哪类请求 + 最近失败原因）
+    if (typeof showModal === 'function') {
+        showModal('后台「' + meta.name + '」请求连续失败 ' + (failCount || '多') + ' 次，已自动关闭该功能。\n\n最近失败原因：' + (errMsg || '未知错误') + '\n\n请检查 API 额度/网络连接后，到「系统设置-游戏设置-总结管理」重新开启。');
+    }
+}
+
+// 显示互动输入弹窗
+function showInteractionInput(npcId, location) {
+    currentInteractionNpc = npcId;
+    currentInteractionLocation = location;
+    
+    const npc = npcs[npcId];
+    const modal = document.getElementById('modal');
+    const modalText = document.getElementById('modal-text');
+    const modalButtons = document.getElementById('modal-buttons');
+    
+    modalText.innerHTML = `
+        <div style="font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: clamp(15px, 3vw, 20px);">与 ${npc.name} 互动</div>
+        <div class="input-area">
+            <textarea class="input-field" id="interaction-input" placeholder="请输入你想对${npc.name}说的话或做的事..."></textarea>
+        </div>
+    `;
+    
+    modalButtons.innerHTML = `
+        <button class="modal-btn" onclick="sendInteraction()">发送</button>
+        <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+    `;
+    
+    modal.style.display = 'block';
+    
+    setTimeout(() => {
+        document.getElementById('interaction-input').focus();
+    }, 100);
+}
+
+// 获取某个地点的NPC列表
+function getNpcsAtLocation(location) {
+    const npcsAtLocation = [];
+    
+    Object.keys(currentNpcLocations).forEach(npcId => {
+        if (currentNpcLocations[npcId] === location) {
+            npcsAtLocation.push({ id: npcId, ...npcs[npcId] });
+        }
+    });
+
+    return npcsAtLocation;
+}
+
+// 根据概率获取NPC的随机位置
+function getRandomLocation(npcId) {
+    const probabilities = npcLocationProbability[npcId];
+    const random = Math.random();
+    let cumulative = 0;
+
+    for (const location in probabilities) {
+        cumulative += probabilities[location];
+        if (random <= cumulative) {
+            return location;
+        }
+    }
+
+    return 'none';
+}
+
+// 显示NPC立绘
+function displayNpcs(location) {
+    const container = document.getElementById(location + '-npcs');
+    if (!container) return;
+
+    let npcsAtLocation = getNpcsAtLocation(location);
+    container.innerHTML = '';
+
+    if (npcsAtLocation.length === 0) {
+        if (window.GameSceneBridge) GameSceneBridge.publishNpcs(location, []);
+        return;
+    }
+
+    if (npcsAtLocation.length > 3) {
+        npcsAtLocation = npcsAtLocation.sort(() => Math.random() - 0.5);
+        npcsAtLocation = npcsAtLocation.slice(0, 3);
+        console.log(`${location} 有超过3个NPC，随机显示其中3个`);
+    }
+
+    npcsAtLocation.forEach((npc, index) => {
+        const portrait = document.createElement('div');
+        portrait.className = 'npc-portrait';
+        portrait.dataset.npcId = npc.id; // 供点击穿透时识别身份
+        
+        // 新增：如果是SLG模式，添加禁用样式
+        if (GameMode === 1) {
+            portrait.classList.add('slg-mode-disabled');
+        }
+        
+        if (npcsAtLocation.length === 1) {
+            portrait.classList.add('single');
+        } else if (npcsAtLocation.length === 2) {
+            portrait.classList.add(index === 0 ? 'double-left' : 'double-right');
+        } else if (npcsAtLocation.length === 3) {
+            portrait.style.position = 'absolute';
+            portrait.style.bottom = '0';
+            portrait.style.width = '60%';
+            portrait.style.height = '60%';
+            
+            const positions = ['25%', '50%', '75%'];
+            portrait.style.left = positions[index];
+            portrait.style.transform = 'translateX(-50%)';
+            portrait.style.zIndex = index + 1;
+        }
+        
+        // 创建img元素，添加crossOrigin以支持跨域canvas操作
+        const img = document.createElement('img');
+        img.crossOrigin = 'anonymous';
+        img.src = npcPortraits[npc.id];
+        img.alt = npc.name;
+        portrait.appendChild(img);
+        
+        // 修改：只在非SLG模式下添加点击事件（带透明度检测）
+        if (GameMode !== 1) {
+            portrait.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // 多NPC同场时立绘容器互相重叠，点击可能被上层NPC的透明区截获。
+                // 自上而下查找第一个在点击处像素不透明的立绘，它就是本次点击的目标。
+                const hit = findOpaqueNpcAtPoint(container, e.clientX, e.clientY);
+                if (hit) {
+                    showNpcInfo(hit.dataset.npcId, location, e);
+                }
+            });
+            
+            // 悬停高亮与点击判定保持一致：高亮“点击会触发”的那个NPC，
+            // 而非 CSS :hover 命中的最上层容器（其透明区会挡住下层NPC，导致高亮错人）
+            portrait.addEventListener('mousemove', function(e) {
+                const hit = findOpaqueNpcAtPoint(container, e.clientX, e.clientY);
+                container.querySelectorAll('.npc-portrait.npc-hover').forEach(p => {
+                    if (p !== hit) p.classList.remove('npc-hover');
+                });
+                if (hit) hit.classList.add('npc-hover');
+            });
+            portrait.addEventListener('mouseleave', function() {
+                container.querySelectorAll('.npc-portrait.npc-hover').forEach(p => p.classList.remove('npc-hover'));
+            });
+        }
+        
+        container.appendChild(portrait);
+    });
+    // Publish the exact existing draw; projecting 3D must never draw RNG again.
+    if (window.GameSceneBridge) GameSceneBridge.publishNpcs(location, npcsAtLocation.map(npc => npc.id));
+}
+
+// 立绘像素检测的离屏canvas缓存：hover会高频触发检测，避免每帧重画整图
+const _npcOpaqueCanvasCache = new WeakMap();
+
+// 在指定点位自上而下查找第一个像素不透明的NPC立绘（解决立绘容器重叠时的遮挡/误判）
+function findOpaqueNpcAtPoint(container, clientX, clientY) {
+    const stack = document.elementsFromPoint(clientX, clientY);
+    for (const el of stack) {
+        const portrait = el.classList && el.classList.contains('npc-portrait')
+            ? el
+            : (el.closest ? el.closest('.npc-portrait') : null);
+        if (!portrait || !container.contains(portrait)) continue;
+        const pimg = portrait.querySelector('img');
+        if (pimg && portrait.dataset.npcId &&
+            isClickOnOpaquePixel({ clientX: clientX, clientY: clientY }, pimg)) {
+            return portrait;
+        }
+    }
+    return null;
+}
+
+// 检测点击位置是否在图片的非透明区域
+function isClickOnOpaquePixel(event, img) {
+    // 如果图片未加载完成，默认允许点击
+    if (!img.complete || img.naturalWidth === 0) {
+        return true;
+    }
+    
+    try {
+        // 获取图片在页面上的位置和尺寸
+        const imgRect = img.getBoundingClientRect();
+        
+        // 计算点击位置相对于图片的坐标
+        const clickX = event.clientX - imgRect.left;
+        const clickY = event.clientY - imgRect.top;
+        
+        // 计算图片实际显示区域（考虑object-fit: contain）
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const containerAspect = imgRect.width / imgRect.height;
+        
+        let displayWidth, displayHeight, offsetX, offsetY;
+        
+        if (imgAspect > containerAspect) {
+            // 图片更宽，以容器宽度为准
+            displayWidth = imgRect.width;
+            displayHeight = imgRect.width / imgAspect;
+            offsetX = 0;
+            offsetY = imgRect.height - displayHeight; // object-position: bottom center
+        } else {
+            // 图片更高，以容器高度为准
+            displayHeight = imgRect.height;
+            displayWidth = imgRect.height * imgAspect;
+            offsetX = (imgRect.width - displayWidth) / 2;
+            offsetY = 0;
+        }
+        
+        // 检查点击是否在图片显示区域内
+        if (clickX < offsetX || clickX > offsetX + displayWidth ||
+            clickY < offsetY || clickY > offsetY + displayHeight) {
+            return false;
+        }
+        
+        // 计算点击位置对应的原始图片像素坐标
+        const pixelX = Math.floor((clickX - offsetX) / displayWidth * img.naturalWidth);
+        const pixelY = Math.floor((clickY - offsetY) / displayHeight * img.naturalHeight);
+        
+        // 使用canvas读取像素alpha值（canvas按img缓存，hover高频检测时避免重复绘制）
+        let canvas = _npcOpaqueCanvasCache.get(img);
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            canvas.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0);
+            _npcOpaqueCanvasCache.set(img, canvas);
+        }
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        // 获取该像素的数据
+        const pixelData = ctx.getImageData(pixelX, pixelY, 1, 1).data;
+        const alpha = pixelData[3]; // alpha通道值 (0-255)
+        
+        // alpha > 30 视为非透明（允许一点容差）
+        return alpha > 30;
+        
+    } catch (error) {
+        // 如果出现跨域或其他错误，默认允许点击
+        console.warn('透明度检测失败，使用默认点击行为:', error.message);
+        return true;
+    }
+}
+
+// 显示NPC信息弹窗
+function showNpcInfo(npcId, location, event) {
+    // 新增：如果是SLG模式，不显示NPC信息弹窗
+    if (GameMode === 1) {
+        return;
+    }
+    
+    const npc = npcs[npcId];
+    
+    // 检查是否已经切磋过
+    const hasSparred = npcSparred[npcId];
+    
+    // 获取切磋奖励信息
+    const reward = npcSparRewards[npcId];
+    const rewardText = reward ? `(${reward.type}+${reward.value})` : '';
+    
+    // 判断UI风格：古风UI使用框选叠加层，扁平化UI使用原有弹窗
+    // 以 body 实际类名为准（uiStyle 变量可能与实际显示风格脱节）
+    if (document.body.classList.contains('ui-style-ancient')) {
+        // ========== 古风UI：框选叠加层效果 ==========
+        showNpcSelectionOverlay(npcId, location, event);
+    } else {
+        // ========== 扁平化UI：原有弹窗效果 ==========
+        showNpcInfoPopup(npcId, location, event);
+    }
+}
+
+// 古风UI：显示NPC选中框选叠加层
+function showNpcSelectionOverlay(npcId, location, event) {
+    const npc = npcs[npcId];
+    const hasSparred = npcSparred[npcId];
+    const reward = npcSparRewards[npcId];
+    const rewardText = reward ? `(${reward.type}+${reward.value})` : '';
+    
+    // 获取送礼状态
+    const hasGifted = npcGiftGiven[npcId];
+    const currentFavorability = npcFavorability[npcId];
+    const canGift = !hasGifted && currentFavorability <= 40 && playerStats.金钱 >= 500;
+    let giftDisabledReason = '';
+    if (hasGifted) {
+        giftDisabledReason = '已送礼';
+    } else if (currentFavorability > 40) {
+        giftDisabledReason = '好感>40';
+    } else if (playerStats.金钱 < 500) {
+        giftDisabledReason = '金钱不足';
+    }
+    
+    // 获取目标NPC的立绘容器：按npcId反查，而非event.currentTarget——
+    // 点击穿透转交时currentTarget是上层其他NPC的容器，会导致框选位置错位
+    const container = document.getElementById(location + '-npcs');
+    if (!container) return;
+    const portrait = container.querySelector(`.npc-portrait[data-npc-id="${npcId}"]`) || event.currentTarget;
+    if (!portrait) return;
+    
+    // 隐藏场景交互按钮
+    const scene = container.closest('.scene');
+    if (scene) {
+        const sceneActions = scene.querySelector('.scene-actions');
+        if (sceneActions) {
+            sceneActions.style.opacity = '0';
+            sceneActions.style.pointerEvents = 'none';
+        }
+    }
+    
+    // 移除已有的叠加层
+    const existingOverlay = container.querySelector('.npc-selection-overlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+    
+    // 统计当前场景NPC数量和位置
+    const allPortraits = container.querySelectorAll('.npc-portrait');
+    const npcCount = allPortraits.length;
+    let npcIndex = Array.from(allPortraits).indexOf(portrait);
+    
+    // 判断按钮应该显示在左侧还是右侧
+    let optionsPosition = 'left';
+    if (npcCount === 2 && npcIndex === 0) {
+        optionsPosition = 'right';
+    } else if (npcCount === 3 && npcIndex === 0) {
+        optionsPosition = 'right';
+    }
+    
+    // 创建叠加层
+    const overlay = document.createElement('div');
+    overlay.className = 'npc-selection-overlay show';
+    overlay.dataset.npcId = npcId;
+    overlay.dataset.portraitIndex = npcIndex; // 保存立绘索引用于后续查找
+    
+    // 直接复制NPC立绘的定位样式，让框选图片完全覆盖立绘
+    const portraitStyle = window.getComputedStyle(portrait);
+    const portraitLeft = portrait.style.left || portraitStyle.left;
+    const portraitTransform = portrait.style.transform || portraitStyle.transform;
+    
+    // 圆周排列参数（3个选项，按角度分布，以右侧水平线为0°）
+    // 从上到下统一顺序：送礼、切磋、互动
+    // 左侧NPC：选项在右侧，角度 -30°(上), 0°(中), 30°(下)
+    // 右侧/中间NPC：选项在左侧，角度 210°(上), 180°(中), 150°(下)
+    const radius = 18; // vw
+    let angles;
+    if (optionsPosition === 'right') {
+        // 左侧NPC，选项显示在右边（上到下：-30°, 0°, 30°）
+        angles = [-30, 0, 30];
+    } else {
+        // 右侧/中间NPC，选项显示在左边（上到下：210°, 180°, 150°）
+        angles = [210, 180, 150];
+    }
+    
+    // 计算每个选项的位置（从上到下：送礼、切磋、互动）
+    const options = [
+        {
+            action: '送礼',
+            text: canGift ? '送礼' : giftDisabledReason,
+            disabled: !canGift,
+            angle: angles[0]
+        },
+        {
+            action: '切磋',
+            text: hasSparred ? '已切磋' : '切磋',
+            disabled: hasSparred,
+            angle: angles[1]
+        },
+        {
+            action: '互动',
+            text: '互动',
+            disabled: false,
+            angle: angles[2]
+        }
+    ];
+    
+    // 生成选项HTML（使用CSS变量传递角度和半径，不显示奖励括号）
+    let optionsHtml = '';
+    options.forEach((opt, idx) => {
+        const angleRad = opt.angle * Math.PI / 180;
+        const x = Math.cos(angleRad) * radius;
+        const y = Math.sin(angleRad) * radius;
+        optionsHtml += `
+            <button class="npc-selection-option ${opt.disabled ? 'disabled' : ''}" 
+                    data-action="${opt.action}" data-npc="${npcId}"
+                    style="--opt-x: ${x.toFixed(2)}vw; --opt-y: ${y.toFixed(2)}vw;"
+                    ${opt.disabled ? 'disabled' : ''}>
+                ${opt.text}
+            </button>
+        `;
+    });
+    
+    // 简介偏移方向：选项在右侧时，简介左移；选项在左侧时，简介右移
+    const descOffsetClass = optionsPosition === 'right' ? 'desc-offset-left' : 'desc-offset-right';
+    
+    overlay.innerHTML = `
+        <div class="npc-selection-close-area"></div>
+        <div class="npc-selection-frame options-${optionsPosition}" style="
+            left: ${portraitLeft};
+            bottom: 0;
+            transform: ${portraitTransform};
+        ">
+            <div class="npc-selection-name">${npc.name}</div>
+            <div class="npc-selection-options">
+                ${optionsHtml}
+            </div>
+            <div class="npc-selection-desc ${descOffsetClass}">${npc.description}</div>
+        </div>
+    `;
+    
+    container.appendChild(overlay);
+    
+    // 使用事件委托绑定按钮点击事件
+    overlay.addEventListener('click', function(e) {
+        const btn = e.target.closest('.npc-selection-option');
+        if (btn && !btn.disabled) {
+            e.stopPropagation();
+            const action = btn.dataset.action;
+            const npcIdFromBtn = btn.dataset.npc;
+            closeNpcSelectionOverlay();
+            
+            // 处理送礼动作
+            if (action === '送礼') {
+                giveGift(npcIdFromBtn);
+            } else {
+                npcAction(npcIdFromBtn, action);
+            }
+            return;
+        }
+        
+        // 点击关闭区域（背景遮罩）
+        if (e.target.classList.contains('npc-selection-close-area')) {
+            closeNpcSelectionOverlay();
+            return;
+        }
+        
+        // 点击frame内部非按钮区域时，检查是否点击在当前NPC的非透明区域
+        // 如果不是，则关闭叠加层
+        const frame = e.target.closest('.npc-selection-frame');
+        if (frame) {
+            // 获取当前选中的NPC立绘
+            const portraitIndex = parseInt(overlay.dataset.portraitIndex, 10);
+            const container = overlay.closest('.npc-container');
+            if (container && !isNaN(portraitIndex)) {
+                // 通过索引找到对应的NPC立绘
+                const allPortraits = container.querySelectorAll('.npc-portrait');
+                const currentPortrait = allPortraits[portraitIndex];
+                
+                if (currentPortrait) {
+                    const img = currentPortrait.querySelector('img');
+                    if (img && !isClickOnOpaquePixel(e, img)) {
+                        // 点击在透明区域，关闭叠加层
+                        closeNpcSelectionOverlay();
+                        return;
+                    }
+                }
+            }
+        }
+    });
+    
+    // 记录当前选中的NPC
+    window._currentSelectedNpc = npcId;
+    
+    // 点击其他区域关闭
+    setTimeout(() => {
+        document.addEventListener('click', handleNpcOverlayOutsideClick);
+    }, 100);
+}
+
+// 关闭NPC选中叠加层
+function closeNpcSelectionOverlay() {
+    const overlays = document.querySelectorAll('.npc-selection-overlay');
+    overlays.forEach(overlay => {
+        // 恢复场景交互按钮
+        const scene = overlay.closest('.scene');
+        if (scene) {
+            const sceneActions = scene.querySelector('.scene-actions');
+            if (sceneActions) {
+                sceneActions.style.opacity = '1';
+                sceneActions.style.pointerEvents = 'auto';
+            }
+        }
+        overlay.remove();
+    });
+    window._currentSelectedNpc = null;
+    document.removeEventListener('click', handleNpcOverlayOutsideClick);
+}
+
+// 处理点击叠加层外部（包括NPC立绘的透明区域）
+function handleNpcOverlayOutsideClick(e) {
+    const overlay = document.querySelector('.npc-selection-overlay');
+    if (!overlay) return;
+    
+    // 如果点击的是叠加层内的元素（选项按钮等），不关闭
+    if (overlay.contains(e.target)) {
+        return;
+    }
+    
+    // 检查是否点击了NPC立绘
+    const clickedPortrait = e.target.closest('.npc-portrait');
+    if (clickedPortrait) {
+        // 检查点击的是否是当前选中NPC的立绘
+        const npcId = overlay.dataset.npcId;
+        const container = overlay.closest('.npc-container');
+        if (container) {
+            const allPortraits = container.querySelectorAll('.npc-portrait');
+            const currentPortraitIndex = Array.from(allPortraits).indexOf(clickedPortrait);
+            
+            // 获取点击的NPC立绘中的图片
+            const img = clickedPortrait.querySelector('img');
+            if (img) {
+                // 检测点击是否在非透明区域
+                if (isClickOnOpaquePixel(e, img)) {
+                    // 点击了非透明区域，不关闭（会由其他逻辑处理切换NPC）
+                    return;
+                }
+            }
+        }
+    }
+    
+    // 其他情况（点击空白区域或透明区域），关闭叠加层
+    closeNpcSelectionOverlay();
+}
+
+// 从叠加层触发NPC动作
+function npcActionFromOverlay(npcId, action) {
+    closeNpcSelectionOverlay();
+    npcAction(npcId, action);
+}
+
+// 扁平化UI：原有弹窗效果
+function showNpcInfoPopup(npcId, location, event) {
+    const npc = npcs[npcId];
+    const popup = document.getElementById('npc-info-popup');
+    
+    // 检查是否已经切磋过
+    const hasSparred = npcSparred[npcId];
+    const sparBtnText = hasSparred ? '已切磋' : '切磋';
+    const sparBtnDisabled = hasSparred ? 'disabled' : '';
+    
+    // 获取切磋奖励信息
+    const reward = npcSparRewards[npcId];
+    const rewardText = reward ? `(${reward.type}+${reward.value})` : '';
+    
+    popup.innerHTML = `
+        <div class="npc-info-name">${npc.name}</div>
+        <div class="npc-info-desc">${npc.description}</div>
+        <div class="npc-info-actions">
+            <button class="npc-info-btn ${hasSparred ? 'disabled' : ''}" 
+                    onclick="npcAction('${npcId}', '切磋')" 
+                    ${sparBtnDisabled}>${sparBtnText} ${rewardText}</button>
+            <button class="npc-info-btn" onclick="npcAction('${npcId}', '互动')">互动</button>
+        </div>
+    `;
+    
+    popup.classList.add('show');
+    
+    // 按npcId反查立绘定位弹窗（点击穿透转交时currentTarget是上层其他NPC的容器）
+    const npcContainer = document.getElementById(location + '-npcs');
+    const portrait = (npcContainer && npcContainer.querySelector(`.npc-portrait[data-npc-id="${npcId}"]`)) || event.currentTarget;
+    const portraitRect = portrait.getBoundingClientRect();
+    
+    const popupRect = popup.getBoundingClientRect();
+    
+    const portraitCenterX = portraitRect.left + portraitRect.width / 2;
+    const portraitCenterY = portraitRect.top + portraitRect.height / 2;
+    
+    let left = portraitCenterX - popupRect.width / 2;
+    let top = portraitCenterY - popupRect.height / 2;
+    
+    const margin = 10;
+    if (left < margin) {
+        left = margin;
+    } else if (left + popupRect.width > window.innerWidth - margin) {
+        left = window.innerWidth - popupRect.width - margin;
+    }
+    
+    if (top < margin) {
+        top = margin;
+    } else if (top + popupRect.height > window.innerHeight - margin) {
+        top = window.innerHeight - popupRect.height - margin;
+    }
+    
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    popup.style.transform = 'none';
+    
+    setTimeout(() => {
+        document.addEventListener('click', closeNpcInfo);
+    }, 100);
+}
+
+function closeNpcInfo(e) {
+    const popup = document.getElementById('npc-info-popup');
+    if (!popup.contains(e.target)) {
+        popup.classList.remove('show');
+        document.removeEventListener('click', closeNpcInfo);
+    }
+}
+
+// 切换场景
+function switchScene(sceneName) {
+    const scenes = document.querySelectorAll('.scene');
+    scenes.forEach(scene => {
+        scene.classList.remove('active');
+        scene.classList.remove('slg-mode');
+    });
+
+    // 如果切换到角色属性或人际关系场景，清除SLG元素
+    if (sceneName === 'player-stats' || sceneName === 'relationships') {
+        const viewport = document.getElementById('main-viewport');
+        const existingLayers = viewport.querySelectorAll('.slg-layer-container, .slg-layer');
+        existingLayers.forEach(layer => layer.remove());
+        const existingMask = viewport.querySelector('.slg-interaction-mask');
+        if (existingMask) existingMask.remove();
+        
+        // 不要记录这两个特殊场景为userLocation
+    } else {
+        // 只在非特殊场景时更新userLocation
+        if (sceneName !== 'map') {
+            userLocation = sceneName;
+        }
+    }
+
+    const targetScene = document.getElementById(sceneName + '-scene');
+    if (targetScene) {
+        targetScene.classList.add('active');
+        
+        // 只给需要遮罩的场景添加slg-mode类
+        if (GameMode === 1 && sceneName !== 'player-stats' && sceneName !== 'relationships') {
+            targetScene.classList.add('slg-mode');
+        }
+        
+        if (sceneName !== 'player-stats' && sceneName !== 'relationships' && sceneName !== 'map') {
+            displayNpcs(sceneName);
+        }
+    }
+    
+    updateSLGReturnButton();
+    if (window.GameSceneBridge) GameSceneBridge.notify('switch-scene');
+}
+
+// 显示地点信息弹窗
+function showLocationInfo(locationId, event) {
+    // 新增：如果是SLG模式，不显示地点信息弹窗
+    if (GameMode === 1) {
+        return;
+    }
+    const popup = document.getElementById('location-info-popup');
+    const locationName = locationNames[locationId];
+    const npcsAtLocation = getNpcsAtLocation(locationId);
+    
+    let npcsHtml = '';
+    if (npcsAtLocation.length > 0) {
+        npcsHtml = '<div class="location-info-npcs">在场NPC：';
+        if (npcsAtLocation.length > 3) {
+            npcsHtml += `<div style="font-size: 0.8em; color: #999; margin: 3px 0;">（共${npcsAtLocation.length}人，随机显示3人）</div>`;
+        }
+        npcsAtLocation.forEach(npc => {
+            npcsHtml += `<div class="location-info-npc-item">• ${npc.name}</div>`;
+        });
+        npcsHtml += '</div>';
+    } else {
+        npcsHtml = '<div class="location-info-npcs">此处暂无人物</div>';
+    }
+    
+    popup.innerHTML = `
+        <div class="location-info-name">${locationName}</div>
+        ${npcsHtml}
+        <button class="location-go-btn" onclick="goToLocation('${locationId}')">前往</button>
+    `;
+    
+    popup.classList.add('show');
+    
+    const locationElement = event.currentTarget;
+    const locationRect = locationElement.getBoundingClientRect();
+    const viewportRect = document.querySelector('.viewport').getBoundingClientRect();
+    
+    const popupRect = popup.getBoundingClientRect();
+    
+    const locationCenterX = locationRect.left + locationRect.width / 2;
+    const locationCenterY = locationRect.top + locationRect.height / 2;
+    
+    let left = locationCenterX - popupRect.width / 2;
+    let top = locationRect.top - popupRect.height - 10;
+    
+    const margin = 10;
+    
+    if (left < viewportRect.left + margin) {
+        left = viewportRect.left + margin;
+    } else if (left + popupRect.width > viewportRect.right - margin) {
+        left = viewportRect.right - popupRect.width - margin;
+    }
+    
+    if (top < viewportRect.top + margin) {
+        top = locationRect.bottom + 10;
+        
+        if (top + popupRect.height > viewportRect.bottom - margin) {
+            if (locationCenterY < viewportRect.top + viewportRect.height / 2) {
+                top = Math.min(locationRect.bottom + 10, viewportRect.bottom - popupRect.height - margin);
+            } else {
+                top = Math.max(locationRect.top - popupRect.height - 10, viewportRect.top + margin);
+            }
+        }
+    }
+    
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    
+    setTimeout(() => {
+        document.addEventListener('click', closeLocationInfo);
+    }, 100);
+}
+
+function closeLocationInfo(e) {
+    const popup = document.getElementById('location-info-popup');
+    if (!popup.contains(e.target)) {
+        popup.classList.remove('show');
+        document.removeEventListener('click', closeLocationInfo);
+        // 关闭弹窗时，取消地图建筑的高亮状态
+        try {
+            const svg = document.getElementById('map-hit-areas');
+            if (svg) {
+                const actives = svg.querySelectorAll('polygon.active');
+                actives.forEach(n => n.classList.remove('active'));
+            }
+        } catch (err) {}
+    }
+}
+
+// 设置地点事件
+function setupLocationEvents() {
+    const locations = document.querySelectorAll('.location');
+
+    // 渲染“地名 + 分隔线 + 人数光点”结构；不绑定点击/悬停事件
+    try {
+        locations.forEach(el => {
+            const id = el.id;
+            const label = (id && typeof locationNames === 'object') ? (locationNames[id] || id) : (id || '');
+
+            // 清空并重建两行结构
+            el.innerHTML = '';
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'location-label-text';
+            nameEl.textContent = label;
+
+            const dividerEl = document.createElement('span');
+            dividerEl.className = 'location-label-divider';
+
+            const peopleEl = document.createElement('span');
+            peopleEl.className = 'location-people';
+            peopleEl.textContent = '';
+
+            el.appendChild(nameEl);
+            el.appendChild(dividerEl);
+            el.appendChild(peopleEl);
+        });
+    } catch (e) {}
+
+    // 初始化一次人数显示
+    if (typeof updateLocationHeadcountLabels === 'function') {
+        updateLocationHeadcountLabels();
+    }
+}
+
+// 更新地图地点标签上的人数显示（统一使用白色光点）
+function updateLocationHeadcountLabels() {
+    try {
+        const countByLocation = {
+            yanwuchang: 0,
+            cangjingge: 0,
+            huofang: 0,
+            houshan: 0,
+            yishiting: 0,
+            tiejiangpu: 0,
+            nandizi: 0,
+            nvdizi: 0,
+            shanmen: 0,
+            gongtian: 0,
+            danfang: 0
+        };
+
+        if (currentNpcLocations && typeof currentNpcLocations === 'object') {
+            Object.keys(currentNpcLocations).forEach(npcId => {
+                const loc = currentNpcLocations[npcId];
+                if (loc && countByLocation.hasOwnProperty(loc)) {
+                    countByLocation[loc] += 1;
+                }
+            });
+        }
+
+		Object.keys(countByLocation).forEach(locId => {
+            const el = document.getElementById(locId);
+            if (!el) return;
+            const peopleEl = el.querySelector('.location-people');
+            const dividerEl = el.querySelector('.location-label-divider');
+            if (peopleEl) {
+				const n = countByLocation[locId];
+				// 清空现有内容
+				peopleEl.textContent = '';
+				peopleEl.innerHTML = '';
+				if (n > 0) {
+					for (let i = 0; i < n; i++) {
+						const dot = document.createElement('span');
+						dot.className = 'people-dot';
+						peopleEl.appendChild(dot);
+					}
+				}
+            }
+            if (dividerEl) {
+                // 当没有人时可淡化分隔线（可选）
+                dividerEl.style.opacity = countByLocation[locId] > 0 ? '1' : '0.35';
+            }
+        });
+    } catch (e) {}
+}
+
+// 暴露到全局（供页面中其他脚本调用）
+window.updateLocationHeadcountLabels = updateLocationHeadcountLabels;
+
+// 使用道具
+async function useItem(itemName) {
+    const item = item_list[itemName];
+    if (!item || !item.可使用 || inventory[itemName] <= 0) return;
+
+    const effects = (item.影响属性 && typeof item.影响属性 === 'object') ? item.影响属性 : {};
+    const effectEntries = Object.entries(effects);
+    const getAttrValue = (attr) => {
+        if (attr === 'playerMood') return playerMood;
+        if (playerTalents.hasOwnProperty(attr)) return playerTalents[attr];
+        if (playerStats.hasOwnProperty(attr)) return playerStats[attr];
+        if (combatStats.hasOwnProperty(attr)) return combatStats[attr];
+        return undefined;
+    };
+    const beforeValues = {};
+    for (const [attr] of effectEntries) {
+        beforeValues[attr] = getAttrValue(attr);
+    }
+    console.log('[道具使用] 开始', {
+        item: itemName,
+        effects: { ...effects },
+        inventoryBefore: inventory[itemName] || 0,
+        before: beforeValues
+    });
+
+    for (const [attr, rawValue] of effectEntries) {
+        const value = Number(rawValue) || 0;
+        if (attr === 'playerMood') {
+            playerMood = Math.min(120, playerMood + value);
+        } else if (playerTalents.hasOwnProperty(attr)) {
+            playerTalents[attr] += value;
+        } else if (playerStats.hasOwnProperty(attr)) {
+            playerStats[attr] += value;
+        } else if (combatStats.hasOwnProperty(attr)) {
+            combatStats[attr] += value;
+        }
+    }
+
+    const afterApply = {};
+    const delta = {};
+    for (const [attr] of effectEntries) {
+        afterApply[attr] = getAttrValue(attr);
+        if (typeof beforeValues[attr] === 'number' && typeof afterApply[attr] === 'number') {
+            delta[attr] = afterApply[attr] - beforeValues[attr];
+        } else {
+            delta[attr] = null;
+        }
+    }
+    console.log('[道具使用] 效果已应用', {
+        item: itemName,
+        afterApply,
+        delta
+    });
+    
+    inventory[itemName]--;
+    if (inventory[itemName] <= 0) {
+        delete inventory[itemName];
+    }
+    
+    checkAllValueRanges();
+
+    const afterClamp = {};
+    for (const [attr] of effectEntries) {
+        afterClamp[attr] = getAttrValue(attr);
+    }
+    console.log('[道具使用] 约束后', {
+        item: itemName,
+        afterClamp,
+        inventoryAfter: inventory[itemName] || 0
+    });
+    updateAllDisplays();
+    // await saveGameData();
+    
+    // showModal(`使用了${itemName}！`);
+    
+    closeItemDetailModal();
+    showInventory();
+}
+
+// 装备道具（简化逻辑：直接修改属性值）
+async function equipItem(itemName, returnToInventory = false) {
+    const item = item_list[itemName];
+    if (!item || !item.可装备 || inventory[itemName] <= 0) return;
+    
+    const equipStatsBefore = { ...(equipStats || {}) };
+    const totalsBefore = getTotalCombatStats();
+    let targetSlot = null;
+    
+    if (item.装备类型 === '武器') {
+        targetSlot = '武器';
+    } else if (item.装备类型 === '防具') {
+        targetSlot = '防具';
+    } else if (item.装备类型 === '饰品') {
+        if (!equipment.饰品1) {
+            targetSlot = '饰品1';
+        } else if (!equipment.饰品2) {
+            targetSlot = '饰品2';
+        } else {
+            targetSlot = '饰品1';
+        }
+    }
+    
+    if (!targetSlot) return;
+    
+    // 如果槽位已有装备，先卸下旧装备
+    const oldEquipment = equipment[targetSlot];
+    if (oldEquipment) {
+        inventory[oldEquipment] = (inventory[oldEquipment] || 0) + 1;
+    }
+    
+    // 装备新道具，更新装备槽
+    equipment[targetSlot] = itemName;
+    
+    inventory[itemName]--;
+    if (inventory[itemName] <= 0) {
+        delete inventory[itemName];
+    }
+    
+    console.log('[装备] 开始', {
+        item: itemName,
+        slot: targetSlot,
+        oldEquipment: oldEquipment || null,
+        inventoryBefore: inventory[itemName] || 0,
+        equipStatsBefore
+    });
+
+    refreshEquipStatsFromEquipment();
+    checkAllValueRanges();
+
+    const equipStatsAfter = { ...(equipStats || {}) };
+    const totalsAfter = getTotalCombatStats();
+    console.log('[装备] 完成', {
+        item: itemName,
+        slot: targetSlot,
+        equipStatsAfter,
+        totalsBefore,
+        totalsAfter,
+        inventoryAfter: inventory[itemName] || 0
+    });
+    updateAllDisplays();
+    // await saveGameData();
+    
+    // showModal(`装备了${itemName}！`);
+    
+    closeItemDetailModal();
+    if (returnToInventory) showInventory();
+    else showEquipment();
+}
+
+// 卸下装备（简化逻辑：直接修改属性值）
+async function unequipItem(itemName) {
+    let slot = null;
+    for (const [key, value] of Object.entries(equipment)) {
+        if (value === itemName) {
+            slot = key;
+            break;
+        }
+    }
+    
+    if (!slot) return;
+    
+    const equipStatsBefore = { ...(equipStats || {}) };
+    const totalsBefore = getTotalCombatStats();
+
+    equipment[slot] = null;
+    inventory[itemName] = (inventory[itemName] || 0) + 1;
+    
+    refreshEquipStatsFromEquipment();
+    checkAllValueRanges();
+
+    const equipStatsAfter = { ...(equipStats || {}) };
+    const totalsAfter = getTotalCombatStats();
+    console.log('[卸下装备] 完成', {
+        item: itemName,
+        slot,
+        equipStatsBefore,
+        equipStatsAfter,
+        totalsBefore,
+        totalsAfter,
+        inventoryAfter: inventory[itemName] || 0
+    });
+    updateAllDisplays();
+    // await saveGameData();
+    
+    // showModal(`卸下了${itemName}！`);
+    
+    closeItemDetailModal();
+    showEquipment();
+}
+
+// 根据周数计算季节
+function calculateSeason(week) {
+    const year = Math.floor((week - 1) / 48) + 1;
+    const remainingWeeks = (week - 1) % 48;
+    const month = Math.floor(remainingWeeks / 4) + 1;
+    
+    if (month === 12 || month === 1 || month === 2) {
+        return 'winter';
+    } else if (month >= 3 && month <= 5) {
+        return 'spring';
+    } else if (month >= 6 && month <= 8) {
+        return 'summer';
+    } else {  // 9, 10, 11月
+        return 'autumn';
+    }
+}
+
+// 更新场景背景（根据昼夜和季节）
+function updateSceneBackgrounds() {
+    // 更新地图场景背景
+    const mapScene = document.getElementById('map-scene');
+    if (mapScene) {
+        const seasonMap = {
+            'spring': '春',
+            'summer': '夏',
+            'autumn': '秋',
+            'winter': '冬'
+        };
+        const dayNightMap = {
+            'daytime': '昼',
+            'night': '夜'
+        };
+        
+        const season = seasonMap[seasonStatus] || '冬';
+        const dayNight = dayNightMap[dayNightStatus] || '昼';
+        
+        mapScene.style.backgroundImage = `url('${_assetUrl(`img/location/天山派_${season}_${dayNight}.webp`)}')`;
+    }
+    
+    // 更新其他场景背景
+    const sceneNames = ['yanwuchang', 'cangjingge', 'huofang', 'houshan', 'yishiting', 'tiejiangpu', 'nandizi', 'nvdizi', 'shanmen', 'gongtian', 'danfang'];
+    const dayNight = dayNightStatus === 'night' ? '夜' : '昼';
+    
+    sceneNames.forEach(sceneName => {
+        const scene = document.getElementById(`${sceneName}-scene`);
+        if (scene) {
+            const locationName = locationNames[sceneName];
+            scene.style.backgroundImage = `url('${_assetUrl(`img/location/${locationName}_${dayNight}.webp`)}')`;
+        }
+    });
+}

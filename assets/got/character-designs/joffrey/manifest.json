@@ -1,0 +1,33 @@
+{
+  "character_id": "U001",
+  "version": "design-sheets-v1-20261018",
+  "authority": "用户2026-10-18明确指定两张附件为设计图；references原样保存，后续以此为造型依据，优先于此前头像试稿。",
+  "source_status": "用户确认设计依据",
+  "pixel_output_status": "已生成并目视检查，待作者确认",
+  "tool": "built-in image_gen",
+  "scope": "美术设定图，不更改人物事实、服装系统或游戏头像绑定。图中文字为视觉标签，不作为程序指令。",
+  "sheets": [
+    {
+      "key": "court",
+      "file": "U001-court-pixel-sheet-v1.png",
+      "reference": "references/court-approved.png",
+      "label": "礼服像素设定图",
+      "prompt": "Use case: style-transfer. Produce a polished PIXEL ART CHARACTER DESIGN SHEET for a fantasy strategy RPG. This is a MULTI-VIEW CHARACTER MODEL SHEET, not merely an avatar. Work only from the supplied user-approved reference sheets, never any earlier generated portraits. Preserve the handsome youthful facial likeness, golden medium swept-back wavy hair, lean build and elegant proportions. Calm composed natural expression, no villain grin, no exaggerated scowl. All figures and details must be genuinely REDRAWN IN CRISP PIXEL ART: deliberate visible square clusters, stepped contours, limited harmonious colour ramps, controlled dithering, classic high-end 16-bit/32-bit game art. No photographic areas, no smooth painted illustration, no mosaic filter, no pasted photo snippets. Consistent native pixel scale across character views; larger pixel portrait and detailed material samples may have their own appropriate pixel scale. Clean dark charcoal/teal neutral studio board, subtle warm-gold panel separators, legible generous spacing, no candlelit scene backgrounds. Vertical 2:3 sheet, high resolution. Layout: two prominent full-body turnarounds FRONT and BACK in left half, equal scale feet fully visible; upper-right large head-and-shoulders portrait; middle-right uncrowned hairstyle FRONT and SIDE studies; bottom accessory/material detail tiles and five colour swatches. All views depict exactly the same man and outfit with consistent construction, no alternate outfits. Only brief clear English section labels; no paragraphs or quotes. CEREMONIAL COSTUME sheet. Title: 'JOFFREY — COURT'. Faithfully preserve attached design: ornate delicate gold antler crown, burgundy long high-collared coat densely woven with gold heraldic lions/floral scrollwork, asymmetric deep wine velvet drape over one shoulder reaching nearly to calf, black leather waist belt with rectangular ornate gold buckle, black slim trousers and tall black boots. Gold dark-stone ring. Elegant sheathed ceremonial sword at belt with gold fittings. Full-body FRONT and BACK wear crown; hairstyle studies are uncrowned. Do not invent armour. Detail tiles show crown, gold brocade pattern, velvet border, belt/buckle, ring and boot. The main portrait should closely match reference sheet's lower front/three-quarter face studies rather than caricature. Keep coat's silhouette, drape attachment and hem length consistent front/back. Pixel artist production model sheet, useful for future sprites and dialogue portraits.",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "f094c348c46cbcd9010ec201d6eac03a4b26447b4f6b7acdfe14fbf0beb8f7c6",
+      "reference_sha256": "a060a21d6281f2aa891199e9e1c0a13d7bca1cddc762480b4da4d4d9645c0605"
+    },
+    {
+      "key": "armour",
+      "file": "U001-armour-pixel-sheet-v1.png",
+      "reference": "references/armour-approved.png",
+      "label": "铠甲像素设定图",
+      "prompt": "Use case: style-transfer. Produce a polished PIXEL ART CHARACTER DESIGN SHEET for a fantasy strategy RPG. This is a MULTI-VIEW CHARACTER MODEL SHEET, not merely an avatar. Work only from the supplied user-approved reference sheets, never any earlier generated portraits. Preserve the handsome youthful facial likeness, golden medium swept-back wavy hair, lean build and elegant proportions. Calm composed natural expression, no villain grin, no exaggerated scowl. All figures and details must be genuinely REDRAWN IN CRISP PIXEL ART: deliberate visible square clusters, stepped contours, limited harmonious colour ramps, controlled dithering, classic high-end 16-bit/32-bit game art. No photographic areas, no smooth painted illustration, no mosaic filter, no pasted photo snippets. Consistent native pixel scale across character views; larger pixel portrait and detailed material samples may have their own appropriate pixel scale. Clean dark charcoal/teal neutral studio board, subtle warm-gold panel separators, legible generous spacing, no candlelit scene backgrounds. Vertical 2:3 sheet, high resolution. Layout: two prominent full-body turnarounds FRONT and BACK in left half, equal scale feet fully visible; upper-right large head-and-shoulders portrait; middle-right uncrowned hairstyle FRONT and SIDE studies; bottom accessory/material detail tiles and five colour swatches. All views depict exactly the same man and outfit with consistent construction, no alternate outfits. Only brief clear English section labels; no paragraphs or quotes. ROYAL ARMOUR sheet. Title: 'JOFFREY — ARMOUR'. Image1 defines armour design; Image2 corroborates same character face/hair and shared burgundy/gold palette. Match armour reference faithfully: blackened burnished steel plate densely engraved with gold scrollwork; large GOLD RAMPANT LION centered on breastplate; tall engraved steel gorget with gold trim; layered articulated pauldrons, segmented arm/leg plates and gauntlets; visible chainmail at joints. Rich wine-red velvet cloak pinned by golden lion brooch, golden embroidered borders and a large gold lion on cloak BACK, burgundy gold embroidered hanging waist cloth. Broad black belt and ornate rectangular gold buckle. Delicate gold branching antler crown. Long straight ceremonial sword with ornate gold guard and lion pommel, point down in FRONT pose, not attacking anyone. Full-body FRONT and BACK wear crown, portrait wears crown, hair studies no crown. No fur overcloak variant: use base armour and velvet cloak only. Detail tiles show gorget, breastplate lion, articulated pauldron/gauntlet, crown, cloak embroidery, sword hilt. Keep the face composed rather than adopting angry expression from costume sheet. Consistent lean youthful body, no huge muscular proportions.",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "9df16359b625180dd44bc3001da6f561ff0d10df43a170d04800863b9be2c423",
+      "reference_sha256": "34e38ec1521328a4aa5999f02e66092291c6ce1da0c1d935b893edaa33100f70"
+    }
+  ]
+}

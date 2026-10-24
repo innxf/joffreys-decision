@@ -1,0 +1,1203 @@
+/**
+ * game-events.js - 事件处理函数
+ * 
+ * 文件概述：
+ * 处理游戏中的各种事件，包括随机事件、战斗事件、LLM响应解析等。
+ * 管理事件的显示、选择和结果处理，以及iframe游戏的消息通信。
+ * 
+ * 主要功能：
+ * 1. 随机事件系统（选项事件的显示和处理）
+ * 2. 战斗事件系统（战斗准备和结果处理）
+ * 3. LLM响应解析（处理AI返回的游戏数据）
+ * 4. iframe消息监听（处理21点/战斗/农场/炼丹/世界地图结果）
+ * 5. 特殊事件触发（与special-event.js联动）
+ * 
+ * 对外暴露的主要函数：
+ * - displayRandomEvent(event): 显示随机事件界面
+ * - hideRandomEvent(): 隐藏随机事件界面
+ * - displayBattleEvent(event): 显示战斗事件界面
+ * - hideBattleEvent(): 隐藏战斗事件界面
+ * - parseLLMResponse(response, mainTextContent): 解析LLM返回的JSON响应
+ * - setupMessageListeners(): 设置iframe消息监听器（21点/战斗/农场/炼丹/世界地图）
+ * - applyBattleReward(reward): 应用战斗胜利奖励
+ * 
+ * 内部函数：
+ * - handleEventOption(optionIndex, option): 处理事件选项选择（支持特殊剧情触发）
+ * - applyEventReward(reward): 应用事件奖励（天赋/数值属性）
+ * 
+ * 依赖关系：
+ * - 依赖 game-state.js 中的状态变量和更新
+ * - 依赖 game-config.js 中的NPC配置
+ * - 依赖 game-utils.js 中的数值检查函数
+ * - 依赖 game-ui.js 中的显示更新函数
+ * - 依赖 game-helpers.js 中的消息处理和游戏显示函数
+ * - 依赖 special-event.js 中的特殊事件检查和触发函数
+ * 
+ * 特殊说明：
+ * - parseLLMResponse 是与AI系统对接的核心函数；在SLG模式下联动 updateStoryText 渲染页与图层
+ * - 支持处理NPC好感度变化（含魅力判定和难度调整）
+ * - 支持处理NPC位置变动
+ * - 支持两种类型的随机事件：选项事件和战斗事件
+ * - handleEventOption 支持"特殊剧情:"前缀选项，自动触发特殊事件
+ */
+
+// 显示随机事件
+function displayRandomEvent(event) {
+    const container = document.getElementById('random-event-container');
+    const options = document.getElementById('event-options');
+    
+    // 不再在事件框中显示事件描述，描述已作为最后一页附加到正文
+    options.innerHTML = '';
+    
+    const optionKeys = ['选项一', '选项二', '选项三'];
+    optionKeys.forEach((key, index) => {
+        if (event[key]) {
+            const option = event[key];
+            const btn = document.createElement('button');
+            btn.className = 'event-option-btn';
+            btn.innerHTML = `
+                <div class="option-desc">${option.描述}</div>
+                <div class="option-reward">奖励: ${option.奖励}</div>
+                <div class="option-success-rate">成功率: ${option.成功率}</div>
+            `;
+            btn.onclick = () => handleEventOption(index + 1, option);
+            options.appendChild(btn);
+        }
+    });
+    
+    // 不直接显示，由 updateStoryDisplay 统一控制（翻到最后一页才显示）
+    // container.classList.add('show');
+}
+
+function hideRandomEvent() {
+    const container = document.getElementById('random-event-container');
+    container.classList.remove('show');
+    currentRandomEvent = null;
+    randomEvent = 0;
+}
+
+// 处理事件选项
+async function handleEventOption(optionIndex, option) {
+    if (!currentRandomEvent) return;
+    
+    const successRate = parseInt(option.成功率) / 100;
+    const isSuccess = Math.random() < successRate;
+    
+    if (isSuccess && option.奖励) {
+        applyEventReward(option.奖励);
+    }
+    
+    const _actorName1 = (typeof isInRenderEnvironment === 'function' && isInRenderEnvironment()) ? '{{user}}' : (gameData.playerName || '主角');
+    const _evYear = Math.floor((currentWeek - 1) / 48) + 1;
+    const _evRemaining = (currentWeek - 1) % 48;
+    const _evMonth = Math.floor(_evRemaining / 4) + 1;
+    const _evWeek = _evRemaining % 4 + 1;
+    const resultMessage =
+        `时间：第${_evYear}年第${_evMonth}月第${_evWeek}周<br>` +
+        `季节：${seasonNameMap[seasonStatus] || '冬天'}<br>` +
+        `地点：${mapLocation || '天山派'}<br>` +
+        `事件描述: ${currentRandomEvent.事件描述}<br>` +
+        `${_actorName1}行动选择: ${option.描述}<br>` +
+        `选择结果: ${isSuccess ? '成功' : '失败'}`;
+    
+    hideRandomEvent();
+    
+    // 检查是否是"特殊剧情:"选项
+    if (option.描述 && option.描述.startsWith('特殊剧情:')) {
+        // 检查是否有满足条件的特殊事件
+        const specialEvent = typeof checkSpecialEvents === 'function' ? checkSpecialEvents() : null;
+        
+        if (specialEvent) {
+            console.log(`[handleEventOption] 触发特殊事件: ${specialEvent.name}`);
+            
+            // 构造用户消息
+            const actionDesc = option.描述.replace(/^特殊剧情:\s*/, '');
+            const injectMessage = `{{user}}行动选择: ${actionDesc}`;
+            
+            // SR 环境：先 inject 用户输入
+            if (typeof isInRenderEnvironment === 'function' && isInRenderEnvironment()) {
+                const renderFunc = typeof getRenderFunction === 'function' ? getRenderFunction() : null;
+                if (renderFunc) {
+                    await renderFunc(`/inject id=10 position=chat depth=0 scan=true role=user ${injectMessage}`);
+                }
+            }
+            
+            // 触发特殊事件
+            const result = await triggerSpecialEvent(specialEvent);
+            
+            // 独立前端：委托给 pipeline 处理文本渲染
+            if (result && result.standalone && typeof pipeline !== 'undefined' && pipeline.handleSpecialEvent) {
+                await pipeline.handleSpecialEvent(result.event, injectMessage);
+                return;
+            }
+            
+            // SR 链路已在 triggerSpecialEvent 内部处理完毕
+            return;
+        }
+    }
+    
+    await handleMessageOutput(resultMessage);
+}
+
+// 应用事件奖励
+function applyEventReward(reward) {
+    const rewardMatch = reward.match(/(.+?)([+-])(\d+)/);
+    if (rewardMatch) {
+        const attribute = rewardMatch[1];
+        const operation = rewardMatch[2];
+        const value = parseInt(rewardMatch[3]);
+        
+        if (playerTalents.hasOwnProperty(attribute)) {
+            if (operation === '+') {
+                playerTalents[attribute] = Math.min(100, playerTalents[attribute] + value);
+            } else {
+                playerTalents[attribute] = Math.max(0, playerTalents[attribute] - value);
+            }
+            checkAllValueRanges();
+            updateStatsDisplay();
+        }
+        else if (playerStats.hasOwnProperty(attribute)) {
+            if (operation === '+') {
+                playerStats[attribute] = playerStats[attribute] + value;
+            } else {
+                playerStats[attribute] = Math.max(0, playerStats[attribute] - value);
+            }
+            checkAllValueRanges();
+            updateStatsDisplay();
+        }
+    }
+}
+
+// 显示战斗事件
+function displayBattleEvent(event) {
+    const container = document.getElementById('battle-event-container');
+    const description = document.getElementById('battle-event-description');
+    const enemyName = document.getElementById('enemy-name-display');
+    const enemyAttack = document.getElementById('enemy-attack-display');
+    const enemyHealth = document.getElementById('enemy-health-display');
+    const rewardText = document.getElementById('battle-reward-text');
+    
+    currentBattleEvent = event;
+    
+    // 不在事件框中显示事件描述，正文最后一页已显示
+    if (description) description.textContent = '';
+    
+    if (event.敌方信息) {
+        enemyName.textContent = event.敌方信息.名称 || '未知敌人';
+        enemyAttack.textContent = event.敌方信息.属性?.攻击力 || '中';
+        enemyHealth.textContent = event.敌方信息.属性?.生命力 || '中';
+        
+        if (event.敌方信息.战斗报酬) {
+            const reward = event.敌方信息.战斗报酬;
+            rewardText.textContent = `战斗胜利奖励：${reward.类型}+${reward.数值}`;
+            currentBattleReward = reward;
+        }
+    }
+    
+    // 不直接显示，由 updateStoryDisplay 统一控制（翻到最后一页才显示）
+    // container.classList.add('show');
+}
+
+function hideBattleEvent() {
+    const container = document.getElementById('battle-event-container');
+    container.classList.remove('show');
+    currentBattleEvent = null;
+    battleEvent = 0;
+}
+
+// 应用战斗奖励
+function applyBattleReward(reward) {
+    if (!reward) return;
+    
+    switch (reward.类型) {
+        case '金钱':
+            playerStats.金钱 += reward.数值;
+            break;
+        case '声望':
+            playerStats.声望 += reward.数值;
+            break;
+        case '武学':
+            playerStats.武学 += reward.数值;
+            break;
+        case '学识':
+            playerStats.学识 += reward.数值;
+            break;
+    }
+    checkAllValueRanges();
+    updateStatsDisplay();
+}
+
+function getTierValue(tierLabel) {
+    const tierMap = {
+        '极低': 0,
+        '低': 1,
+        '中': 2,
+        '高': 3,
+        '极高': 4
+    };
+
+    if (typeof tierLabel === 'number' && Number.isFinite(tierLabel)) {
+        return tierLabel;
+    }
+
+    if (typeof tierLabel === 'string' && tierMap.hasOwnProperty(tierLabel)) {
+        return tierMap[tierLabel];
+    }
+
+    return null;
+}
+
+function resolveEnemyBattlePower(enemyInfo) {
+    const wuxueRaw = enemyInfo?.属性?.武学;
+    const wuxueValue = Number(wuxueRaw);
+
+    if (Number.isFinite(wuxueValue) && wuxueValue >= 0 && wuxueValue <= 9) {
+        if (wuxueValue === 0) {
+            console.log('[战斗-掉落] 武学为0，按1处理');
+            return 1;
+        }
+        return wuxueValue;
+    }
+
+    if (wuxueRaw !== undefined && wuxueRaw !== null) {
+        console.log('[战斗-掉落] 武学无效，改用生命/攻击档位:', wuxueRaw);
+    }
+
+    const healthTier = getTierValue(enemyInfo?.属性?.生命力);
+    const attackTier = getTierValue(enemyInfo?.属性?.攻击力);
+
+    const healthValue = Number.isFinite(healthTier) ? healthTier : 0;
+    const attackValue = Number.isFinite(attackTier) ? attackTier : 0;
+    const total = healthValue + attackValue;
+
+    if (!Number.isFinite(healthTier) && !Number.isFinite(attackTier)) {
+        console.log('[战斗-掉落] 生命/攻击档位无效，按0处理');
+    }
+
+    return total;
+}
+
+function rollRarityByPower(powerValue) {
+    if (!Number.isFinite(powerValue) || powerValue <= 0) {
+        return 1;
+    }
+
+    const maxRarity = Math.max(1, Math.floor(powerValue));
+    const minRarity = Math.max(1, maxRarity - 3);
+    let totalWeight = 0;
+    const weights = [];
+
+    for (let rarity = minRarity; rarity <= maxRarity; rarity++) {
+        const weight = Math.max(1, 10 - rarity);
+        weights.push({ rarity, weight });
+        totalWeight += weight;
+    }
+
+    const roll = Math.random() * totalWeight;
+    let cumulative = 0;
+    for (const entry of weights) {
+        cumulative += entry.weight;
+        if (roll <= cumulative) {
+            console.log('[战斗-掉落] 稀有度roll:', {
+                powerValue,
+                minRarity,
+                maxRarity,
+                totalWeight,
+                roll,
+                picked: entry.rarity
+            });
+            return entry.rarity;
+        }
+    }
+
+    return maxRarity;
+}
+
+function generateBattleEventDrop(enemyInfo) {
+    if (!enemyInfo || typeof item_list !== 'object') {
+        console.log('[战斗-掉落] 掉落条件不足，跳过');
+        return null;
+    }
+
+    const powerValue = resolveEnemyBattlePower(enemyInfo);
+    const targetRarity = rollRarityByPower(powerValue);
+
+    const candidates = Object.entries(item_list).filter(([name, item]) => {
+        return item && Number(item.稀有度) === targetRarity;
+    });
+
+    if (candidates.length === 0) {
+        console.log('[战斗-掉落] 未找到对应稀有度道具:', targetRarity);
+        return null;
+    }
+
+    const pickIndex = Math.floor(Math.random() * candidates.length);
+    const [itemName] = candidates[pickIndex];
+
+    inventory[itemName] = (inventory[itemName] || 0) + 1;
+    console.log('[战斗-掉落] 掉落道具:', {
+        itemName,
+        targetRarity,
+        powerValue,
+        candidates: candidates.length
+    });
+
+    return { itemName, targetRarity };
+}
+
+// 解析LLM响应
+function parseLLMResponse(response, mainTextContent) {
+    // 在函数开头添加时间解析
+    randomEvent = 0;
+    battleEvent = 0;
+    if (response && response.时间) {
+        const timeStr = response.时间;
+        console.log(`当前时间：${timeStr}`);
+        
+        // 解析时间格式 "HH:MM"
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})/);
+        if (timeMatch) {
+            const hour = parseInt(timeMatch[1]);
+            const minute = parseInt(timeMatch[2]);
+
+            // 保存当前剧情时间
+            currentGameTime = timeStr;
+            if (window.GameSceneBridge) GameSceneBridge.captureTime(timeMatch[0]);
+
+            // 判断昼夜
+            if (hour >= 6 && hour < 18) {
+                dayNightStatus = 'daytime';
+            } else {
+                dayNightStatus = 'night';
+            }
+            
+            console.log(`昼夜状态更新为：${dayNightStatus}`);
+            
+            // 更新场景背景
+            updateSceneBackgrounds();
+        } else {
+            console.warn(`无法解析时间格式：${timeStr}`);
+        }
+    }
+
+    // 解析用户位置变动
+    if (GameMode === 0 && response && response.用户 && response.用户.位置变动 && response.用户.位置变动 !== 'none') {
+        const userNewLocation = response.用户.位置变动;
+        console.log(`用户位置变动：${userNewLocation}`);
+        
+        // 查找对应的地点ID
+        let userLocationId = null;
+        for (const [locId, locName] of Object.entries(locationNames)) {
+            if (locName === userNewLocation.trim()) {
+                userLocationId = locId;
+                break;
+            }
+        }
+        
+        if (userLocationId) {
+            // 更新用户位置
+            userLocation = userLocationId;
+            userLocation_old = userLocation;
+            // gameData.userLocation = userLocationId;
+            
+            console.log(`用户移动到：${userNewLocation} (${userLocationId})`);
+            
+            // 切换到新场景（如果不在特殊界面）
+            const activeScene = document.querySelector('.scene.active');
+            if (activeScene && 
+                activeScene.id !== 'player-stats-scene' && 
+                activeScene.id !== 'relationships-scene' ) {
+                
+                // 如果用户位置改变，切换场景
+                const currentSceneId = activeScene.id.replace('-scene', '');
+                if (currentSceneId !== userLocationId) {
+                    switchScene(userLocationId);
+                    // 在新场景显示NPC
+                    displayNpcs(userLocationId);
+                }
+            }
+        } else {
+            console.warn(`未找到位置 "${userNewLocation}" 的ID映射`);
+        }
+    }
+
+    // ====== SLG模式：把 MAIN_TEXT 交给 UI 侧的解析（支持流式增量）======
+    if (GameMode === 1 && mainTextContent) {
+        currentStoryText = mainTextContent;
+        updateStoryText(mainTextContent);   // 内部会调用 parseSlgMainText 并即时渲染3层图
+        // 下面保留：处理 response 中的NPC好感等数值变动（如有）
+        if (response && response.当前NPC && typeof response.当前NPC === 'object') {
+            for (const npcName in response.当前NPC) {
+                const npcData = response.当前NPC[npcName];
+                let npcId = npcNameToId[npcName];
+                if (!npcId) {
+                    console.warn(`未找到NPC "${npcName}" 的ID映射`);
+                    continue;
+                }
+                // 好感变化（保持你原有的难度调整和魅力判定逻辑）
+                if (npcData.好感变化 && npcFavorability.hasOwnProperty(npcId)) {
+                    let changeValue = 0;
+                    const currentDifficulty = difficulty || 'normal';
+                    switch (npcData.好感变化) {
+                        case '大幅下降': changeValue = (currentDifficulty === 'hard') ? -4 : -2; break;
+                        case '下降': changeValue = (currentDifficulty === 'hard') ? -2 : -1; break;
+                        case '不变': changeValue = 0; break;
+                        case '上升': changeValue = (currentDifficulty === 'easy') ? 2 : 1; break;
+                        case '大幅上升': changeValue = (currentDifficulty === 'easy') ? 4 : 2; break;
+                    }
+                    let finalChangeValue = changeValue;
+                    let charmMessageShown = false;
+                    if (changeValue > 0) {
+                        const totalTalents = getTotalTalents();
+                        const charmChance = totalTalents.魅力 / 2;
+                        if (Math.random() * 100 < charmChance) {
+                            finalChangeValue = changeValue * 2;
+                            charmMessageShown = true;
+                        }
+                        // 应用周好感度上限限制
+                        finalChangeValue = clampFavorabilityGain(npcId, finalChangeValue);
+                    }
+                    npcFavorability[npcId] = npcFavorability[npcId] + finalChangeValue;
+                    checkAllValueRanges();
+                    if (charmMessageShown && finalChangeValue > 0) {
+                        setTimeout(() => {
+                            showModal(`对${npcName}的魅力属性判定成功，好感度变化加倍`);
+                        }, 100);
+                    }
+                }
+            }
+        }
+    } else {
+        // 原有的解析逻辑（普通模式）
+        slgModeData = [];  // 清空SLG模式数据
+        
+        if (mainTextContent) {
+            currentStoryText = mainTextContent;
+            updateStoryText(currentStoryText);
+        }
+        
+        // 处理当前NPC
+        if (response.当前NPC && typeof response.当前NPC === 'object') {
+            for (const npcName in response.当前NPC) {
+                const npcData = response.当前NPC[npcName];
+                
+                let npcId = npcNameToId[npcName];
+                
+                if (!npcId) {
+                    console.warn(`未找到NPC "${npcName}" 的ID映射`);
+                    continue;
+                }
+                
+                if (npcData.好感变化 && npcFavorability.hasOwnProperty(npcId)) {
+                    let changeValue = 0;
+    
+                    // 根据难度调整好感度变化值
+                    const currentDifficulty = difficulty || 'normal';
+                    
+                    switch (npcData.好感变化) {
+                        case '大幅下降':
+                            if (currentDifficulty === 'easy') {
+                                changeValue = -2;  // 简单：保持原状
+                            } else if (currentDifficulty === 'normal') {
+                                changeValue = -2;  // 普通：大幅下降变为-2
+                            } else if (currentDifficulty === 'hard') {
+                                changeValue = -4;  // 困难：大幅下降-4
+                            }
+                            break;
+                            
+                        case '下降':
+                            if (currentDifficulty === 'easy') {
+                                changeValue = -1;  // 简单：保持原状
+                            } else if (currentDifficulty === 'normal') {
+                                changeValue = -1;  // 普通：下降变为-1
+                            } else if (currentDifficulty === 'hard') {
+                                changeValue = -2;  // 困难：下降-2
+                            }
+                            break;
+                            
+                        case '不变':
+                            changeValue = 0;  // 所有难度都是0
+                            break;
+                            
+                        case '上升':
+                            if (currentDifficulty === 'easy') {
+                                changeValue = 2;   // 简单：保持原状
+                            } else if (currentDifficulty === 'normal') {
+                                changeValue = 1;   // 普通：上升变为+1
+                            } else if (currentDifficulty === 'hard') {
+                                changeValue = 1;   // 困难：上升+1
+                            }
+                            break;
+                            
+                        case '大幅上升':
+                            if (currentDifficulty === 'easy') {
+                                changeValue = 4;   // 简单：保持原状
+                            } else if (currentDifficulty === 'normal') {
+                                changeValue = 2;   // 普通：大幅上升变为+2
+                            } else if (currentDifficulty === 'hard') {
+                                changeValue = 2;   // 困难：大幅上升+2
+                            }
+                            break;
+                    }
+                    
+                    let finalChangeValue = changeValue;
+                    let charmMessageShown = false;
+                    if (changeValue > 0) {
+                        const totalTalents = getTotalTalents();
+                        const charmChance = totalTalents.魅力 / 2;
+                        if (Math.random() * 100 < charmChance) {
+                            finalChangeValue = changeValue * 2;
+                            charmMessageShown = true;
+                        }
+                        // 应用周好感度上限限制
+                        finalChangeValue = clampFavorabilityGain(npcId, finalChangeValue);
+                    }
+                    
+                    npcFavorability[npcId] = npcFavorability[npcId] + finalChangeValue;
+                    checkAllValueRanges();
+                    
+                    if (charmMessageShown && finalChangeValue > 0) {
+                        setTimeout(() => {
+                            showModal(`对${npcName}的魅力属性判定成功，好感度变化加倍`);
+                        }, 100);
+                    }
+                }
+                
+                if (npcData.位置变动) {
+                    // 支持多种格式："演武场|议事厅|后山" 或 "伙房"
+                    const locations = npcData.位置变动.split('|').map(loc => loc.trim());
+                    const toLocation = locations[locations.length - 1]; // 取最后一个位置
+                    
+                    let toLocationId = null;
+                    for (const [locId, locName] of Object.entries(locationNames)) {
+                        if (locName === toLocation.trim()) {
+                            toLocationId = locId;
+                            break;
+                        }
+                    }
+                    
+                    if (toLocationId) {
+                        currentNpcLocations[npcId] = toLocationId;
+                        
+                        switch(npcId) {
+                            case 'A': npcLocationA = toLocationId; break;
+                            case 'B': npcLocationB = toLocationId; break;
+                            case 'C': npcLocationC = toLocationId; break;
+                            case 'D': npcLocationD = toLocationId; break;
+                            case 'E': npcLocationE = toLocationId; break;
+                            case 'F': npcLocationF = toLocationId; break;
+                            case 'G': npcLocationG = toLocationId; break;
+                            case 'H': npcLocationH = toLocationId; break;
+                            case 'I': npcLocationI = toLocationId; break;
+                            case 'J': npcLocationJ = toLocationId; break;
+                            case 'K': npcLocationK = toLocationId; break;
+                            case 'L': npcLocationL = toLocationId; break;
+                            // case 'Z': npcLocationZ = toLocationId; break;  // 占位角色Z - 已注释
+                            case 'M': npcLocationM = toLocationId; break;
+                            case 'N': npcLocationN = toLocationId; break;
+                            case 'O': npcLocationO = toLocationId; break;
+                        }
+                        
+                        console.log(`${npcName} 移动到 ${toLocation}`);
+                    } else {
+                        console.warn(`未找到位置 "${toLocation}" 的ID映射`);
+                    }
+                }
+            }
+        }
+    }
+
+    // 处理随机事件
+    if (response.随机事件) {
+        currentRandomEvent = response.随机事件;
+
+        // 悬赏战斗：保留 SIDENOTE 中 LLM 生成的长版剧情描述，
+        // 只以 activeBounty 为准覆盖敌方数据和报酬（保证数值与议事厅一致）
+        if (currentBattleType === 'bounty' && currentRandomEvent.事件类型 === '战斗事件' && typeof activeBounty !== 'undefined' && activeBounty) {
+            currentRandomEvent.敌方信息 = {
+                名称: activeBounty.enemyName,
+                类别: '悬赏目标',
+                属性: { 攻击力: '中', 生命力: '中', 武学: activeBounty.level },
+                战斗报酬: { 类型: '金钱', 数值: activeBounty.goldReward }
+            };
+            // 如果 LLM 没有给事件描述或描述为空，兜底为精简版
+            if (!currentRandomEvent.事件描述 || currentRandomEvent.事件描述.trim() === '') {
+                currentRandomEvent.事件描述 = `悬赏缉拿：${activeBounty.enemyName}`;
+            }
+        }
+        
+        // 有随机事件时禁用输入
+        inputEnable = 0;
+        if (typeof updateFreeActionInputState === 'function') {
+            updateFreeActionInputState();
+        }
+        
+        if (currentRandomEvent.事件类型 === '战斗事件') {
+            displayBattleEvent(currentRandomEvent);
+            hideRandomEvent();
+        } else {
+            displayRandomEvent(currentRandomEvent);
+            hideBattleEvent();
+        }
+
+        // 确保事件描述作为最后一页追加到正文后
+        try {
+            if (typeof updateStoryText === 'function' && typeof currentStoryText === 'string') {
+                updateStoryText(currentStoryText);
+            }
+        } catch (e) {}
+    } else {
+        // 无随机事件时启用输入
+        inputEnable = 1;
+        if (typeof updateFreeActionInputState === 'function') {
+            updateFreeActionInputState();
+        }
+        
+        hideRandomEvent();
+        hideBattleEvent();
+
+        // 兜底：悬赏战斗模式下 LLM 未按格式规范输出战斗事件 JSON，主动从 activeBounty 构造，避免流程卡死
+        if (currentBattleType === 'bounty' && typeof activeBounty !== 'undefined' && activeBounty) {
+            console.warn('[bounty] LLM 未输出战斗事件，已从 activeBounty 兜底构造');
+            currentRandomEvent = {
+                事件描述: `悬赏缉拿：${activeBounty.enemyName}`,
+                事件类型: '战斗事件',
+                敌方信息: {
+                    名称: activeBounty.enemyName,
+                    类别: '悬赏目标',
+                    属性: { 攻击力: '中', 生命力: '中', 武学: activeBounty.level },
+                    战斗报酬: { 类型: '金钱', 数值: activeBounty.goldReward }
+                }
+            };
+            inputEnable = 0;
+            if (typeof updateFreeActionInputState === 'function') {
+                updateFreeActionInputState();
+            }
+            displayBattleEvent(currentRandomEvent);
+        }
+    }
+    console.log(`NPC好感度 ${npcFavorability}`);
+    // 更新关系显示（如果在关系界面）
+    const activeScene = document.querySelector('.scene.active');
+    if (activeScene && activeScene.id === 'relationships-scene') {
+        updateRelationshipsDisplay();
+    }
+    console.log(`currentNpcLocations ${currentNpcLocations}`);
+    console.log(`npcLocationA ${npcLocationA}`);
+    console.log(`npcLocationB ${npcLocationB}`);
+    console.log(`npcLocationC ${npcLocationC}`);
+    console.log(`npcLocationD ${npcLocationD}`);
+    console.log(`npcLocationE ${npcLocationE}`);
+    console.log(`npcLocationF ${npcLocationF}`);
+    console.log(`npcLocationG ${npcLocationG}`);
+    console.log(`npcLocationH ${npcLocationH}`);
+    console.log(`npcLocationI ${npcLocationI}`);
+    console.log(`npcLocationJ ${npcLocationJ}`);
+    console.log(`npcLocationK ${npcLocationK}`);
+    console.log(`npcLocationL ${npcLocationL}`);
+    // console.log(`npcLocationZ ${npcLocationZ}`);  // 占位角色Z - 已注释
+    console.log(`npcLocationM ${npcLocationM}`);
+    console.log(`npcLocationN ${npcLocationN}`);
+    console.log(`npcLocationO ${npcLocationO}`);
+    // 更新当前场景的NPC显示
+    if (activeScene && activeScene.id !== 'map-scene' && 
+        activeScene.id !== 'player-stats-scene' && 
+        activeScene.id !== 'relationships-scene') {
+        const locationName = activeScene.id.replace('-scene', '');
+        displayNpcs(locationName);
+    }
+    
+    // 同步更新地图地点标签人数显示
+    try {
+        if (typeof updateLocationHeadcountLabels === 'function') {
+            updateLocationHeadcountLabels();
+        }
+    } catch (e) {}
+    
+    checkAllValueRanges();
+    updateAllDisplays();
+
+    // === BGM 更新（仅独立前端有效，SR 链路因 bgmManager 未定义而自动跳过）===
+    if (typeof bgmManager !== 'undefined' && typeof bgmManager.updateByTone === 'function') {
+        var _toneData = (response && response['剧情基调']) ? response['剧情基调'] : null;
+        var _mapLoc = (typeof mapLocation !== 'undefined') ? mapLocation : (gameData ? gameData.mapLocation : '天山派');
+        bgmManager.updateByTone(_toneData, _mapLoc);
+    }
+}
+
+// 监听iframe消息
+function setupMessageListeners() {
+    window.addEventListener('message', async function(event) {
+        if (event.data.type === 'blackjack-exit') {
+            playerStats.金钱 = event.data.money;
+            checkAllValueRanges();
+            updateStatsDisplay();
+            
+            document.getElementById('blackjack-modal').style.display = 'none';
+            document.getElementById('blackjack-iframe').src = '';
+            
+            let message = `赌场游戏结束<br>当前金钱：${playerStats.金钱}`;
+            
+            if (window.pendingMindMessage) {
+                message = '【心性属性判定成功，本次行动不消耗行动点】<br><br>' + message;
+                window.pendingMindMessage = false;
+            }
+            
+            showModal(message);
+        }
+        else if (event.data.type === 'battle-exit') {
+            // 战斗结束：恢复战斗前的BGM（SR 链路因 bgmManager 未定义而自动跳过）
+            if (typeof bgmManager !== 'undefined' && typeof bgmManager.onBattleEnd === 'function') {
+                bgmManager.onBattleEnd();
+            }
+            document.getElementById('battle-modal').style.display = 'none';
+            document.getElementById('battle-iframe').src = '';
+            
+            const result = event.data.result;
+            
+            if (currentBattleType === 'npc') {
+                // 无论胜利还是失败，都标记本周已经切磋过
+                npcSparred[currentBattleNpcId] = true;
+                
+                // 先同步道具数量变化（在发送消息之前，避免saveGameData保存旧数据）
+                if (event.data.remainingItems) {
+                    const remaining = event.data.remainingItems;
+                    inventory['大力丸'] = remaining.daliwan || 0;
+                    inventory['筋骨贴'] = remaining.jingutie || 0;
+                    inventory['金疮药'] = remaining.jinchuangyao || 0;
+                    inventory['霹雳丸'] = remaining.piliwan || 0;
+                    
+                    // 清理数量为0的道具
+                    Object.keys(inventory).forEach(key => {
+                        if (inventory[key] === 0) {
+                            delete inventory[key];
+                        }
+                    });
+                    
+                    console.log('[战斗-NPC切磋] 道具数量已同步:', remaining);
+                }
+                
+                // 获取时间信息
+                const year = Math.floor((currentWeek - 1) / 48) + 1;
+                const remainingWeeks = (currentWeek - 1) % 48;
+                const month = Math.floor(remainingWeeks / 4) + 1;
+                const week = remainingWeeks % 4 + 1;
+                
+                // 获取当前地点
+                const activeScene = document.querySelector('.scene.active');
+                const locationId = activeScene.id.replace('-scene', '');
+                const locationName = locationNames[locationId] || '未知地点';
+                
+                // 构建地点信息
+                let locationInfo = '';
+                if (userLocation === userLocation_old) {
+                    locationInfo = `地点：${locationName}<br>`;
+                } else {
+                    const oldLocationName = locationNames[userLocation_old] || userLocation_old;
+                    locationInfo = `地点：从${oldLocationName}来到${locationName}<br>`;
+                }
+                
+                // 基础信息
+                const _actorName2 = (typeof isInRenderEnvironment === 'function' && isInRenderEnvironment()) ? '{{user}}' : (gameData.playerName || '主角');
+                let resultMessage = `时间：第${year}年第${month}月第${week}周<br>` +
+                                `季节：${seasonNameMap[seasonStatus] || '冬天'}<br>` +
+                                locationInfo +  // 使用新的地点信息
+                                `切磋对手：${currentBattleNpcName}<br>` +
+                                `${_actorName2}行动选择：武艺切磋<br>`;
+                
+                if (result === 'victory') {
+                    resultMessage += `比试结果：胜利<br><br>属性变化：`;
+                    
+                    // 获取对应的奖励配置
+                    const reward = npcSparRewards[currentBattleNpcId];
+                    
+                    if (reward) {
+                        // 应用奖励
+                        if (playerTalents.hasOwnProperty(reward.type)) {
+                            // 天赋属性
+                            playerTalents[reward.type] = Math.min(100, playerTalents[reward.type] + reward.value);
+                        } else if (playerStats.hasOwnProperty(reward.type)) {
+                            // 人物数值
+                            playerStats[reward.type] += reward.value;
+                        }
+                        resultMessage += `<br>${reward.type}: +${reward.value}`;
+                        checkAllValueRanges();
+                        updateStatsDisplay();
+                    }
+                    
+                } else if (result === 'defeat' || result === 'quit') {
+                    resultMessage += `比试结果：失败<br><br>属性变化：<br>无`;
+                }
+                
+                await handleMessageOutput(resultMessage);
+                
+                currentBattleNpcName = null;
+                currentBattleNpcId = null;
+                
+            } else if (currentBattleType === 'event') {
+                // 先同步道具数量变化（在发送消息之前，避免saveGameData保存旧数据）
+                if (event.data.remainingItems) {
+                    const remaining = event.data.remainingItems;
+                    inventory['大力丸'] = remaining.daliwan || 0;
+                    inventory['筋骨贴'] = remaining.jingutie || 0;
+                    inventory['金疮药'] = remaining.jinchuangyao || 0;
+                    inventory['霹雳丸'] = remaining.piliwan || 0;
+                    
+                    // 清理数量为0的道具
+                    Object.keys(inventory).forEach(key => {
+                        if (inventory[key] === 0) {
+                            delete inventory[key];
+                        }
+                    });
+                    
+                    console.log('[战斗-事件] 道具数量已同步:', remaining);
+                }
+                
+                if (result === 'victory') {
+                    let rewardText = '';
+                    let dropText = '';
+                    const rewardSource = currentBattleEvent?.敌方信息?.战斗报酬 || currentBattleReward;
+                    if (rewardSource) {
+                        applyBattleReward(rewardSource);
+                        rewardText = `获得奖励：${rewardSource.类型}+${rewardSource.数值}`;
+                    } else {
+                        console.log('[战斗-事件] 未找到战斗报酬来源');
+                    }
+
+                    const dropResult = generateBattleEventDrop(currentBattleEvent?.敌方信息);
+                    if (dropResult && dropResult.itemName) {
+                        dropText = `获得掉落：${dropResult.itemName}`;
+                    }
+                    const _bvYear = Math.floor((currentWeek - 1) / 48) + 1;
+                    const _bvRemaining = (currentWeek - 1) % 48;
+                    const _bvMonth = Math.floor(_bvRemaining / 4) + 1;
+                    const _bvWeek = _bvRemaining % 4 + 1;
+                    const _bvSeason = seasonNameMap[seasonStatus] || '冬天';
+                    const _bvLoc = mapLocation || '天山派';
+                    await handleMessageOutput(
+                        `时间：第${_bvYear}年第${_bvMonth}月第${_bvWeek}周<br>` +
+                        `季节：${_bvSeason}<br>` +
+                        `地点：${_bvLoc}<br>` +
+                        `事件描述: ${currentBattleEvent.事件描述}<br>` +
+                        `战斗结果: 胜利，击败了${currentBattleEvent.敌方信息.名称}`);
+                    if (rewardText || dropText) {
+                        const modalLines = [rewardText, dropText].filter(Boolean).join('<br>');
+                        showModal(modalLines);
+                    }
+                } else if (result === 'defeat' || result === 'quit') {
+                    const _bdYear = Math.floor((currentWeek - 1) / 48) + 1;
+                    const _bdRemaining = (currentWeek - 1) % 48;
+                    const _bdMonth = Math.floor(_bdRemaining / 4) + 1;
+                    const _bdWeek = _bdRemaining % 4 + 1;
+                    await handleMessageOutput(
+                        `时间：第${_bdYear}年第${_bdMonth}月第${_bdWeek}周<br>` +
+                        `季节：${seasonNameMap[seasonStatus] || '冬天'}<br>` +
+                        `地点：${mapLocation || '天山派'}<br>` +
+                        `事件描述: ${currentBattleEvent.事件描述}<br>` +
+                        `战斗结果: ${result === 'quit' ? '放弃战斗' : `落败，败给了${currentBattleEvent.敌方信息.名称}`}`);
+                }
+                
+                hideBattleEvent();
+            } else if (currentBattleType === 'bounty') {
+                // 悬赏战斗结算：奖励来源固定为 activeBounty（不信任 SIDENOTE 里 LLM 自行编造的数值）
+                if (event.data.remainingItems) {
+                    const remaining = event.data.remainingItems;
+                    inventory['大力丸'] = remaining.daliwan || 0;
+                    inventory['筋骨贴'] = remaining.jingutie || 0;
+                    inventory['金疮药'] = remaining.jinchuangyao || 0;
+                    inventory['霹雳丸'] = remaining.piliwan || 0;
+
+                    Object.keys(inventory).forEach(key => {
+                        if (inventory[key] === 0) {
+                            delete inventory[key];
+                        }
+                    });
+
+                    console.log('[战斗-悬赏] 道具数量已同步:', remaining);
+                }
+
+                const _boYear = Math.floor((currentWeek - 1) / 48) + 1;
+                const _boRemaining = (currentWeek - 1) % 48;
+                const _boMonth = Math.floor(_boRemaining / 4) + 1;
+                const _boWeek = _boRemaining % 4 + 1;
+                const _boSeason = seasonNameMap[seasonStatus] || '冬天';
+                const _boLoc = mapLocation || '天山派';
+                const _bountyEnemyName = (activeBounty && activeBounty.enemyName) || (currentBattleEvent?.敌方信息?.名称) || '悬赏目标';
+
+                if (result === 'victory') {
+                    let rewardText = '';
+                    let dropText = '';
+
+                    // 赏金
+                    if (activeBounty && typeof activeBounty.goldReward === 'number') {
+                        applyBattleReward({ 类型: '金钱', 数值: activeBounty.goldReward });
+                        rewardText = `获得赏金：${activeBounty.goldReward}`;
+                    }
+                    // 声望
+                    if (activeBounty && typeof activeBounty.reputationReward === 'number') {
+                        playerStats.声望 += activeBounty.reputationReward;
+                        rewardText += (rewardText ? '<br>' : '') + `获得声望：${activeBounty.reputationReward}`;
+                    }
+                    // 掉落物
+                    const dropResult = generateBattleEventDrop(currentBattleEvent?.敌方信息);
+                    if (dropResult && dropResult.itemName) {
+                        dropText = `获得掉落：${dropResult.itemName}`;
+                    }
+
+                    activeBounty = null;
+                    lastBountyAcceptWeek = currentWeek;  // 兜底：战斗跨周结算时按结算周记额度
+                    currentBattleType = null;
+                    checkAllValueRanges();
+                    updateAllDisplays();
+                    syncGameDataFromVariables();
+                    hideBattleEvent();
+
+                    await handleMessageOutput(
+                        `时间：第${_boYear}年第${_boMonth}月第${_boWeek}周<br>` +
+                        `季节：${_boSeason}<br>` +
+                        `地点：${_boLoc}<br>` +
+                        `悬赏目标：${_bountyEnemyName}<br>` +
+                        `战斗结果: 胜利，成功缉拿悬赏目标`);
+
+                    if (rewardText || dropText) {
+                        const modalLines = [rewardText, dropText].filter(Boolean).join('<br>');
+                        showModal(modalLines);
+                    }
+                } else if (result === 'defeat' || result === 'quit') {
+                    // 悬赏失败/放弃：清空任务，不可重复挑战
+                    activeBounty = null;
+                    lastBountyAcceptWeek = currentWeek;  // 兜底：战斗跨周结算时按结算周记额度
+                    currentBattleType = null;
+                    syncGameDataFromVariables();
+                    hideBattleEvent();
+                    await handleMessageOutput(
+                        `时间：第${_boYear}年第${_boMonth}月第${_boWeek}周<br>` +
+                        `季节：${_boSeason}<br>` +
+                        `地点：${_boLoc}<br>` +
+                        `悬赏目标：${_bountyEnemyName}<br>` +
+                        `战斗结果: ${result === 'quit' ? '放弃战斗' : '落败，悬赏目标逃脱'}`);
+                }
+            } else {
+                // 非NPC切磋、非事件战斗的情况，也需要同步道具
+                if (event.data.remainingItems) {
+                    const remaining = event.data.remainingItems;
+                    inventory['大力丸'] = remaining.daliwan || 0;
+                    inventory['筋骨贴'] = remaining.jingutie || 0;
+                    inventory['金疮药'] = remaining.jinchuangyao || 0;
+                    inventory['霹雳丸'] = remaining.piliwan || 0;
+                    
+                    // 清理数量为0的道具
+                    Object.keys(inventory).forEach(key => {
+                        if (inventory[key] === 0) {
+                            delete inventory[key];
+                        }
+                    });
+                    
+                    console.log('[战斗-其他] 道具数量已同步:', remaining);
+                }
+            }
+            
+            currentBattleType = null;
+            currentBattleReward = null;
+        }
+        else if (event.data.type === 'farm-exit') {
+            // 更新金钱
+            playerStats.金钱 = event.data.money;
+            
+            // 更新种子数量
+            if (event.data.seeds) {
+                inventory['小麦种子'] = event.data.seeds.wheat || 0;
+                inventory['茄子种子'] = event.data.seeds.eggplant || 0;
+                inventory['甜瓜种子'] = event.data.seeds.melon || 0;
+                inventory['甘蔗种子'] = event.data.seeds.sugarcane || 0;
+                
+                // 清理数量为0的种子
+                Object.keys(inventory).forEach(key => {
+                    if (inventory[key] === 0) {
+                        delete inventory[key];
+                    }
+                });
+            }
+            
+            // 保存农场状态
+            lastFarmWeek = currentWeek;
+            farmGrid = event.data.farmGrid || [];
+            
+            checkAllValueRanges();
+            updateAllDisplays();
+            // await saveGameData();  // 保存游戏数据
+            
+            document.getElementById('farm-modal').style.display = 'none';
+            document.getElementById('farm-iframe').src = '';
+        }
+        else if (event.data.type === 'alchemy-exit') {
+            // 更新金钱
+            playerStats.金钱 = event.data.money;
+            
+            // 更新药材数量
+            if (event.data.herbs) {
+                inventory['丹参'] = event.data.herbs.danshen || 0;
+                inventory['当归'] = event.data.herbs.danggui || 0;
+                inventory['没药'] = event.data.herbs.moyao || 0;
+                inventory['沉香'] = event.data.herbs.chenxiang || 0;
+            }
+            
+            // 更新丹药数量
+            if (event.data.pills) {
+                inventory['大力丸'] = event.data.pills.daliwan || 0;
+                inventory['筋骨贴'] = event.data.pills.jingutie || 0;
+                inventory['金疮药'] = event.data.pills.jinchuangyao || 0;
+                inventory['霹雳丸'] = event.data.pills.piliwan || 0;
+                inventory['培元丹-根骨'] = event.data.pills.peiyuan_rootBone || 0;
+                inventory['培元丹-悟性'] = event.data.pills.peiyuan_comprehension || 0;
+                inventory['培元丹-心性'] = event.data.pills.peiyuan_nature || 0;
+                inventory['培元丹-魅力'] = event.data.pills.peiyuan_charm || 0;
+                inventory['易筋丹-根骨'] = event.data.pills.yijin_rootBone || 0;
+                inventory['易筋丹-悟性'] = event.data.pills.yijin_comprehension || 0;
+                inventory['易筋丹-心性'] = event.data.pills.yijin_nature || 0;
+                inventory['易筋丹-魅力'] = event.data.pills.yijin_charm || 0;
+                inventory['九转金丹-根骨'] = event.data.pills.jiuzhuan_rootBone || 0;
+                inventory['九转金丹-悟性'] = event.data.pills.jiuzhuan_comprehension || 0;
+                inventory['九转金丹-心性'] = event.data.pills.jiuzhuan_nature || 0;
+                inventory['九转金丹-魅力'] = event.data.pills.jiuzhuan_charm || 0;
+            }
+            
+            // 清理数量为0的物品
+            Object.keys(inventory).forEach(key => {
+                if (inventory[key] === 0) {
+                    delete inventory[key];
+                }
+            });
+            
+            // 标记本周已炼丹
+            alchemyDone = true;
+            
+            checkAllValueRanges();
+            updateAllDisplays();
+            // await saveGameData();  // 保存游戏数据
+            
+            document.getElementById('alchemy-modal').style.display = 'none';
+            document.getElementById('alchemy-iframe').src = '';
+        }
+        else if (event.data.type === 'worldmap-close') {
+            // 只关闭弹窗，不做任何其他操作
+            document.getElementById('worldmap-modal').style.display = 'none';
+            document.getElementById('worldmap-iframe').src = '';
+            return;  // 直接返回，不执行任何其他操作
+        }
+        else if (event.data.type === 'worldmap-exit') {
+            // 关闭世界地图弹窗
+            document.getElementById('worldmap-modal').style.display = 'none';
+            document.getElementById('worldmap-iframe').src = '';
+            
+            // 更新游戏状态
+            if (event.data.mapLocation) {
+                mapLocation = event.data.mapLocation;
+            }
+            if (event.data.companionNPC) {
+                companionNPC = event.data.companionNPC;
+            }
+            if (event.data.randomEvent !== undefined) {
+                randomEvent = event.data.randomEvent;
+            }
+            if (event.data.battleEvent !== undefined) {
+                battleEvent = event.data.battleEvent;
+            }
+            
+            // 构建返回消息
+            const year = Math.floor((currentWeek - 1) / 48) + 1;
+            const remainingWeeks = (currentWeek - 1) % 48;
+            const month = Math.floor(remainingWeeks / 4) + 1;
+            const week = remainingWeeks % 4 + 1;
+            
+            // 生成随行NPC名字列表
+            let companionNames = '无';
+            if (companionNPC && companionNPC.length > 0) {
+                // 将NPC名字转换为ID
+                const npcIds = companionNPC.map(name => {
+                    // 如果传递的是名字，转换为ID
+                    return npcNameToId[name] || name;
+                });
+                // 再从ID获取名字（确保格式正确）
+                companionNames = npcIds.map(id => npcs[id]?.name || id).join('、');
+            }
+
+            // 悬赏战斗：优先于普通"下山游历"流程处理。bountyBattle 只有 index.html 专属的
+            // bounty-service.js + 改造后的 showWorldMap() 才会产生，SR 链路不可达（详见开发文档第九节）
+            if (event.data.bountyBattle === 1 && typeof activeBounty !== 'undefined' && activeBounty) {
+                currentBattleType = 'bounty';  // 提前标记，battle-exit 时判断用
+
+                const _actorNameBounty = (typeof isInRenderEnvironment === 'function' && isInRenderEnvironment()) ? '{{user}}' : (gameData.playerName || '主角');
+                const bountyUserMessage =
+                    `时间：第${year}年第${month}月第${week}周<br>` +
+                    `季节：${seasonNameMap[seasonStatus] || '冬天'}<br>` +
+                    `地点：${mapLocation}<br>` +
+                    `随行NPC：${companionNames}<br>` +
+                    `${_actorNameBounty}行动选择：悬赏缉拿`;
+
+                checkAllValueRanges();
+                updateAllDisplays();
+
+                // 地点信息迭代：与普通下山游历一致，不因走 bounty 分支而跳过
+                if (!isInRenderEnvironment() && typeof storageService !== 'undefined' && typeof gameData !== 'undefined') {
+                    gameData.locationVisit = {
+                        active: true,
+                        location: mapLocation,
+                        startUiIndex: storageService.loadUIConversation().length,
+                        startWeek: currentWeek
+                    };
+                }
+
+                // 关键：SIDENOTE 是否输出"随机事件.战斗事件"JSON结构由全局格式规范
+                // （char_card_information/110格式规范_精简版_独立前端.txt）里的 battleEventforFormat
+                // 条件决定，读的是 gameData.battleEvent，必须在调用 handleMessageOutput 前置 1
+                // （randomEvent 置 0 避免误触发选项事件）
+                battleEvent = 1;
+                randomEvent = 0;
+                GameMode = 1;
+            if (window.GameSceneBridge) GameSceneBridge.invalidate('enter-gal');
+                await handleMessageOutput(bountyUserMessage);
+                return;  // 不走普通 worldmap-exit 的后续逻辑
+            }
+
+            // 构建事件信息
+            let eventInfo = '';
+            if (randomEvent === 1) {
+                eventInfo += '<br>特殊事件：发现随机事件';
+            }
+            if (battleEvent === 1) {
+                eventInfo += '<br>特殊事件：遭遇战斗';
+            }
+            
+            const _actorName3 = (typeof isInRenderEnvironment === 'function' && isInRenderEnvironment()) ? '{{user}}' : (gameData.playerName || '主角');
+            const resultMessage = 
+                `时间：第${year}年第${month}月第${week}周<br>` +
+                `季节：${seasonNameMap[seasonStatus] || '冬天'}<br>` +
+                `抵达目的地：${mapLocation}<br>` +
+                `随行NPC：${companionNames}<br>` +
+                `${_actorName3}行动选择：下山游历` +
+                eventInfo;
+            
+            // 保存游戏数据
+            checkAllValueRanges();
+            updateAllDisplays();
+            // await saveGameData();
+
+            // 地点信息迭代：记录本次访问起点（目的地 + 当时的 uiConversation 下标）
+            // module/game-events.js 是 ST/独立前端共享文件，index - SR.html 没有 storageService，必须加环境守卫
+            if (!isInRenderEnvironment() && typeof storageService !== 'undefined' && typeof gameData !== 'undefined') {
+                gameData.locationVisit = {
+                    active: true,
+                    location: mapLocation,
+                    startUiIndex: storageService.loadUIConversation().length,
+                    startWeek: currentWeek
+                };
+            }
+            
+            // 发送消息
+            GameMode = 1;
+            if (window.GameSceneBridge) GameSceneBridge.invalidate('enter-gal');
+            await handleMessageOutput(resultMessage);
+        }
+    });
+}

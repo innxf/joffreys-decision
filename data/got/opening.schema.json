@@ -1,0 +1,2705 @@
+{
+  "type": "object",
+  "properties": {
+    "model_id": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "$schema": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "runtime_integrated": {
+          "type": "boolean"
+        },
+        "pressure": {
+          "type": "string"
+        },
+        "source_hashes": {
+          "type": "object",
+          "properties": {
+            "第一阶段事件推进设计.md": {
+              "type": "string"
+            },
+            "第一阶段人物分级与人设编写规范.md": {
+              "type": "string"
+            },
+            "第一阶段人物提示词.md": {
+              "type": "string"
+            },
+            "第一阶段人物考据与行为验收.md": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "第一阶段事件推进设计.md",
+            "第一阶段人物分级与人设编写规范.md",
+            "第一阶段人物提示词.md",
+            "第一阶段人物考据与行为验收.md"
+          ],
+          "additionalProperties": false
+        },
+        "authority": {
+          "type": "string"
+        },
+        "storage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "created",
+        "status",
+        "runtime_integrated",
+        "pressure",
+        "source_hashes",
+        "authority",
+        "storage"
+      ],
+      "additionalProperties": false
+    },
+    "clock": {
+      "type": "object",
+      "properties": {
+        "epoch": {
+          "type": "string"
+        },
+        "elapsed_minutes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "calendar_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "display_phase": {
+          "type": "string"
+        },
+        "basis": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "detail": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "refs",
+            "detail"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "epoch",
+        "elapsed_minutes",
+        "calendar_date",
+        "display_phase",
+        "basis"
+      ],
+      "additionalProperties": false
+    },
+    "revision": {
+      "type": "object",
+      "properties": {
+        "state_id": {
+          "type": "string"
+        },
+        "parent_state_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "branch_id": {
+          "type": "string"
+        },
+        "turn_id": {
+          "type": "string"
+        },
+        "commit_id": {
+          "type": "string"
+        },
+        "applied_commit_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "last_settled_minute": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "state_id",
+        "parent_state_id",
+        "branch_id",
+        "turn_id",
+        "commit_id",
+        "applied_commit_ids",
+        "last_settled_minute"
+      ],
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "verification": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "uri",
+          "scope",
+          "verification"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "life": {
+            "type": "string",
+            "enum": [
+              "存活",
+              "已故",
+              "生死未知"
+            ]
+          },
+          "location": {
+            "type": "string"
+          },
+          "location_precision": {
+            "type": "string"
+          },
+          "mobility": {
+            "type": "string",
+            "enum": [
+              "被俘",
+              "受控",
+              "不适用",
+              "受任务、路程与守卫条件限制"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "actual_authority": {
+            "type": "string"
+          },
+          "authority_basis": {
+            "type": "string"
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_updated_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "life",
+          "location",
+          "location_precision",
+          "mobility",
+          "roles",
+          "actual_authority",
+          "authority_basis",
+          "limits",
+          "last_updated_minute",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "current": {
+            "type": "string"
+          },
+          "ongoing": {
+            "type": "string"
+          },
+          "next_condition": {
+            "type": "string"
+          },
+          "responsible": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "event_refs",
+          "current",
+          "ongoing",
+          "next_condition",
+          "responsible",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "offices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "holder": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "limits": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "holder",
+          "status",
+          "limits",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "kingsguard": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "holder": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "office_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "duty": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "holder",
+          "office_ref",
+          "duty",
+          "available",
+          "basis"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 7,
+      "maxItems": 7
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "statement": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "established_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "statement",
+          "visibility",
+          "event_refs",
+          "established_minute",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "commitments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string"
+          },
+          "parties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "terms": {
+            "type": "string"
+          },
+          "actual_controller": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string"
+          },
+          "dissolution_cost": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "parties",
+          "status",
+          "terms",
+          "actual_controller",
+          "event_refs",
+          "visibility",
+          "dissolution_cost",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observer": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "assessment": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_updated_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "observer",
+          "target",
+          "assessment",
+          "evidence",
+          "event_refs",
+          "last_updated_minute",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sender": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string"
+          },
+          "fact_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "content": {
+            "type": "string"
+          },
+          "sent_minute": {
+            "type": "integer"
+          },
+          "arrival_window_minutes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "delivered_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "待发送",
+              "在途",
+              "已收到",
+              "被截获",
+              "失联",
+              "已取消未发送"
+            ]
+          },
+          "channel": {
+            "type": "string"
+          },
+          "obstruction": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "arrival_condition": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "sender",
+          "recipient",
+          "fact_refs",
+          "content",
+          "sent_minute",
+          "arrival_window_minutes",
+          "delivered_minute",
+          "status",
+          "channel",
+          "obstruction",
+          "arrival_condition",
+          "event_refs",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "beliefs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "actor": {
+            "type": "string"
+          },
+          "fact_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "亲历或既有可靠认知",
+              "官署报告可信待核",
+              "可信转述",
+              "有限掌握",
+              "存疑",
+              "不相信",
+              "尚未知情"
+            ]
+          },
+          "assessment": {
+            "type": "string"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "public_stance": {
+            "type": "string"
+          },
+          "updated_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "actor",
+          "fact_refs",
+          "confidence",
+          "assessment",
+          "evidence_refs",
+          "public_stance",
+          "updated_minute",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "orders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "已发出",
+              "已送达",
+              "已接受",
+              "执行中",
+              "部分完成",
+              "已完成",
+              "被拒绝",
+              "执行失败",
+              "已撤销"
+            ]
+          },
+          "issued_minute": {
+            "type": "integer"
+          },
+          "delivered_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "accepted_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "completed_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "report_message_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reservation_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "authority": {
+            "type": "string"
+          },
+          "execution_condition": {
+            "type": "string"
+          },
+          "cancellation_order_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "issuer",
+          "recipient",
+          "action",
+          "status",
+          "issued_minute",
+          "delivered_minute",
+          "accepted_minute",
+          "completed_minute",
+          "report_message_id",
+          "event_refs",
+          "reservation_refs",
+          "authority",
+          "execution_condition",
+          "cancellation_order_id",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "controller": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string"
+              },
+              "design_range": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "as_of_minute": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "refs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "refs",
+                  "detail"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "value",
+              "unit",
+              "design_range",
+              "as_of_minute",
+              "basis"
+            ],
+            "additionalProperties": false
+          },
+          "condition": {
+            "type": "string"
+          },
+          "access": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "owner",
+          "controller",
+          "location",
+          "quantity",
+          "condition",
+          "access"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "reservations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resource_id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "owner": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "有效",
+              "部分使用",
+              "已用尽",
+              "已释放"
+            ]
+          },
+          "start_minute": {
+            "type": "integer"
+          },
+          "end_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "release_rule": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "resource_id",
+          "amount",
+          "owner",
+          "target_id",
+          "purpose",
+          "status",
+          "start_minute",
+          "end_minute",
+          "release_rule",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "obligations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "due_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string"
+          },
+          "account": {
+            "type": "string"
+          },
+          "payee": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reservation_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "待核验或支付",
+              "部分支付",
+              "已支付",
+              "逾期",
+              "已撤销"
+            ]
+          },
+          "payment_condition": {
+            "type": "string"
+          },
+          "partial_allowed": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "due_minute",
+          "amount",
+          "unit",
+          "account",
+          "payee",
+          "reason",
+          "reservation_id",
+          "status",
+          "payment_condition",
+          "partial_allowed",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "receivables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "earliest_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "expected_amount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "预计未到账",
+              "部分到账",
+              "已到账",
+              "延误",
+              "取消"
+            ]
+          },
+          "condition": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "earliest_minute",
+          "expected_amount",
+          "unit",
+          "destination",
+          "source",
+          "status",
+          "condition",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "consumption": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resource_id": {
+            "type": "string"
+          },
+          "rate_per_day": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string"
+          },
+          "last_settled_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fractional_remainder": {
+            "type": "number",
+            "minimum": 0
+          },
+          "condition": {
+            "type": "string"
+          },
+          "change_rule": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "resource_id",
+          "rate_per_day",
+          "unit",
+          "last_settled_minute",
+          "fractional_remainder",
+          "condition",
+          "change_rule",
+          "notes",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "supply_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "change_conditions": {
+            "type": "string"
+          },
+          "guaranteed_deliveries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "origin",
+          "destination",
+          "status",
+          "operator",
+          "event_refs",
+          "change_conditions",
+          "guaranteed_deliveries",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "forces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "controller": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "strength": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string"
+              },
+              "design_range": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "as_of_minute": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "refs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "refs",
+                  "detail"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "value",
+              "unit",
+              "design_range",
+              "as_of_minute",
+              "basis"
+            ],
+            "additionalProperties": false
+          },
+          "scale_grade": {
+            "type": "string"
+          },
+          "readiness": {
+            "type": "string"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "task": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "until": {
+                  "type": "string"
+                },
+                "group_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "task",
+                "count",
+                "until"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "food_pool": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "controller",
+          "location",
+          "strength",
+          "scale_grade",
+          "readiness",
+          "allocations",
+          "food_pool",
+          "event_refs",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "responsible": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "earliest_work_days": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "required_resources": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^RES-"
+            },
+            "additionalProperties": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "estimated_cash_cost": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string"
+              },
+              "design_range": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "as_of_minute": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "refs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "refs",
+                  "detail"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "value",
+              "unit",
+              "design_range",
+              "as_of_minute",
+              "basis"
+            ],
+            "additionalProperties": false
+          },
+          "active_reservation_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "progress": {
+            "type": "string"
+          },
+          "completion_condition": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "responsible",
+          "event_refs",
+          "earliest_work_days",
+          "required_resources",
+          "estimated_cash_cost",
+          "active_reservation_id",
+          "progress",
+          "completion_condition",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "fleets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "controller": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string"
+              },
+              "design_range": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "as_of_minute": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "refs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "refs",
+                  "detail"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "value",
+              "unit",
+              "design_range",
+              "as_of_minute",
+              "basis"
+            ],
+            "additionalProperties": false
+          },
+          "seaworthy": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "in_repair": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "task": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "task",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "crew": {
+            "type": "string"
+          },
+          "external_scale": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          },
+          "food_pool": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hull_classes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "class_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "seaworthy": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "in_repair": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "crew_per_active": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "class_id",
+                "name",
+                "total",
+                "seaworthy",
+                "in_repair",
+                "crew_per_active"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "crew_manifest": {
+            "type": "object",
+            "properties": {
+              "active_assigned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "repair_retained": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "total_supported": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "full_fleet_requirement": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "additional_required_if_all_repaired": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "basis_kind": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "active_assigned",
+              "repair_retained",
+              "total_supported",
+              "full_fleet_requirement",
+              "additional_required_if_all_repaired",
+              "basis_kind",
+              "notes"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "controller",
+          "location",
+          "total",
+          "seaworthy",
+          "in_repair",
+          "tasks",
+          "crew",
+          "external_scale",
+          "event_refs",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "未就绪",
+              "可筹备",
+              "执行中",
+              "已完成",
+              "被替代",
+              "失效"
+            ]
+          },
+          "stage_detail": {
+            "type": "string"
+          },
+          "completed_once": {
+            "type": "boolean"
+          },
+          "completed_components": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pending_components": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "next_check_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "blocked_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "result_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "source",
+          "status",
+          "stage_detail",
+          "completed_once",
+          "completed_components",
+          "pending_components",
+          "next_check_minute",
+          "blocked_reason",
+          "result_refs",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "可行动",
+              "条件不足",
+              "已约定",
+              "执行中",
+              "已完成",
+              "已关闭"
+            ]
+          },
+          "earliest_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deadline_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "close_condition": {
+            "type": "string"
+          },
+          "extension_condition": {
+            "type": "string"
+          },
+          "player_access": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "refs",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "event_refs",
+          "participants",
+          "status",
+          "earliest_minute",
+          "deadline_minute",
+          "close_condition",
+          "extension_condition",
+          "player_access",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "briefing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string"
+          },
+          "message_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "other_evidence": {
+            "type": "string"
+          },
+          "event_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reporter": {
+            "type": "string"
+          },
+          "decision_prompt": {
+            "type": "string"
+          },
+          "auto_action": {
+            "type": "string"
+          },
+          "hidden_excluded": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "recipient",
+          "message_refs",
+          "other_evidence",
+          "event_refs",
+          "reporter",
+          "decision_prompt",
+          "auto_action",
+          "hidden_excluded"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4
+    },
+    "transfers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "resource_id",
+          "source_pool",
+          "destination_pool",
+          "quantity",
+          "in_transit",
+          "lost",
+          "received",
+          "sent_minute",
+          "arrival_minute",
+          "status",
+          "commit_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "resource_id": {
+            "type": "string"
+          },
+          "source_pool": {
+            "type": "string"
+          },
+          "destination_pool": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "in_transit": {
+            "type": "number",
+            "minimum": 0
+          },
+          "lost": {
+            "type": "number",
+            "minimum": 0
+          },
+          "received": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sent_minute": {
+            "type": "integer"
+          },
+          "arrival_minute": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "在途",
+              "部分到货",
+              "已到货",
+              "全损",
+              "已取消未出发"
+            ]
+          },
+          "commit_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "settlements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "commit_id",
+          "branch_id",
+          "turn_id",
+          "parent_state_id",
+          "result_state_id",
+          "at_minute",
+          "kind",
+          "target_id",
+          "delta",
+          "unit",
+          "reason",
+          "evidence_refs"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "commit_id": {
+            "type": "string"
+          },
+          "branch_id": {
+            "type": "string"
+          },
+          "turn_id": {
+            "type": "string"
+          },
+          "parent_state_id": {
+            "type": "string"
+          },
+          "result_state_id": {
+            "type": "string"
+          },
+          "at_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "delta": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "update_contract": {
+      "type": "object",
+      "properties": {
+        "writer": {
+          "type": "string"
+        },
+        "readers": {
+          "type": "string"
+        },
+        "minimum_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "order_statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "event_statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "message_statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "transaction_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "transaction_rule": {
+          "type": "string"
+        },
+        "branch_rule": {
+          "type": "string"
+        },
+        "time_rule": {
+          "type": "string"
+        },
+        "resource_rule": {
+          "type": "string"
+        },
+        "failure_rule": {
+          "type": "string"
+        },
+        "invariants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_host_gate": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "writer",
+        "readers",
+        "minimum_checks",
+        "order_statuses",
+        "event_statuses",
+        "message_statuses",
+        "transaction_fields",
+        "transaction_rule",
+        "branch_rule",
+        "time_rule",
+        "resource_rule",
+        "failure_rule",
+        "invariants",
+        "next_host_gate"
+      ],
+      "additionalProperties": false
+    },
+    "review_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "preconditions": {
+            "type": "string"
+          },
+          "timeline": {
+            "type": "string"
+          },
+          "expected": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "changes_opening": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "preconditions",
+          "timeline",
+          "expected",
+          "method",
+          "status",
+          "changes_opening"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "model_id",
+    "model_version",
+    "$schema",
+    "meta",
+    "clock",
+    "revision",
+    "sources",
+    "entities",
+    "actors",
+    "regions",
+    "offices",
+    "kingsguard",
+    "facts",
+    "commitments",
+    "relations",
+    "messages",
+    "beliefs",
+    "orders",
+    "resources",
+    "reservations",
+    "obligations",
+    "receivables",
+    "consumption",
+    "supply_routes",
+    "forces",
+    "projects",
+    "fleets",
+    "events",
+    "opportunities",
+    "briefing",
+    "transfers",
+    "settlements",
+    "update_contract",
+    "review_cases"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "权游第一阶段状态模型 v1.1.0（军事财政离线基线）",
+  "description": "结构校验不代替跨表引用、数量守恒、权限、知情或宿主事务校验；语义检查见Markdown。"
+}
