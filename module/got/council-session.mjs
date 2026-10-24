@@ -1,3 +1,4 @@
+import {quoteMatches} from './middleware-evidence.mjs';
 import {saveCharacter} from './character-state.mjs';
 import {startCouncilV3,applyCouncilV3} from './council-v3.mjs';
 import {campaignIssue,campaignReport,campaignDecision} from './campaign-engine.mjs';
@@ -24,10 +25,12 @@ export function checkCouncilBatch(g,batch,result){
   checkPost(g,t.context,row.post,t.prose);
   if(batch.resolution){
    for(const p of row.post.candidates){
-    need(!batch.resolution.choice&&t.id===batch.resolution.turn&&p.speaker===(batch.resolution.speaker||'npc')&&(p.quote.includes(batch.resolution.quote)||batch.resolution.quote.includes(p.quote)),'翻译包含未选定的方案，请核对本题裁决。');
+    need(!batch.resolution.choice&&t.id===batch.resolution.turn&&p.speaker===(batch.resolution.speaker||'npc')&&(quoteMatches(Array.isArray(p.quote)?p.quote.join('\n'):p.quote,batch.resolution.quote)||quoteMatches(Array.isArray(batch.resolution.quote)?batch.resolution.quote.join('\n'):batch.resolution.quote,p.quote)),'翻译包含未选定的方案，请核对本题裁决。');
     need(batch.resolution.conditions.every(c=>p.conditions.includes(c)),'翻译遗漏尚未落实的条件。');
+    if(batch.resolution.binding_version===2)need((batch.resolution.actions||[]).some(a=>JSON.stringify(Object.entries(a).sort())===JSON.stringify(Object.entries(p.action).sort())),'ACTION_DIFFERS_FROM_SELECTED_PROPOSAL');
    }
   }
+  if(batch.resolution?.binding_version===2&&t.id===batch.resolution.turn)need(row.post.candidates.length===(batch.resolution.actions||[]).length,'SELECTED_ACTION_MISSING');
   need(t.pre.intent.mode!=='claim'||!row.post.candidates.length,'声称完成不能形成补执行。');
  }
  return result;

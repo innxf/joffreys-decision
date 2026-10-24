@@ -4,7 +4,7 @@ import {barristanChoices} from './opening-content.mjs';
 import {eventProposal,proposalQueued,queueCardProposal} from './event-cards.mjs';
 import {pendingCharacters,saveCharacter,validCharacterRecord} from './character-state.mjs';
 import {RuleError,applyWorldAction} from './world-engine.mjs';
-import {actorEvidence,initializeDialogue,buildContext,buildCharacterReview,checkPre,checkPost,decisionTarget,target,observe,audience,exact,ensure,checkAction,profiles} from './dialogue-core.mjs';
+import {actorEvidence,initializeDialogue,buildContext,buildCharacterReview,checkPre,checkPost,decisionTarget,target,observe,audience,exact,ensure,checkAction,profiles,normalizePost} from './dialogue-core.mjs';
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const key=g=>'D-'+(++g.execution.serial);
 function safe(fn){try{return fn();}catch(e){if(e instanceof RuleError)throw e;throw new RuleError(e.message,'invalid');}}
@@ -15,7 +15,7 @@ export function dialogueErrors(d,g){
   ensure(d.agendas&&typeof d.agendas==='object'&&!Array.isArray(d.agendas),'INVALID_DIALOGUE_SAVE');
   for(const rows of [d.turns,d.proposals,d.observations,d.requests])ensure(new Set(rows.map(r=>r.id)).size===rows.length,'DUPLICATE_DIALOGUE_RECORD');
   for(const p of d.presence)ensure(g.activities.some(a=>a.id===p.activity_ref&&a.participants.includes(p.actor)),'PRESENCE_WITHOUT_ACTIVITY');
-  for(const t of d.turns){ensure(profiles[t.actor]&&typeof t.prose==='string'&&typeof t.input==='string'&&Array.isArray(t.audience)&&t.audience.includes(t.actor)&&t.audience.includes('U001')&&Number.isSafeInteger(t.at)&&t.at>=0&&t.at<=g.clock.elapsed_minutes&&t.post&&t.pre&&t.context,'INVALID_FORMAL_DIALOGUE');ensure(typeof t.post.summary==='string'&&Array.isArray(t.post.experiences)&&Array.isArray(t.post.decisions)&&Array.isArray(t.request_records),'INVALID_FORMAL_DIALOGUE');}
+  for(const t of d.turns){ensure(profiles[t.actor]&&typeof t.prose==='string'&&typeof t.input==='string'&&Array.isArray(t.audience)&&t.audience.includes(t.actor)&&t.audience.includes('U001')&&Number.isSafeInteger(t.at)&&t.at>=0&&t.at<=g.clock.elapsed_minutes&&(t.post||t.settlement)&&t.pre&&t.context,'INVALID_FORMAL_DIALOGUE');if(t.settlement){ensure(['pending','running','ready','interrupted','failed','partial','done'].includes(t.settlement.status)&&typeof t.settlement.branch==='string'&&Array.isArray(t.settlement.issues),'INVALID_SETTLEMENT_RECORD');ensure(!/"(?:key|apiKey|authorization)"\s*:/i.test(JSON.stringify(t.settlement)),'REQUEST_CONTAINS_SECRET');}if(t.post)ensure(typeof t.post.summary==='string'&&Array.isArray(t.post.experiences)&&Array.isArray(t.post.decisions)&&Array.isArray(t.request_records),'INVALID_FORMAL_DIALOGUE');}
   for(const o of d.observations)ensure(Array.isArray(o.actors)&&Array.isArray(o.targets)&&typeof o.content==='string'&&Number.isSafeInteger(o.at)&&o.at<=g.clock.elapsed_minutes,'INVALID_OBSERVATION');
   for(const [actor,agenda]of Object.entries(d.agendas))ensure(profiles[actor]&&Array.isArray(agenda.priorities)&&agenda.priorities.every(x=>typeof x==='string')&&Array.isArray(agenda.basis)&&validCharacterRecord(actor,agenda.character),'INVALID_AGENDA');
   for(const p of d.proposals){checkAction(p.action);ensure(d.turns.some(t=>t.id===p.turn_ref)&&['pending','executed','cancelled'].includes(p.status)&&Array.isArray(p.conditions)&&Array.isArray(p.bindings)&&Array.isArray(p.dependencies)&&p.dependencies.every(id=>d.proposals.some(x=>x.id===id&&x.turn_ref===p.turn_ref))&&typeof p.joint_group==='string','INVALID_PROPOSAL');}
@@ -84,7 +84,7 @@ export function applyDialogueAction(g,a,ctx){return safe(()=>{
   const content=barristanChoices[a.choice];ensure(content,'INVALID_ACTION');const c=buildContext(g,'P011',activity.id,content.input);
   const refs=c.known.filter(k=>k.targets?.some(t=>t.ref==='BARRISTAN-AUDIENCE')||k.content?.includes('本次可以分别谈')).map(k=>k.ref);
   ensure(refs.length,'UNKNOWN_EVIDENCE');
-  const pre={intent:{mode:'proposal',purpose:'大圣堂面谈',means:[],joint_conditions:[],unresolved:[]},focus_refs:refs,agenda:{mode:'keep',priorities:c.agenda.priorities,basis:c.agenda.basis},guidance:[]};
+  const pre={character:{mode:'keep',attitude:c.character.state.attitude,explanation:'作者固定演出维持当前态度；具体答复另存。',basis:[]},intent:{mode:'proposal',purpose:'大圣堂面谈',means:[],joint_conditions:[],unresolved:[]},focus_refs:refs,agenda:{mode:'keep',priorities:c.agenda.priorities,basis:c.agenda.basis},guidance:[]};
   const post={consistent:true,summary:content.prose,decisions:content.decisions.map(([kind,choice,quote,conditions])=>({kind,target_ref:'BARRISTAN-AUDIENCE',choice,quote,conditions,refs})),experiences:[],candidates:[]};
   return applyDialogueAction(g,{type:'dialogue_finish',turn_id:turnId,context:c,pre,prose:content.prose,post,request_records:[{source:'author-barristan-v1'}]},ctx);
  }
@@ -95,7 +95,7 @@ export function applyDialogueAction(g,a,ctx){return safe(()=>{
  if(a.type==='dialogue_share'){
   exact(a,['type','activity_ref','target_ref']);const listeners=audience(g,a.activity_ref);ensure(listeners.includes('U001'),'ACTOR_NOT_PRESENT');const t=target(g,a.target_ref);ensure(t,'UNKNOWN_TARGET');
   // Only player-owned new plans/appointments, or an authorization actually offered to the king.
-  ensure(t.kind==='guard_plan'||t.kind==='detail_request'||(t.kind==='appointment'&&g.administration.organizations.some(o=>o.source_refs[0]!=='T0'&&o.office_refs.includes(t.ref)))||(t.kind==='authority'&&(t.issuer==='U001'||g.dialogue.turns.some(r=>r.audience.includes('U001')&&r.post.decisions.some(d=>d.kind==='temporary_authority'&&d.choice==='accept')))),'TARGET_NOT_PLAYER_KNOWN');
+  ensure(t.kind==='guard_plan'||t.kind==='detail_request'||(t.kind==='appointment'&&g.administration.organizations.some(o=>o.source_refs[0]!=='T0'&&o.office_refs.includes(t.ref)))||(t.kind==='authority'&&(t.issuer==='U001'||g.dialogue.turns.some(r=>r.audience.includes('U001')&&r.post?.decisions.some(d=>d.kind==='temporary_authority'&&d.choice==='accept')))),'TARGET_NOT_PLAYER_KNOWN');
   observe(g,listeners,'国王说明已有安排：'+JSON.stringify(t),ctx.id,[t]);return 'DIALOGUE_SHARED';
  }
  if(a.type==='dialogue_presence'){
@@ -106,16 +106,58 @@ export function applyDialogueAction(g,a,ctx){return safe(()=>{
   exact(a,['type','count','end_at']);ensure(Number.isSafeInteger(a.count)&&a.count>=1&&a.count<=12&&Number.isSafeInteger(a.end_at)&&a.end_at>g.clock.elapsed_minutes+75&&a.end_at<=g.clock.elapsed_minutes+1440,'INVALID_DETAIL');
   g.dialogue.requests.push({id:key(g),count:a.count,end_at:a.end_at});return 'DETAIL_REQUEST_RECORDED';
  }
+ if(a.type==='dialogue_store_prose'){
+  exact(a,['type','turn_id','context','pre','prose','settings','request_records','canon']);
+  ensure(!g.dialogue.turns.some(t=>t.id===a.turn_id),'TURN_ALREADY_COMMITTED');const c=a.context;
+  const live=buildContext(g,c.actor,c.activity,c.input,c.retrieved||[]);
+  ensure(c.branch===g.revision.branch_id&&c.at===live.at&&c.node===live.node&&same(c.audience,live.audience),'STALE_DIALOGUE_CONTEXT');checkPre(c,a.pre);
+  ensure(typeof a.prose==='string'&&a.prose.length>0&&a.prose.length<=250000,'INVALID_DIALOGUE_TEXT');
+  ensure(!/"(?:key|apiKey|authorization)"\s*:/i.test(JSON.stringify([a.settings,a.request_records])),'REQUEST_CONTAINS_SECRET');
+  const turn=ctx.savedTurn?g.dialogue.turns.find(t=>t.id===a.turn_id):{id:a.turn_id,actor:c.actor,at:c.at,audience:structuredClone(c.audience),activity:c.activity,input:c.input,prose:a.prose,context:structuredClone(c),pre:structuredClone(a.pre),post:null,request_records:structuredClone(a.request_records),canon:structuredClone(a.canon),settlement:{status:'pending',branch:c.branch,settings:structuredClone(a.settings),snapshot:null,response:null,error:null,issues:[]}};
+  g.dialogue.turns.push(turn);g.dialogue.agendas[c.actor]={...g.dialogue.agendas[c.actor],priorities:a.pre.agenda.priorities,basis:a.pre.agenda.basis.map(r=>r==='current-input'?turn.id:r)};saveCharacter(g,c,a.pre.character,turn.id);
+  const queue=dailyForActivity(g,c.activity)?.queue;if(queue?.status==='pending'&&queue.actors[queue.index]===c.actor&&queue.input===c.input){queue.turns.push(turn.id);queue.index++;if(queue.index===queue.actors.length)queue.status='done';}
+  return 'DIALOGUE_PROSE_SAVED';
+ }
+ if(a.type==='dialogue_post_checkpoint'){
+  exact(a,['type','turn_id','branch','status','snapshot','response','error']);const turn=g.dialogue.turns.find(t=>t.id===a.turn_id),job=turn?.settlement;
+  ensure(job&&a.branch===g.revision.branch_id&&job.branch===a.branch&&!['done','partial'].includes(job.status),'STALE_SETTLEMENT');
+  ensure(['running','failed','ready','interrupted'].includes(a.status),'INVALID_SETTLEMENT_STATUS');
+  ensure(!/"(?:key|apiKey|authorization)"\s*:/i.test(JSON.stringify([a.snapshot,a.response])),'REQUEST_CONTAINS_SECRET');
+  Object.assign(job,{status:a.status,snapshot:structuredClone(a.snapshot),response:structuredClone(a.response),error:a.error});return 'SETTLEMENT_CHECKPOINT';
+ }
+ if(a.type==='dialogue_settle'){
+  exact(a,['type','turn_id','branch','result']);const turn=g.dialogue.turns.find(t=>t.id===a.turn_id),job=turn?.settlement;
+  ensure(job&&job.branch===a.branch&&a.branch===g.revision.branch_id,'STALE_SETTLEMENT');if(['done','partial'].includes(job.status))return 'SETTLEMENT_ALREADY_APPLIED';
+  ensure(!g.dialogue.turns.some(t=>t.actor===turn.actor&&g.dialogue.turns.indexOf(t)<g.dialogue.turns.indexOf(turn)&&t.settlement&&!['done','partial'].includes(t.settlement.status)),'EARLIER_SETTLEMENT_PENDING');
+  const {post,issues}=normalizePost(g,turn.context,a.result,turn.prose);
+  applyDialogueAction(g,{type:'dialogue_finish',turn_id:turn.id,context:turn.context,pre:turn.pre,prose:turn.prose,post,request_records:[...turn.request_records,{snapshot:job.snapshot,response:job.response}]},{...ctx,savedTurn:true});
+  job.status=issues.length?'partial':'done';job.issues=issues;job.error=null;
+  // Only an explicit player command may bypass the proposal button. Formal
+  // politics and unresolved exchanges retain their existing approval route.
+  const routine=new Set(['night_patrol','cancel_order','inspect_payment','pay_obligation','nav_inspect_tunnel']);
+  const newer=g.dialogue.turns.slice(g.dialogue.turns.indexOf(turn)+1).some(t=>t.actor===turn.actor&&t.activity===turn.activity);
+  // Successful trials replace g.dialogue. Carry IDs, never object references,
+  // into the next iteration; keep the candidate's original positional binding.
+  const proposalIds=g.dialogue.proposals.filter(p=>p.turn_ref===turn.id).map(p=>p.id);
+  for(const [index,id] of proposalIds.entries()){
+   const p=g.dialogue.proposals.find(p=>p.id===id),candidate=post.candidates[index];
+   if(newer){p.conditions.push('后续发言可能调整了本项安排，请核对最新决定。');continue;}
+   if(turn.pre.intent.mode==='command'&&candidate.speaker==='player'&&p.requires_council&&g.campaign){queueCardProposal(g,p,ctx.id);continue;}
+   if(turn.pre.intent.mode==='command'&&candidate.speaker==='player'&&routine.has(p.action.type)&&!p.joint_group&&!p.conditions.length&&!p.dependencies.length&&!eventProposal(g,p)){
+    const trial=structuredClone(g);try{executeProposals(trial,p.id,ctx);Object.assign(g,trial);}catch(e){p.execution_error=e.message;}
+   }
+  }
+  return issues.length?'SETTLEMENT_PARTIAL':'SETTLEMENT_COMPLETE';
+ }
  if(a.type==='dialogue_finish'){
-  exact(a,['type','turn_id','context','pre','prose','post','request_records']);ensure(typeof a.turn_id==='string'&&a.turn_id.length<150,'INVALID_TURN_ID');ensure(!g.dialogue.turns.some(t=>t.id===a.turn_id),'TURN_ALREADY_COMMITTED');
-  const c=ctx.councilFrozen?a.context:buildContext(g,a.context.actor,a.context.activity,a.context.input,a.context.retrieved||[]);const legacy=!a.context.character&&a.context.personality.version!==c.personality.version;const comparable=v=>{const n=structuredClone(v);delete n.character;delete n.personality;delete n.agenda.character;return n;};ensure(legacy?same(comparable(c),comparable(a.context)):same(c,a.context),'STALE_DIALOGUE_CONTEXT');if(legacy){c.personality=structuredClone(a.context.personality);delete c.character;}checkPre(c,a.pre);checkPost(g,c,a.post,a.prose);
+  exact(a,['type','turn_id','context','pre','prose','post','request_records']);ensure(typeof a.turn_id==='string'&&a.turn_id.length<150,'INVALID_TURN_ID');ensure(ctx.savedTurn||!g.dialogue.turns.some(t=>t.id===a.turn_id),'TURN_ALREADY_COMMITTED');
+  const c=ctx.councilFrozen||ctx.savedTurn||a.context.version===1?a.context:buildContext(g,a.context.actor,a.context.activity,a.context.input,a.context.retrieved||[]);if(a.context.version===1&&!ctx.savedTurn&&!ctx.councilFrozen)ensure(a.context.branch===g.revision.branch_id&&a.context.world===g.revision.state_id,'STALE_DIALOGUE_CONTEXT');const legacy=!a.context.character&&a.context.personality.version!==c.personality.version;const comparable=v=>{const n=structuredClone(v);delete n.character;delete n.personality;delete n.agenda.character;return n;};ensure(legacy?same(comparable(c),comparable(a.context)):same(c,a.context),'STALE_DIALOGUE_CONTEXT');if(legacy){c.personality=structuredClone(a.context.personality);delete c.character;}checkPre(c,a.pre);checkPost(g,c,a.post,a.prose);
   if(a.pre.intent.mode==='claim')ensure(!a.post.candidates.length,'CLAIM_CANNOT_EXECUTE');
   ensure(Array.isArray(a.request_records)&&a.request_records.length<=100,'INVALID_REQUEST_RECORD');
   // Request snapshots contain connections without credentials. Refuse credential-shaped data anywhere.
   ensure(!/"(?:key|apiKey|authorization)"\s*:/i.test(JSON.stringify(a.request_records)),'REQUEST_CONTAINS_SECRET');
-  const turn={id:a.turn_id,actor:c.actor,at:c.at,audience:c.audience,activity:c.activity,input:c.utterance_origin==='chair'?'':c.input,prose:a.prose,context:structuredClone(c),pre:structuredClone(a.pre),post:structuredClone(a.post),request_records:structuredClone(a.request_records)};
-  g.dialogue.turns.push(turn);const daily=dailyForActivity(g,c.activity),queue=daily?.queue;if(queue&&queue.status==='pending'&&queue.actors[queue.index]===c.actor&&queue.input===c.input){queue.turns.push(turn.id);queue.index++;if(queue.index===queue.actors.length)queue.status='done';}g.dialogue.agendas[c.actor]={...g.dialogue.agendas[c.actor],priorities:a.pre.agenda.priorities,basis:a.pre.agenda.basis.map(r=>r==='current-input'?turn.id:r)};
-  saveCharacter(g,c,a.pre.character,turn.id);
+  const turn=ctx.savedTurn?g.dialogue.turns.find(t=>t.id===a.turn_id):{id:a.turn_id,actor:c.actor,at:c.at,audience:c.audience,activity:c.activity,input:c.utterance_origin==='chair'?'':c.input,prose:a.prose,context:structuredClone(c),pre:structuredClone(a.pre),post:structuredClone(a.post),request_records:structuredClone(a.request_records)};
+  if(ctx.savedTurn){turn.post=structuredClone(a.post);turn.request_records=structuredClone(a.request_records);}else g.dialogue.turns.push(turn);const daily=dailyForActivity(g,c.activity),queue=daily?.queue;if(queue&&queue.status==='pending'&&queue.actors[queue.index]===c.actor&&queue.input===c.input){queue.turns.push(turn.id);queue.index++;if(queue.index===queue.actors.length)queue.status='done';}if(!ctx.savedTurn){g.dialogue.agendas[c.actor]={...g.dialogue.agendas[c.actor],priorities:a.pre.agenda.priorities,basis:a.pre.agenda.basis.map(r=>r==='current-input'?turn.id:r)};saveCharacter(g,c,a.pre.character,turn.id);}
   for(const d of a.post.decisions){const snapshot=decisionTarget(g,c,d),id=key(g);
    // A later explicit refusal/condition replaces the old decision for this exact scope.
    for(const old of g.execution.decisions.filter(x=>x.actor===c.actor&&x.kind===d.kind&&x.target_ref===d.target_ref))old.status='superseded';
@@ -123,14 +165,14 @@ export function applyDialogueAction(g,a,ctx){return safe(()=>{
    g.dialogue.bindings.push({decision_ref:id,turn_ref:turn.id,target_ref:d.target_ref,target_snapshot:snapshot});
    if(d.kind==='temporary_authority'&&d.choice==='accept'){
     const req=g.dialogue.requests.find(r=>r.id===d.target_ref),authId='DAUTH-'+key(g),messageId='DMSG-'+key(g);
-    const issuedAt=ctx.councilFrozen?g.clock.elapsed_minutes:c.at;
+    const issuedAt=ctx.councilFrozen||ctx.savedTurn?g.clock.elapsed_minutes:c.at;
     g.authorities.push({id:authId,issuer:'P001',subject:'P048',relation:'temporary_detail',object_ref:'FORCE02',scope:{actions:['temporary_detail'],max_count:req.count,group_id:'FORCE02-C',location:'红堡'},starts_at:issuedAt,expires_at:req.end_at,status:'active',source_refs:[turn.id,messageId],delivery_refs:[]});
     g.messages.push({id:messageId,sender:'P001',recipient:'P048',fact_refs:[],content:`摄政批准一次临时借调：最多${req.count}名家兵，截止T0+${req.end_at}分钟。授权${authId}，指挥者接受与交接仍待落实。`,sent_minute:issuedAt,arrival_window_minutes:[issuedAt+15,issuedAt+15],delivered_minute:null,status:'在途',channel:'授权文书',obstruction:null,arrival_condition:'正常本地送达',event_refs:[],basis:{kind:'本卡设计',refs:[turn.id],detail:'正式对话形成有限授权；文书15分钟后送达'}});
     observe(g,c.audience,'摄政已给出有限授权，仍需送达与执行：'+JSON.stringify(target(g,authId)),turn.id,[target(g,authId)]);
    }
   }
   const ids=a.post.candidates.map(()=>key(g));
-  a.post.candidates.forEach((p,i)=>g.dialogue.proposals.push({id:ids[i],turn_ref:turn.id,action:structuredClone(p.action),conditions:p.conditions,joint_group:p.joint_group,dependencies:p.depends_on.map(j=>ids[j]),bindings:c.targets.filter(t=>JSON.stringify(p.action).includes(t.ref)).map(t=>({ref:t.ref,value:t})),status:'pending',receipt_ref:null}));
+  a.post.candidates.forEach((p,i)=>g.dialogue.proposals.push({id:ids[i],turn_ref:turn.id,action:structuredClone(p.action),conditions:structuredClone(p.conditions),joint_group:p.joint_group,dependencies:p.depends_on.map(j=>ids[j]),bindings:c.targets.filter(t=>JSON.stringify(p.action).includes(t.ref)).map(t=>({ref:t.ref,value:t})),status:'pending',receipt_ref:null,...(ctx.savedTurn?{requires_council:!['night_patrol','cancel_order','inspect_payment','pay_obligation','nav_inspect_tunnel'].includes(p.action.type)}:{})}));
   return 'DIALOGUE_COMMITTED';
  }
  if(a.type==='dialogue_execute'){

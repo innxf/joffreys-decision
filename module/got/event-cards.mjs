@@ -32,11 +32,11 @@ const queued=g=>history(g).filter(h=>h.choice==='queued'&&!history(g).some(x=>x.
 const supplyTasks=g=>g.execution.tasks.filter(t=>t.kind==='campaign_work'&&t.params.operation==='supply'&&['sent','accepted','executing','blocked'].includes(t.status));
 const free=g=>g.resources.find(r=>r.id==='RES-CASH').quantity.value-g.reservations.filter(r=>r.resource_id==='RES-CASH'&&['有效','部分使用'].includes(r.status)).reduce((n,r)=>n+r.amount,0);
 export function cardDialogue(g){return !!card(g.campaign?.scene)&&g.campaign.scene_step===2&&!!active(g);}
-export function eventProposal(g,p){return !!p&&history(g).some(h=>h.choice==='llm'&&h.activity===g.dialogue.turns.find(t=>t.id===p.turn_ref)?.activity);}
+export function eventProposal(g,p){return !!p&&(!!p.requires_council||history(g).some(h=>h.choice==='llm'&&h.activity===g.dialogue.turns.find(t=>t.id===p.turn_ref)?.activity));}
 export function proposalQueued(g,id){return queued(g).some(h=>h.proposal_ref===id||h.proposal_refs?.includes(id));}
 export function queueCardProposal(g,p,source){
  if(proposalQueued(g,p.id))return;
- const turn=g.dialogue.turns.find(t=>t.id===p.turn_ref),origin=history(g).find(h=>h.choice==='llm'&&h.activity===turn?.activity);
+ const turn=g.dialogue.turns.find(t=>t.id===p.turn_ref),origin=history(g).find(h=>h.choice==='llm'&&h.activity===turn?.activity)||(p.requires_council?{scene:'DIALOGUE-REQUEST'}:null);
  if(!origin)return;
  const all=g.dialogue.proposals.filter(x=>x.turn_ref===p.turn_ref),group=p.joint_group?all.filter(x=>x.joint_group===p.joint_group):[p];
  const quotes=group.map(x=>turn.post.candidates[all.indexOf(x)].quote);

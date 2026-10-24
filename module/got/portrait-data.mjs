@@ -5,6 +5,7 @@ const aliases=new Map();
 for(const [id,p] of Object.entries(portraits))for(const name of p.name.split(/[／/]/)){aliases.set(name,id);aliases.set(name.split('·')[0],id);}
 for(const [name,id]of Object.entries({'乔佛里':'U001','乔弗里':'U001','小恶魔':'P003','小指头':'P005','猎狗':'P016','史林特':'P020','梅斯':'P030','奥莲娜':'P031','老玫瑰':'P031','红毒蛇':'R001','奥伯伦':'R001','奥柏伦':'R001','科本':'R007','魔山':'P078','太后':'P001','瓦利斯':'P004','培提尔':'P005','派席尔大学士':'P018'}))aliases.set(name,id);
 export const roleNames={clerk:'书记官',guard:'守卫',attendant:'侍从',septon:'总主教',unknown:'席间人声',singer:'歌手',herald:'司仪',knight:'席间骑士',judge:'审理官员',messenger:'使者',garlan:'加兰·提利尔',ellaria:'艾拉莉亚·沙德'};
+export const characterAliases=id=>[...aliases].filter(([,actor])=>actor===id).map(([name])=>name);
 export const characterId=name=>portraits[name]?name:aliases.get(String(name).trim())||null;
 export const characterName=id=>portraits[id]?.name.split('／')[0]||roleNames[id]||'来人';
 const names=[...aliases.keys()].sort((a,b)=>b.length-a.length);

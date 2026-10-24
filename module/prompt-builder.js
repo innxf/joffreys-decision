@@ -1,5 +1,5 @@
 /**
- * prompt-builder.js - Prompt 编排（6 条消息结构）
+ * prompt-builder.js - Prompt 编排（正文沿用6条；权游默认结构化任务使用2条）
  * Phase 2.3：重构为与"整理后的log"一致的消息格式
  *   msg1: system (开场+settings+Details+background前半；MainNPCs/UserInfo 位于 history 内 </PreviousMemories> 之后)
  *   msg2: user   ([Start a new chat])
@@ -965,6 +965,7 @@ var promptBuilder = (function() {
             '<KnownInformation>\n'+p.known+'\n</KnownInformation>',
             '<RecalledMemories>\n'+p.recalled.join('\n')+'\n</RecalledMemories>',
             '<RecentMemories>\n'+p.recent.join('\n')+'\n</RecentMemories>'].join('\n\n');
+        if(p.structured){var compact=[{role:'system',content:[render(p.parts.opening),render(p.parts.background),render(p.parts.style),p.contract].join('\n')},{role:'user',content:[system.slice(system.indexOf('<Scenario>')),p.latest?'<LatestReply>\n'+p.latest+'\n</LatestReply>':'','<user_input>\n'+p.input+'\n</user_input>','<MainTextGuidance>\n'+p.guidance+'\n'+render(p.parts.order)+'\n</MainTextGuidance>',(p.customPrefill?'':render(p.parts.final))].filter(Boolean).join('\n\n')}];if(p.customPrefill)compact.push({role:'assistant',content:render(p.parts.prefill)},{role:'user',content:render(p.parts.final)});return compact;}
         return [
             {role:'system',content:system},
             {role:'user',content:'[Start a new chat]'},

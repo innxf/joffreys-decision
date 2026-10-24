@@ -16,15 +16,15 @@ export function characterSignals(known){return known.filter(k=>['observation','r
 export function characterMaterials(g,id,known){
  const p=profiles[id],a=g.actors.find(x=>x.id===id),state=characterState(g,id);
  const inCapital=!!a&&(Object.values(places).includes(a.location)||a.location==='君临'||a.location==='红堡');
- const seen=(re)=>known.some(k=>!['initial','heard_claim','private_knowledge'].includes(k.kind)&&re.test(k.content));
- const jaimeNews=known.filter(k=>!['initial','heard_claim','private_knowledge'].includes(k.kind)&&/詹姆.*(?:被俘|俘虏|获释|返回君临)/.test(k.content)).sort((a,b)=>a.at-b.at).at(-1);
- const conditions={always:true,jaime_report:!!jaimeNews&&/詹姆.*(?:被俘|俘虏)/.test(jaimeNews.content)&&!/詹姆.*(?:获释|返回君临)/.test(jaimeNews.content),acting_hand:inCapital&&g.offices.some(o=>o.holder===id&&o.status==='在任'&&/首相|国王之手/.test(o.title)),known_victory:g.campaign?.battle?.result==='held_with_relief'&&seen(/君临守住了|黑水河(?:之战)?(?:已经|最终)?(?:获胜|结束|告捷)/),captive:/俘|拘|囚/.test(a?.mobility||''),own_wound:id==='P015'&&g.facts.some(f=>f.established_minute<=g.clock.elapsed_minutes&&/詹姆.*(?:断手|失去右手|重伤)/.test(f.statement)),qyburn_employed:!!g.campaign?.qyburn&&inCapital,barristan_return:g.execution.decisions.some(d=>d.actor===id&&d.kind==='return_intent'&&d.status==='accepted')};
+ const verified=known.filter(k=>k.reliability==='confirmed');
+ const has=key=>verified.some(k=>k.stage_facts?.includes(key));
+ const conditions={always:true,jaime_report:has('jaime_captured')&&!has('jaime_released'),acting_hand:inCapital&&g.offices.some(o=>o.holder===id&&o.status==='在任'&&/首相|国王之手/.test(o.title)),known_victory:g.campaign?.battle?.result==='held_with_relief'&&has('blackwater_victory'),captive:/俘|拘|囚/.test(a?.mobility||''),own_wound:id==='P015'&&has('jaime_wounded'),qyburn_employed:!!g.campaign?.qyburn&&inCapital,barristan_return:g.execution.decisions.some(d=>d.actor===id&&d.kind==='return_intent'&&d.status==='accepted')};
  const stages=p.stages.filter(s=>conditions[s.condition]);
  return {expression:p.expression||'speech',state,current:p.attitudes.find(x=>x.id===state.attitude)||null,stages:copy(stages),options:copy(p.attitudes),signals:characterSignals(known)};
 }
 export const characterContract='人物态度：在既有JSON结果上附character:{mode:"keep|select|unsupported",attitude:"该人物已写态度id",explanation:"结合本人经历的简短判断",basis:["本人known中的ref"]}。有character资料时必须提供。keep保留现态度，select选用已写档案；unsupported表示没有适用档案，保持原状态并等待作者补充。只按本人已知经历判断，不以互动次数或国王单次善意兑换信任。认可才能与敌意可以并存。不得创造新态度或把未来原著当依据。';
 export function checkCharacter(c,r){
- if(r===undefined)return; // Legacy frozen requests retain their original contract.
+ if(r===undefined){need(c.version!==2,'CHARACTER_RESULT_MISSING');return;} // Legacy frozen requests retain their original contract.
  need(c.character,'CHARACTER_CONTEXT_MISSING');
  need(r&&Object.keys(r).sort().join('|')==='attitude|basis|explanation|mode','CHARACTER_FIELDS');
  need(['keep','select','unsupported'].includes(r.mode)&&typeof r.explanation==='string'&&r.explanation.length>0&&r.explanation.length<=2000&&Array.isArray(r.basis),'CHARACTER_FORMAT');
@@ -44,7 +44,7 @@ export function characterText(c,result){
  return (c.character.expression==='nonverbal'?'\n表达方式：此人无口语能力，只写可观察动作；不得替他发出口头台词。':c.character.expression==='hodor'?'\n表达方式：口语限“霍多”，其余以动作和声调表现。':'')+'\n\n【当前阶段】\n'+c.character.stages.map(s=>s.label+'：'+s.text).join('\n')+'\n【对乔弗里的态度】\n'+(current?Object.entries(current).filter(([k])=>!['id','scene_cue'].includes(k)).map(([k,v])=>({label:'状态',inside:'内心判断',public:'公开表现',private:'私下表现',boundary:'合作边界',basis:'转变依据',reverse:'反向变化'}[k]+'：'+v)).join('\n'):'沿已保存历史，当前档案需要作者补充。');
 }
 export const finaleActors=['P002','P003','P012','P060'];
-export function pendingCharacters(g,knownFor){return finaleActors.filter(id=>{const s=characterState(g,id);return s.pending||JSON.stringify(s.reviewed)!==JSON.stringify(characterSignals(knownFor(g,id)));});}
+export function pendingCharacters(g,knownFor){return finaleActors.filter(id=>{const s=characterState(g,id);return g.dialogue.turns.some(t=>t.actor===id&&t.settlement&&!['done','partial'].includes(t.settlement.status))||s.pending||JSON.stringify(s.reviewed)!==JSON.stringify(characterSignals(knownFor(g,id)));});}
 export function validCharacterRecord(id,s){return !s||!!profiles[id]?.attitudes.some(a=>a.id===s.attitude)&&typeof s.explanation==='string'&&Array.isArray(s.basis)&&Array.isArray(s.reviewed)&&typeof s.pending==='boolean';}
 
 export function characterSceneCue(g,id){const p=profiles[id];return p?.attitudes.find(a=>a.id===characterState(g,id).attitude)?.scene_cue||'';}

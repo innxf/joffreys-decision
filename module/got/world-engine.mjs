@@ -40,7 +40,14 @@ function journal(g,ctx,target,delta,unit,reason,refs=[],kind='execution'){
 function change(g,ctx,ref,delta,reason,refs=[]){const r=resource(g,ref);need(r.quantity.value+delta>=-1e-9,'RESOURCE_UNAVAILABLE');r.quantity.value=rounded(r.quantity.value+delta);r.quantity.as_of_minute=now(g);journal(g,ctx,ref,delta,r.quantity.unit,reason,refs);}
 function report(g,sender,text,refs=[],recipient='U001',delay=15){
   const id=key(g,'MSG');g.messages.push({id,sender,recipient,fact_refs:[],content:text,sent_minute:now(g),arrival_window_minutes:[now(g)+delay,now(g)+delay],
-    delivered_minute:null,status:'在途',channel:'执行回报',obstruction:null,arrival_condition:'正常本地回报；有明确阻断时不送达',event_refs:[],basis:basis('M2本地回报15分钟设计值',refs)});return id;
+    delivered_minute:null,status:'在途',channel:'执行回报',obstruction:null,arrival_condition:'正常本地回报；有明确阻断时不送达',event_refs:[],basis:basis('M2本地回报15分钟设计值',refs)});
+  // Treasury reports pass through the serving master of coin's actual office.
+  // Record a real copy and delivery; no actor gets raw global resource balances.
+  if(sender==='ORG-TREASURY'&&recipient==='U001')for(const actor of [...new Set(g.offices.filter(o=>o.status==='在任'&&o.title==='财政大臣').map(o=>o.holder))]){
+    if(!g.actors.some(a=>a.id===actor&&a.life==='存活'))continue;
+    g.messages.push({...structuredClone(g.messages.find(m=>m.id===id)),id:key(g,'MSG'),recipient:actor,channel:'财政职务抄送',basis:basis('国库已形成报表经财政大臣职责渠道同步送达',[id,...refs])});
+  }
+  return id;
 }
 function reserve(g,ctx,target,value){need(amount(value)&&available(g,'RES-CASH')>=value,'RESOURCE_UNAVAILABLE');const id=key(g,'RSV');
   g.reservations.push({id,resource_id:'RES-CASH',amount:value,owner:'U001',target_id:target,purpose:'明确批准的有限预算',status:'有效',start_minute:now(g),end_minute:null,release_rule:'仅释放尚未使用的额度',basis:basis('预算不等于付款',[ctx.id])});return id;}

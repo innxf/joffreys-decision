@@ -5,7 +5,7 @@ import type {Preset,Phase,Library,PromptInput} from './presets.js';
 export interface Compatibility {errors:string[];warnings:string[];recommendedOrder:number}
 const phases:Phase[]=['pre','prose','post'];
 const sample:PromptInput={user:'乔弗里',char:'当前人物',personality:'当前人物允许资料',scenario:'当前场景',known:'已收到的信息',guidance:'当前诉求',contract:'本阶段输出合同',payload:{preview:true},history:[],input:'预设检查，不发送请求。',generation:'normal'};
-const required=['gameContract','gamePayload','gameGuidance','chatHistory'];
+const required=['gameContract','gamePayload','worldInfoBefore','gameGuidance','chatHistory'];
 export function inspectPreset(p:Preset,phase:Phase='prose'):Compatibility {
  const errors:string[]=[],warnings:string[]=[];validatePreset(p);
  const recommendedOrder=p.data.prompt_order.findIndex(x=>x.character_id===100001);
@@ -13,7 +13,7 @@ export function inspectPreset(p:Preset,phase:Phase='prose'):Compatibility {
  const active=p.data.prompt_order[p.order]!.order.filter(o=>o.enabled).map(o=>p.data.prompts.find(x=>x.identifier===o.identifier));
  for(const id of required)if(!active.some(x=>x?.identifier===id&&(!x.injection_trigger?.length||x.injection_trigger.includes(phase==='prose'?'normal':'quiet'))))errors.push('缺少本阶段必需条目：'+id+'。可生成适配副本。');
  for(const x of active)if(x?.marker&&!MARKERS.includes(x.identifier))errors.push('未支持的动态占位：'+x.identifier+'。保留原件；适配副本可停用该条目。');
- try{warnings.push(...compilePreset(p,{...sample,generation:phase==='prose'?'normal':'quiet'}).warnings);}catch(e){errors.push((e as Error).message);}
+ try{const compiled=compilePreset(p,{...sample,generation:phase==='prose'?'normal':'quiet'});warnings.push(...compiled.warnings);for(const value of [sample.known,sample.guidance])if(!compiled.messages.some(m=>m.content.includes(value!)))errors.push('编译后缺少本轮知情或指导材料。');}catch(e){errors.push((e as Error).message);}
  if(phase!=='prose'&&(p.data.assistant_prefill||active.some(x=>x?.role==='assistant'&&x.content)))warnings.push('结构化处理预设含助手续写内容，可能与JSON输出合同冲突；建议使用独立前置/后置预设。');
  warnings.push('发送预览只能检查格式和组装；不能保证文风、模型效果或服务商支持全部参数。');
  return {errors:[...new Set(errors)],warnings:[...new Set(warnings)],recommendedOrder};

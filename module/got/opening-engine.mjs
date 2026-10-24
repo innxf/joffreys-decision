@@ -276,7 +276,7 @@ export function applyOpeningAction(g,a,ctx,o){
    const choice=s.meetings[0].issues.pursuit.choice;
    const question=!recounted?'瑟曦问道：「我还没听到一份像样的交代。巴利斯坦的事，你今天怎么处置的？」':choice==='recall'?'瑟曦问道：「珊莎说，你要把巴利斯坦请回来。你究竟指望他替你做什么？事情办到哪一步了？」':choice==='cancel'?'瑟曦问道：「你撤了追捕，还替他正名。下一步呢？你准备就这样让他离开？」':'瑟曦问道：「搜捕还在继续。那个老头仍没归案，你打算怎么办？」';
    heard(g,question,ctx.id);
-   if(turns.length)observe(g,['U001'],'你记得在大圣堂听到的答复：'+turns.map(t=>t.post.summary).join('；'),ctx.id);
+   if(turns.length)observe(g,['U001'],'你记得在大圣堂听到的答复：'+turns.map(t=>t.post?.summary).join('；'),ctx.id);
   }return 'OPENING_SCENE_STARTED';
  }
  if(a.type==='opening_protect'){

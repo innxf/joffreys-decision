@@ -1,7 +1,9 @@
 import type {Request} from './model-client.js';
+import {googleRequest} from './google-provider.js';
 // Explicit official-host adapter; custom compatible services retain their own contract.
 // DeepSeek API docs checked 2026-10-12; ST 1.16.0 sendDeepSeekRequest supplies prefix/JSON handling.
 export function providerRequest(r:Pick<Request,'connection'|'stage'|'compiled'|'stream'>){
+ if(['gemini','vertex'].includes(r.connection.type))return googleRequest(r);
  let endpoint=r.connection.endpoint;const parameters={...r.compiled.parameters},messages=r.compiled.messages.map(m=>({...m})),warnings:string[]=[];
  const deepseek=new URL(endpoint).hostname==='api.deepseek.com';
  if(deepseek){

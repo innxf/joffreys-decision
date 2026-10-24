@@ -1,10 +1,11 @@
+import {parseMiddlewareJson} from './middleware-json.mjs';
 import {buildCharacterReview,actorEvidence} from './dialogue-core.mjs';
 import {characterContract,characterText,checkCharacter,pendingCharacters,requireCharacterInput} from './character-state.mjs';
 import {compileTask,displayText} from './generation-core.mjs';
 const copy=structuredClone,need=(v,m)=>{if(!v)throw Error(m);};
 // Reuses the existing middleware connection, preset compiler, request lock and debug storage.
 export async function reviewCharacters(runner){
- need(!runner.busy,'DIALOGUE_BUSY');need(!runner.draft||['done','discarded','stale'].includes(runner.draft.status),'PENDING_DIALOGUE_EXISTS');
+ need(!runner.runtime.read().dialogue.turns.some(t=>t.settlement&&!['done','partial'].includes(t.settlement.status)),'请先在待办事项中完成相关对白整理，再核对人物态度。');need(!runner.busy,'DIALOGUE_BUSY');need(!runner.draft||['done','discarded','stale'].includes(runner.draft.status),'PENDING_DIALOGUE_EXISTS');
  runner.busy=true;runner.notify(runner);
  try{return await runner.lock(async()=>{
   runner.abort=new AbortController();const name=runner.record+'-character-review';
@@ -27,12 +28,12 @@ export async function reviewCharacters(runner){
      // No automatic retry. A complete response is saved before parsing or committing.
      if(!checkpoint.response){const response=await runner.call(checkpoint.snapshot,()=>{},runner.abort.signal);current();need(!runner.abort.signal.aborted,'DIALOGUE_CANCELLED');await persist({...checkpoint,response});}
      const response=checkpoint.response;need(!response.finishReason||response.finishReason==='stop','INCOMPLETE_MODEL_RESPONSE');
-     const result=JSON.parse(displayText(checkpoint.snapshot.compiled.prefix||'',response.content).trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));checkCharacter(c,result);await persist({...checkpoint,result,status:'ready'});
+     const result=parseMiddlewareJson(displayText(checkpoint.snapshot.compiled.prefix||'',response.content));checkCharacter(c,result);await persist({...checkpoint,result,status:'ready'});
     }
     current();if(!checkpoint.candidate)await persist({...checkpoint,candidate:runner.runtime.prepareAction({type:'dialogue_review_character',context:c,result:checkpoint.result})});
     const result=await runner.runtime.commit(checkpoint.candidate);need(result.status==='committed',result.validation.code);
     await persist({...checkpoint,status:'done'});need(!runner.runtime.read().dialogue.agendas[actor].character.pending,'CHARACTER_AUTHOR_GAP');
-   }catch(e){await persist({...checkpoint,status:'failed',error:e.message,retry_response:!!checkpoint.response&&!checkpoint.result&&(e instanceof SyntaxError||/^(CHARACTER_(FIELDS|FORMAT|NOT_AUTHORED|UNKNOWN_EVIDENCE|KEEP_CHANGED|CHANGE_WITHOUT_EXPERIENCE|CONTEXT_MISSING)|INCOMPLETE_MODEL_RESPONSE)$/.test(e.message))});throw e;}
+   }catch(e){await persist({...checkpoint,status:'failed',error:e.message,retry_response:!!checkpoint.response&&!checkpoint.result&&(e instanceof SyntaxError||/MIDDLEWARE_JSON/.test(e.message)||/^(CHARACTER_(FIELDS|FORMAT|NOT_AUTHORED|UNKNOWN_EVIDENCE|KEEP_CHANGED|CHANGE_WITHOUT_EXPERIENCE|CONTEXT_MISSING)|INCOMPLETE_MODEL_RESPONSE)$/.test(e.message))});throw e;}
   }
  });}finally{runner.busy=false;runner.abort=null;runner.notify(runner);}
 }

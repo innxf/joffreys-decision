@@ -33,7 +33,7 @@ export async function handleLocalRequest(req,res,{shutdown}={}){
   }
   if(url.pathname==='/api/health'&&req.method==='GET'){
    res.writeHead(200,{...headers,'Content-Type':'application/json; charset=utf-8'});
-   res.end(JSON.stringify({app:'got-fork-baseline',stage:'firstday-play',build:loadedBuild,distribution,features:['memory-v1','execution-judgment-v1','opening-council-v1','continuous-council-v2','council-issue-batches-v1','firstday-play-v1','pixel-scenes-v1','event-cards-annual-156-v1','court-folio-v1','authored-council-v1','inherited-reuse-v1','google-native-vertex-v1','music-slots-v1','canon-vector-local-v1','court-life-v1'],source:'5cec5f53c3304f5c6d9e2e7e15c15d3823341cfa',modelRequestsEnabled:process.env.GOT_ENABLE_API==='1',pid:process.pid}));return;
+   res.end(JSON.stringify({app:'got-fork-baseline',stage:'firstday-play',build:loadedBuild,distribution,features:['memory-v1','middleware-background-v2','execution-judgment-v1','opening-council-v1','continuous-council-v2','council-issue-batches-v1','firstday-play-v1','pixel-scenes-v1','event-cards-annual-156-v1','court-folio-v1','authored-council-v1','inherited-reuse-v1','google-native-vertex-v1','music-slots-v1','canon-vector-local-v1','court-life-v1'],source:'5cec5f53c3304f5c6d9e2e7e15c15d3823341cfa',modelRequestsEnabled:process.env.GOT_ENABLE_API==='1',pid:process.pid}));return;
   }
   if(url.pathname.startsWith('/api/')){
    gateway ??= createGateway(process.env.GOT_ENABLE_API==='1' ? fetch : async()=>{throw Error('本机服务未开启模型请求；既定剧情可继续游玩，自由生成需要另行启用。');},new ConnectionStore(path.join(root,'.local','model-connections.json')));

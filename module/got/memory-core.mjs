@@ -1,22 +1,23 @@
 // GOT adaptation of summaryRunner's persistent buffer and memoryRecall's layered context.
 // Facts, promises and original dialogue stay in the existing world save.
 const copy=structuredClone;
+const narrative=t=>'【对白已发生；结果尚待整理】乔弗里：'+t.input+'\n'+t.actor+'：'+t.prose;
 const assert=(v,m)=>{if(!v)throw Error(m);};
 export const memoryDefaults={autoSummary:false,autoResume:false,autoRetry:false,retryLimit:0,retrieval:false,rerank:false};
 export const estimate=text=>Math.ceil((text.match(/[\u4e00-\u9fff]/g)||[]).length+(text.replace(/[\u4e00-\u9fff]/g,'').length/4));
 export function initializeMemory(g){g.memory??={version:1,jobs:[],summaries:[]};}
 export function visibleTurns(g,actor){return (g.dialogue?.turns||[]).filter(t=>t.audience.includes(actor)&&t.at<=g.clock.elapsed_minutes);}
-export function turnRecord(t){return {id:t.id,at:t.at,activity:t.activity,text:t.post.summary||'',audience:[...t.audience]};}
+export function turnRecord(t){return {id:t.id,at:t.at,activity:t.activity,text:t.post?.summary||'',audience:[...t.audience]};}
 export function summarySources(g,actor,ids){const all=new Map(visibleTurns(g,actor).map(t=>[t.id,turnRecord(t)]));return ids.map(id=>{const r=all.get(id);assert(r&&r.text,'总结来源缺失或人物没有听见。');return r;});}
 export function queueMemory(g,{force=false}={}){
  initializeMemory(g);if(!g.dialogue?.turns.length)return;
  const actors=[...new Set(g.dialogue.turns.flatMap(t=>t.audience).filter(x=>x!=='U001'))];
  for(const actor of actors){
   const covered=new Set(g.memory.jobs.filter(j=>j.actor===actor).flatMap(j=>j.sources.map(s=>s.id)));
-  const available=visibleTurns(g,actor).filter(t=>t.post.summary&&!covered.has(t.id));
+  const available=visibleTurns(g,actor).filter(t=>t.post?.summary&&!covered.has(t.id));
   const activities=[...new Set(available.map(t=>t.activity))];
   for(const activity of activities){const rows=available.filter(t=>t.activity===activity);const ended=g.activities.find(a=>a.id===activity)?.status!=='active';
-   while(rows.length){const soft=estimate(rows.map(t=>t.post.summary).join('\n'))>=70000;
+   while(rows.length){const soft=estimate(rows.map(t=>t.post?.summary).join('\n'))>=70000;
     if(!force&&!ended&&rows.length<20&&!soft)break;
     const sources=rows.splice(0,20).map(turnRecord);
     g.memory.jobs.push({id:'MEM-'+(++g.execution.serial),actor,branch:g.revision.branch_id,sources,status:'pending',attempts:0,snapshot:null,result:null,error:null});
@@ -62,10 +63,10 @@ export function memoryMaterials(g,actor,retrieved=[]){
  const covered=new Set(long.flatMap(s=>s.sources.map(t=>t.id)));
  const unsummarized=turns.filter(t=>t.id!==last?.id&&!covered.has(t.id)),recent=unsummarized.slice(-20),fallback=unsummarized.slice(0,-20);
  const recall=[];for(const r of retrieved){const original=all.get(r.id);assert(original&&original.text===r.text&&r.id!==last?.id,'检索结果不属于此人物或来源已改变。');if(!recent.some(t=>t.id===r.id)&&!recall.some(t=>t.id===r.id))recall.push(original);}
- return {latest:last?{ref:last.id,kind:'heard_dialogue',content:`乔弗里：${last.input}\n${last.actor}：${last.prose}`,at:last.at,source:last.actor}:null,
-  long:[...long.map(s=>({ref:s.id,kind:'long_summary',content:s.entries.map(e=>e.text).join('\n'),at:s.at,source:actor})),...fallback.filter(t=>!recall.some(r=>r.id===t.id)).map(t=>({ref:t.id,kind:'long_summary',content:t.post.summary,at:t.at,source:t.actor}))].sort((a,b)=>a.at-b.at),
-  recent:recent.map(t=>({ref:t.id,kind:'heard_summary',content:t.post.summary,at:t.at,source:t.actor})),
+ return {latest:last?{ref:last.id,kind:'heard_dialogue',content:(last.post?'':'【对白已发生；结果尚待整理】')+`乔弗里：${last.input}\n${last.actor}：${last.prose}`,at:last.at,source:last.actor}:null,
+  long:[...long.map(s=>({ref:s.id,kind:'long_summary',content:s.entries.map(e=>e.text).join('\n'),at:s.at,source:actor})),...fallback.filter(t=>!recall.some(r=>r.id===t.id)).map(t=>({ref:t.id,kind:'long_summary',content:t.post?.summary||narrative(t),at:t.at,source:t.actor}))].sort((a,b)=>a.at-b.at),
+  recent:recent.map(t=>({ref:t.id,kind:'heard_summary',content:t.post?.summary||narrative(t),at:t.at,source:t.actor})),
   recalled:recall.map(t=>({ref:t.id,kind:'recalled_summary',content:t.text,at:t.at,source:actor})),
-  missing:turns.filter(t=>!t.post.summary).map(t=>t.id)};
+  missing:turns.filter(t=>!t.post?.summary).map(t=>t.id)};
 }
 export const summaryContract='你是人物记忆整理助手。只读给定人物实际听见的摘要，输出JSON：{"entries":[{"text":"具体经历，区分说过、相信、承诺和已执行","refs":["来源id"]}]}。每条不超过1500字；每个来源必须被引用。保留约定、未决问题、不同解释和传闻的不确定性。不补原著秘密，不把承诺写成完成，不改变世界。';

@@ -1,3 +1,4 @@
+import {requireMaterials} from './middleware-evidence.mjs';
 import '../response-parser.js';
 // GOT-only task data adapter. Prompt ordering and preset compilation remain in reused modules.
 import {executionContract} from './autonomy-core.mjs';
@@ -66,21 +67,22 @@ export function compileTask(settings,phase,input,builder,generation='normal',con
  }else{
   const parts={...nativeDefaults,...(phase!=='prose'?{style:'客观整理本次资料。',prefill:'我会按要求输出JSON。'}:{}),...settings.native[phase]};
   const limits=budgetLimits(connection.maxContextTokens,outputReserve);
-  let messages=builder({...p,parts}),trimmed=0;
+  let messages=builder({...p,parts,structured:['pre','post'].includes(phase),customPrefill:!!settings.native[phase]?.prefill}),trimmed=0;
   while(estimateMessages(messages)>limits.inputLimit&&(p.previous.length||p.recalled.length||p.recent.length)){
-   (p.previous.length?p.previous:p.recalled.length?p.recalled:p.recent).shift();trimmed++;messages=builder({...p,parts});
+   (p.previous.length?p.previous:p.recalled.length?p.recalled:p.recent).shift();trimmed++;messages=builder({...p,parts,structured:['pre','post'].includes(phase),customPrefill:!!settings.native[phase]?.prefill});
   }
   if(generation==='continue')throw Error('原作六条消息模式本批不提供续写；可使用带续写预填充的酒馆预设。');
   if(estimateMessages(messages)>limits.inputLimit)throw Error('必要资料超过输入预算，请缩短资料或调整配置。');
   const parameters={temperature:connection.temperature,max_tokens:connection.maxOutputTokens};
   for(const [key,target] of [['topP','top_p'],['topK','top_k'],['frequencyPenalty','frequency_penalty'],['presencePenalty','presence_penalty']])if(connection[key+'Enabled'])parameters[target]=connection[key];
-  compiled={messages,parameters,prefix:'',rawPrefix:'',vars:{},generation,trimmed,preset:{id:'native-'+phase,version:settings.revision},estimatedTokens:estimateMessages(messages),warnings:['沿用姬侠传六条消息；第五条是普通助手消息，后面仍有最终指令。','token为估算。'],budget:{...limits,estimatedInput:estimateMessages(messages),needsOrganization:estimateMessages(messages)>=limits.softInput}};
+  compiled={messages,parameters,prefix:'',rawPrefix:'',vars:{},generation,trimmed,preset:{id:'native-'+phase,version:settings.revision},estimatedTokens:estimateMessages(messages),warnings:[(['pre','post'].includes(phase)?'中间层使用任务说明与本轮材料两条消息。':'沿用姬侠传正文编排。'),'token为估算。'],budget:{...limits,estimatedInput:estimateMessages(messages),needsOrganization:estimateMessages(messages)>=limits.softInput}};
   if(compiled.budget.needsOrganization)compiled.warnings.push('资料已达到整理阈值；本批不自动发起总结。');
  }
  if(phase==='summary'){
   compiled.parameters.max_tokens=summaryLimit;
   compiled.warnings.push(summaryLimit===null?'总结输出跟随服务默认上限；输入仍预留18000 token空间。':'总结采用单独输出上限，输入容量已扣除相应预留。');
  }
+ requireMaterials({compiled},p);
  const previewConnection={...connection,endpoint:connection.endpoint||'http://127.0.0.1:1/v1/chat/completions',model:connection.model||'尚未设置'};
  const prepared=providerRequest({connection:previewConnection,stage:phase,compiled,stream:phase==='prose'&&connection.streamMode!=='non-stream'});
  return {id:crypto.randomUUID(),proseFormat:2,stage:phase,connection,configId:connection.id,compiled,stream:phase==='prose'&&connection.streamMode!=='non-stream',preview:{endpoint:connection.endpoint?prepared.endpoint:'尚未配置',body:prepared.body,warnings:[...compiled.warnings,...prepared.warnings]},input:p};

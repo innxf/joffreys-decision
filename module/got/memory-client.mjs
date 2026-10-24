@@ -29,7 +29,7 @@ export class MemoryClient {
  engine(config){return JSON.stringify([config.endpoint,config.model,'turn-summary-v1']);}
  async rebuild(actor,{confirm}={}){
   assert(!this.indexBusy,'索引正在处理。');assert(!this.isDialoguePending(),'请先完成或放弃当前对话草稿。');const config=this.client.settings.memory.connection;assert(config,'请先保存独立的记忆检索连接。');
-  const g=this.runtime.read(),branch=g.revision.branch_id,sources=visibleTurns(g,actor).filter(t=>t.post.summary).map(turnRecord),engine=this.engine(config);
+  const g=this.runtime.read(),branch=g.revision.branch_id,sources=visibleTurns(g,actor).filter(t=>t.post?.summary).map(turnRecord),engine=this.engine(config);
   if(!sources.length){this.status='此人还没有可建索引的摘要。';this.notify();return;}
   if(confirm&&!await confirm(sources.length))return;
   this.indexBusy=true;this.indexAbort=new AbortController();this.notify();

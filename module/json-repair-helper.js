@@ -85,5 +85,5 @@
         return null;
     }
 
-    window.safeParseLLMJson = safeParseLLMJson;
+    (typeof window === 'undefined' ? globalThis : window).safeParseLLMJson = safeParseLLMJson;
 })();

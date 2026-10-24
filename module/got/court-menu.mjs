@@ -43,9 +43,17 @@ async function openMenu(id,label){
 }
 function refreshTasks(d){
  const {runtime,button,act}=current,g=runtime.read(),host=fill(d),tod=(g.clock.elapsed_minutes+360)%1440;
- el('h3','今日起居',host);for(const def of dailyDefinitions){const row=el('div','',host);row.className='schedule-row';el('strong',(def.at>=1440?'次日 ':'')+clock(def.at)+' · '+def.name,row);const today=Math.floor((g.clock.elapsed_minutes+360)/1440);const record=g.opening.household?.days.findLast(r=>r.definition===def.id&&r.day===today);el('small',({done:'已完成',skipped:'已略过',active:'进行中',offered:'侍从候命',postponed:'已推迟',expired:'已过时段'})[record?.status]||(def.at<tod?'依实际安排':'尚待安排'),row);}
- const meeting=g.opening.meetings.find(m=>!m.missed&&m.status!=='closed');if(meeting){el('h3','御前会议',host);el('p','预约 '+clock(meeting.scheduled+360)+'。早膳之后赴会；重要召见会由侍从通报。',host);if(!meeting.activity)host.append(button('前往御前会议',async()=>{await act({type:'council_begin'});d.close();}));}
- const a=g.activities.find(a=>a.status==='active'&&a.participants.includes('U001'));if(!a&&!g.opening.travel){const next=dailyDefinitions.map(x=>x.at%1440).filter(t=>t>tod).sort((a,b)=>a-b)[0];if(next)host.append(button('等候下一项日程 · '+clock(next),async()=>{await act({type:'wait',minutes:next-tod});d.close();}));}
+ el('h3','今日起居',host);for(const def of dailyDefinitions){const row=el('div','',host);row.className='schedule-row';el('strong',(def.at>=1440?'次日 ':'')+clock(def.at)+' · '+def.name,row);const today=Math.floor((g.clock.elapsed_minutes+360)/1440);const record=g.opening?.household?.days?.findLast(r=>r.definition===def.id&&r.day===today);el('small',({done:'已完成',skipped:'已略过',active:'进行中',offered:'侍从候命',postponed:'已推迟',expired:'已过时段'})[record?.status]||(def.at<tod?'依实际安排':'尚待安排'),row);}
+ const meeting=g.opening?.meetings.find(m=>!m.missed&&m.status!=='closed');if(meeting){el('h3','御前会议',host);el('p','预约 '+clock(meeting.scheduled+360)+'。早膳之后赴会；重要召见会由侍从通报。',host);if(!meeting.activity)host.append(button('前往御前会议',async()=>{await act({type:'council_begin'});d.close();}));}
+ const a=g.activities.find(a=>a.status==='active'&&a.participants.includes('U001'));if(!a&&!g.opening?.travel){const next=dailyDefinitions.map(x=>x.at%1440).filter(t=>t>tod).sort((a,b)=>a-b)[0];if(next)host.append(button('等候下一项日程 · '+clock(next),async()=>{await act({type:'wait',minutes:next-tod});d.close();}));}
+ const pending=g.dialogue.turns.filter(t=>t.settlement&&!['done','partial'].includes(t.settlement.status));
+ if(pending.length){el('h3','文书整理',host);el('p','对白已经保存，可以继续游玩。尚未整理的命令和答复仍待核对。',host);
+  for(const t of pending){el('p',characterName(t.actor)+' · '+({running:'正在整理',ready:'返回已收到，等待保存',failed:'整理未完成',interrupted:'请求已中断',pending:'等待整理'}[t.settlement.status]||'等待整理'),host);if(t.settlement.error)el('p',t.settlement.error,host);
+   const cached=t.settlement.response||window.gotDialogue?.postResults.has(g.revision.branch_id+'|'+t.id),run=async retry=>{try{await window.gotDialogue.settle(t.id,{retry});}catch(e){el('p','未完成：'+e.message,host);}refreshTasks(d);};
+   const b=button(cached?'继续整理／保存':'恢复整理',()=>run(!cached&&t.settlement.status==='failed'));b.disabled=!!window.gotDialogue?.postBusy;host.append(b);
+   if(cached&&t.settlement.status==='failed'){const b=button('重新请求整理',()=>run(true));b.disabled=!!window.gotDialogue?.postBusy;host.append(b);}
+  }
+ }
  renderCalendar(runtime,host,{button,act});
 }
 function openNPC(id){

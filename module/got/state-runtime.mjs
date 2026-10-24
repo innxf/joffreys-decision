@@ -79,6 +79,7 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
     return {contract_version:'c1.2',id:id(),branch_id:formal.revision.branch_id,parent_revision:formal.revision.state_id,
       as_of_minute:formal.clock.elapsed_minutes,origin:'player_ui',source_refs:clone(sourceRefs),action:clone(action)};
   }
+  function prepareSettlementAction(action){return {...prepareAction(action),origin:'dialogue_worker'};}
   function prepareBackgroundAction(action){return {...prepareAction(action,action.job_ref?[action.job_ref]:[]),origin:'execution_worker'};}
   function prepareBriefingRead(briefingId) {
     if(!formal) throw Error('NO_GAME');
@@ -95,13 +96,14 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
       const keys=['contract_version','id','branch_id','parent_revision','as_of_minute','origin','source_refs','action'];
       if (!c || keys.some(k=>!Object.hasOwn(c,k)) || Object.keys(c).some(k=>!keys.includes(k)) ||
         c.contract_version!=='c1.2' || typeof c.id!=='string' || !c.id || typeof c.action!=='object' || !c.action ||
-        !Array.isArray(c.source_refs) || !['player_ui','execution_worker'].includes(c.origin)) return failure('invalid','INVALID_CANDIDATE');
+        !Array.isArray(c.source_refs) || !['player_ui','execution_worker','dialogue_worker'].includes(c.origin)) return failure('invalid','INVALID_CANDIDATE');
       if(c.origin==='execution_worker'&&!['autonomy_begin','autonomy_result','autonomy_fail','autonomy_finish','autonomy_continue_time'].includes(c.action.type))return failure('invalid','INVALID_BACKGROUND_ACTION');
+      if(c.origin==='dialogue_worker'&&!['dialogue_post_checkpoint','dialogue_settle','council_v3_extract'].includes(c.action.type))return failure('invalid','INVALID_BACKGROUND_ACTION');
       if(c.branch_id!==formal.revision.branch_id) return failure('stale','STALE_BRANCH');
       const fingerprint=canonical(c);
       const old=formal._runtime.receipts.find(r=>r.id===c.id);
       if(old) return old.fingerprint===fingerprint ? {...clone(old.result),replayed:true} : failure('invalid','DUPLICATE_ID_MISMATCH');
-      if(c.parent_revision!==formal.revision.state_id || c.as_of_minute!==formal.clock.elapsed_minutes) return failure('stale','STALE_REVISION');
+      if(c.origin!=='dialogue_worker'&&(c.parent_revision!==formal.revision.state_id || c.as_of_minute!==formal.clock.elapsed_minutes)) return failure('stale','STALE_REVISION');
       if(pendingDialogue&&(/^(guard_|nav_|daily_|wait$|start_activity|end_activity|advance_activity|opening_|campaign_|council_begin)/.test(c.action.type))){const draft=await pendingDialogue();if(draft&&draft.context?.branch===formal.revision.branch_id&&!['done','discarded','stale'].includes(draft.status)&&!formal.dialogue.turns.some(t=>t.id===draft.id))return failure('blocked','当前发言尚未完成，请先保存或取消这轮对话。');}
       const next=read(),resultRevision='state-'+id();let code='BRIEFING_READ_ONLY';
       if(c.action.type==='acknowledge_briefing'){
@@ -120,7 +122,7 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
             invalidateDecisions(next);
             if(c.action.type.startsWith('memory_')){try{code=applyMemoryAction(next,c.action);}catch(e){throw new RuleError(e.message,'invalid');}}
             else if(c.action.type.startsWith('council_'))code=applyCouncilAction(next,c.action,{...c,result_revision:resultRevision,councilVersion,authoredPlay});
-            else if(liveCouncil(next)&&!c.action.type.startsWith('guard_')&&c.action.type!=='daily_preferences')throw new RuleError('大臣们还在等您的裁决，请先完成会议。');
+            else if(liveCouncil(next)&&!['dialogue_post_checkpoint','dialogue_settle'].includes(c.action.type)&&!c.action.type.startsWith('guard_')&&c.action.type!=='daily_preferences')throw new RuleError('大臣们还在等您的裁决，请先完成会议。');
             else if(c.action.type.startsWith('dialogue_'))code=applyDialogueAction(next,c.action,{...c,result_revision:resultRevision,councilVersion,authoredPlay});
             else {const before=clone(next);code=applyWorldAction(next,c.action,{...c,result_revision:resultRevision,councilVersion,authoredPlay});afterWorldAction(before,next,c.action,c);}
             if(['end_activity','opening_scene_end','campaign_choose','council_finish'].includes(c.action.type))settleNightAfterActivity(next,{...c,result_revision:resultRevision,councilVersion,authoredPlay});
@@ -156,6 +158,8 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
       // Every load creates a distinct branch even if loaded at the exact same turn.
       next.revision.parent_state_id=got.revision.state_id;
       next.revision.state_id='state-'+id();next.revision.branch_id='branch-'+id();
+      for(const t of next.dialogue?.turns||[])if(t.settlement&&!['done','partial'].includes(t.settlement.status)){t.settlement.branch=next.revision.branch_id;if(t.settlement.status==='running')t.settlement.status='interrupted';}
+      const work=liveCouncil(next)?.session.work;if(work?.context){work.context.branch=next.revision.branch_id;work.context.world=next.revision.state_id;}
       rebranchMemory(next);
       rebranchAutonomy(next);
       next.revision.commit_id='restore-'+id();next.revision.applied_commit_ids.push(next.revision.commit_id);
@@ -171,5 +175,5 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
         reports:b.message_refs.map(ref=>formal.messages.find(m=>m.id===ref && m.recipient==='U001' && m.status==='已收到' && m.delivered_minute<=formal.clock.elapsed_minutes)).filter(Boolean).map(m=>m.content)
       }))};
   }
-  return {init,startNew,read,prepareAction,prepareBackgroundAction,prepareBriefingRead,commit,exportSave,saveSlot,restore,playerView,finaleView:()=>formal?finaleView(formal):null};
+  return {init,startNew,read,prepareAction,prepareBackgroundAction,prepareSettlementAction,prepareBriefingRead,commit,exportSave,saveSlot,restore,playerView,finaleView:()=>formal?finaleView(formal):null};
 }

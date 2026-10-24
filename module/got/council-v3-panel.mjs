@@ -4,6 +4,7 @@ import {topicOf} from './council-v3.mjs';
 import {liveCouncil,pendingCouncilBatch} from './council-session.mjs';
 import {demoWork,demoBatch} from './council-v3-demo.mjs';
 const readableError=text=>String(text).replaceAll('RESOURCE_UNAVAILABLE','可用钱款或物资不足，请核对本次其他已定安排').replaceAll('STALE_DIALOGUE_CONTEXT','存档或会议已改变，旧回复没有采用').replaceAll('SAVE_FAILED','尚未保存成功，可重试保存').replaceAll('INCOMPLETE_MODEL_RESPONSE','模型输出被截断，已收到的内容保留').replaceAll('DIALOGUE_CANCELLED','生成已停止，已收到的内容保留');
+const defChoice=(q,id,g)=>g.opening.meetings.flatMap(m=>m.session?.turns||[]).find(t=>t.issue===q.id)?.context.meeting?.choices.find(c=>c[0]===id)?.[1];
 const name=id=>profiles[id]?.name||(id==='U001'?'乔弗里':'书记');
 export function renderCouncilV3(runtime,host,{button,act}){
  const g=runtime.read(),m=liveCouncil(g),s=m.session,q=topicOf(m),r=window.gotDialogue;
@@ -21,9 +22,9 @@ export function renderCouncilV3(runtime,host,{button,act}){
   r.councilAutoResume=true;r.councilError='';
   if(demo)await act(demoWork(runtime.read(),liveCouncil(runtime.read())));else{if(!r.councilRequestsEnabled)throw Error('当前服务未开启模型请求，记录已保留。');await r.runCouncilWork();}
  };
- const closing=async()=>{try{
+ const closing=async(regenerate=false)=>{try{
   if(demo){let batch;while((batch=pendingCouncilBatch(liveCouncil(runtime.read()))))await act({type:'council_parse_issue',issue:batch.issue,result:demoBatch(batch),request_record:{source:'isolated-fixed-demo'}});}
-  else if(pendingCouncilBatch(liveCouncil(runtime.read()))){if(!r.councilRequestsEnabled)throw Error('当前服务未开启模型请求，文书已保存。');await r.registerCouncil();}
+  else if(pendingCouncilBatch(liveCouncil(runtime.read()))){if(!r.councilRequestsEnabled)throw Error('当前服务未开启模型请求，文书已保存。');await r.registerCouncil({regenerate});}
   // An all-silent meeting has no prose batch to translate.
   if(liveCouncil(runtime.read()).session.phase==='registering')await act({type:'council_prepare'});
   await act({type:'council_finish'});
@@ -43,12 +44,12 @@ export function renderCouncilV3(runtime,host,{button,act}){
   if(s.phase==='decision'&&!s.input){
    action('采用席间提出的方案',{type:'council_v3_menu'});action('提出修改或另一种办法',{type:'council_v3_edit'});
    if(s.selectionMenu){const list=el('section','');list.className='council-proposals';const ps=q.proposals.filter(p=>p.status==='active');if(!ps.length)el('p','席间尚无人提出可直接采用的办法。可以提出自己的意见。',list);
-    for(const p of ps){const b=button(name(p.actor)+'：'+p.summary,()=>{if(r)r.councilAutoResume=true;return act({type:'council_v3_select',proposal:p.id});});b.disabled=!!r?.busy;list.append(b);el('small','拟负责人：'+(p.owner?name(p.owner):'依原职权或待明确')+(p.conditions.length?'；条件：'+p.conditions.join('；'):''),list);if(p.detail)el('small',p.detail,list);}
+    for(const p of ps){const b=button(name(p.actor)+'：'+p.summary,()=>{if(r)r.councilAutoResume=true;return act({type:'council_v3_select',proposal:p.id});});b.disabled=!!r?.busy;list.append(b);el('small','拟负责人：'+(p.owner?name(p.owner):'依原职权或待明确')+(p.conditions.length?'；条件：'+p.conditions.join('；'):''),list);if(p.detail)el('small',p.detail,list);if(p.actions?.length)el('p','执行范围：'+p.actions.map(a=>Object.entries(a).filter(([k])=>k!=='type').map(([k,v])=>({count:'人数',duration:'分钟',amount:'数量',source:'调出方',destination:'调入方',person:'人选',commander:'指挥者',title:'名称',name:'名称',organization_ref:'机构',operation:'事务',end_at:'截止分钟',expires_at:'权限截止分钟',posts:'岗位',template:'工作类型',responsibilities:'职责',target_ref:'对象'}[k]||k)+'：'+v).join('；')).join(' / '),list);if(p.choice)el('p','实际采用：'+(defChoice(q,p.choice,g)||p.summary),list);}
    }
   }
   if(s.phase==='clarify')el('p',s.clarification);
-  if(s.phase==='ready'){el('p','书记合上最后一页。「陛下，今日各项议题都已记妥。诸位没有别的事项了。」');add('宣布散会',async()=>{await act({type:'council_v3_close'});await closing();});}
-  if(['registering','review'].includes(s.phase)){el('p','书记逐项核对裁决，众人稍歇。文书尚未用印。');add('继续整理文书',closing);
+  if(s.phase==='ready'&&!s.turns.some(t=>t.extraction&&t.extraction.status!=='done'&&s.agenda.find(q=>q.id===t.issue)?.revision===t.extraction.revision)){el('p','书记合上最后一页。「陛下，今日各项议题都已记妥。诸位没有别的事项了。」');add('宣布散会',async()=>{await act({type:'council_v3_close'});await closing();});}
+  if(['registering','review'].includes(s.phase)){el('p','书记逐项核对裁决，众人稍歇。文书尚未用印。');add('继续整理文书',()=>closing());if(r?.councilError&&!demo)add('重新请求未完成议题整理',()=>closing(true));
    if(r?.councilError){el('p','尚未完成：'+r.councilError);const details=el('details','');el('summary','澄清相关议题',details);for(const t of s.agenda)details.append(button(t.title,()=>act({type:'council_v3_reopen',issue:t.id})));}
   }
  }
@@ -66,6 +67,9 @@ export function renderCouncilV3(runtime,host,{button,act}){
   else if(!r?.councilAutoResume&&!demo)add('继续会议讨论',work);
   else if(r&&r.councilScheduled!==s.work.id){r.councilScheduled=s.work.id;queueMicrotask(()=>work().catch(e=>{r.councilError=readableError(e.message);r.notify(r);}));}
  }
+ for(const t of s.turns.filter(t=>t.issue===q?.id&&t.extraction?.issues?.length))el('p',name(t.context.actor)+'的'+t.extraction.issues.length+'项提案尚有不明确之处，没有加入可采纳方案。可提出修改继续讨论。');
+ const pendingExtract=s.turns.filter(t=>t.extraction&&t.extraction.status!=='done'&&s.agenda.find(q=>q.id===t.issue)?.revision===t.extraction.revision);
+ for(const t of pendingExtract){el('p',name(t.context.actor)+'的原话已记下，方案'+(r?.postBusy?'正在整理。':'尚待核对。'));if(t.extraction.error)el('p','未完成：'+readableError(t.extraction.error));const cached=t.extraction.response||r?.postResults.has(g.revision.branch_id+'|'+t.id);const b=add(cached?'继续整理／保存':'恢复方案整理',()=>r.extractCouncil(t.id,{retry:!cached&&t.extraction.status==='failed'}));b.disabled=!!r?.postBusy;if(cached&&t.extraction.status==='failed'){const b=add('重新请求方案整理',()=>r.extractCouncil(t.id,{retry:true}));b.disabled=!!r?.postBusy;}}
  if(s.entries.length){const history=el('details','');history.className='council-history';el('summary','查看发言记录',history);const filter=el('select','',history);el('option','全部人物',filter).value='';for(const id of [...new Set(s.entries.map(e=>e.speaker))])el('option',name(id),filter).value=id;const body=el('div','',history);
   const draw=()=>{body.replaceChildren();for(const e of s.entries.filter(e=>!['silence','character-review'].includes(e.kind)&&(!filter.value||e.speaker===filter.value))){el('small',s.agenda.find(q=>q.id===e.issue)?.title||'会议',body);speech(body,e.speaker,e.content,{id:e.id});}};filter.onchange=draw;draw();
  }

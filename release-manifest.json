@@ -1,11 +1,11 @@
 {
-  "release": "Joffreys Decision v0.1-test",
+  "release": "Joffreys Decision v0.2-test",
   "name": "乔佛里的决定",
-  "version": "0.1-test",
+  "version": "0.2-test",
   "port": 8090,
   "apiEnabledByDefault": true,
   "source": "development snapshot",
-  "created": "2026-10-24",
+  "created": "2026-10-25",
   "files": [
     {
       "path": ".gitignore",
@@ -2114,18 +2114,23 @@
     },
     {
       "path": "docs/release/使用说明.md",
-      "bytes": 1071,
-      "sha256": "1b73407c3d64cd8d442d965247a05a477c8de677a5b85f995016586e63dc0bc1"
+      "bytes": 1802,
+      "sha256": "3ae2143ac85831ec50064cb218906ea0cd394718c7e95e8009131e1b32bb6f38"
     },
     {
       "path": "docs/release/复用清单与后续.md",
-      "bytes": 2064,
-      "sha256": "d4ad8865d3663e2364eb13dfd617c9f115ca5e9cb010f0c2dc5a9b44288db938"
+      "bytes": 2240,
+      "sha256": "e352e278673f0977679a18e03ed11968eb6a49706544c2a8b8d8175a68e67945"
+    },
+    {
+      "path": "docs/release/更新记录.md",
+      "bytes": 1056,
+      "sha256": "a2e01a098653f131377aff631e7bc1162fa90466dc17b4161a3f30d4e56e11ed"
     },
     {
       "path": "docs/release/本轮验证.md",
-      "bytes": 1655,
-      "sha256": "4bc5221d5249505c6b390a902551f7deb516ebe7b820ca285f1f2d16c298162d"
+      "bytes": 2409,
+      "sha256": "5e2560d0adb8a238324425e983d0636947897479d4b93676b722de611da0cc9f"
     },
     {
       "path": "docs/release/音乐资源接入.md",
@@ -2175,7 +2180,7 @@
     {
       "path": "got-state.html",
       "bytes": 6530,
-      "sha256": "a2ce464609745ccddcbb18c3601232c1fc997f74fcbf2e2c18d74bb7034b1d77"
+      "sha256": "4e90d250c7caedcff4e72be58e3319cc756d28115407538fd2321b7a920c8ee7"
     },
     {
       "path": "got-ui-preview.html",
@@ -2374,13 +2379,13 @@
     },
     {
       "path": "module/got/character-review-runner.mjs",
-      "bytes": 4537,
-      "sha256": "f2d58c2ac31b26a5b73961db1c5729ad17ae61d989bc8ee512d8f88392f019aa"
+      "bytes": 4775,
+      "sha256": "e23930bdc01ea21c58a0573f7e437d9218b5e1abe1c5b533e1f8e20103d49bac"
     },
     {
       "path": "module/got/character-state.mjs",
-      "bytes": 6890,
-      "sha256": "e995360121ff994518893e6457b4d847c170d00b4a1de6a9ec7a7fad921a77c4"
+      "bytes": 6616,
+      "sha256": "27678a371df82c4a61c4ee71ca5dd0e24eeb1077062bb9b6fc8ff260612726bc"
     },
     {
       "path": "module/got/chronicle.mjs",
@@ -2414,13 +2419,13 @@
     },
     {
       "path": "module/got/compat/preset-compatibility.js",
-      "bytes": 8212,
-      "sha256": "63fcea370478a81a5774047a9b4b253b2df480c51146b4bdbf74f9d47bf9f2b2"
+      "bytes": 8423,
+      "sha256": "a046378a5252af41b2a1b5a8b058d3092f4995f2c26781e45cf29dca35b92e57"
     },
     {
       "path": "module/got/compat/preset-compatibility.ts",
-      "bytes": 8212,
-      "sha256": "0202a000128a2d060e51d751f9a6c2991d1cb421320e673491fe931887fc9cc0"
+      "bytes": 8423,
+      "sha256": "f2724680ea2d8ece15a60ad3c968ff9c1d6d22bd6eaad97dce3212fc547f3dd9"
     },
     {
       "path": "module/got/compat/presets.js",
@@ -2439,8 +2444,8 @@
     },
     {
       "path": "module/got/compat/provider-request.ts",
-      "bytes": 1617,
-      "sha256": "07e43097d513fdba934f37b9d05eb4381aeee8efa407923219637790da5eba78"
+      "bytes": 1748,
+      "sha256": "ee77ac245bd90f90967425c41f8f1b5398a71ac10888afe582b146316d57a21b"
     },
     {
       "path": "module/got/continuous-panel.mjs",
@@ -2449,8 +2454,13 @@
     },
     {
       "path": "module/got/council-session.mjs",
-      "bytes": 15322,
-      "sha256": "38db00c6bf10d5537980627a35e73b5489f05cb6a04c4909e6d0cebee06b7882"
+      "bytes": 15898,
+      "sha256": "a7b6476e22b9315840377dd49aa438f9aa5ebede911d41f926a1efdd15832420"
+    },
+    {
+      "path": "module/got/council-settlement.mjs",
+      "bytes": 2538,
+      "sha256": "bcb380d2d1d7eeeb5bbc51a733b60b49bc04682f35d49780415b40cd33108f77"
     },
     {
       "path": "module/got/council-v3-demo.mjs",
@@ -2459,23 +2469,23 @@
     },
     {
       "path": "module/got/council-v3-panel.mjs",
-      "bytes": 9031,
-      "sha256": "5adc5dc7600cc80e7918b4fa6bd9a5e96a78c40f8b71bf3042091e6b0ca59a08"
+      "bytes": 11047,
+      "sha256": "b74e9a1f7d41edbecb3c1ece64affb2267fa2f833c038ed47a02491ffefb49bf"
     },
     {
       "path": "module/got/council-v3-runner.mjs",
-      "bytes": 7208,
-      "sha256": "fa585fd9bb551e6a9fc0ce1b430392cca2d75259593b895decd1f38ac8f5a5bf"
+      "bytes": 7997,
+      "sha256": "42aeb48afbf276c6e89fc3adce695985b4ef0f7867874cda6d1630dbb698a354"
     },
     {
       "path": "module/got/council-v3.mjs",
-      "bytes": 13460,
-      "sha256": "866777d6b0458676a114b6a0163e0f3757ad40fd474004601c7eab3f605ca4c0"
+      "bytes": 15978,
+      "sha256": "a75edd11a5f893dccaf4821058ae2643f3d40a6a8b2e639c346d93dba6a50427"
     },
     {
       "path": "module/got/court-menu.mjs",
-      "bytes": 9967,
-      "sha256": "b4f4c731173f594b0bb65ccf7ef05678d1b804ca139ad732ce8ca75702cbb61a"
+      "bytes": 11122,
+      "sha256": "6314dce4fd6ab33c35236831356b34d1ac9afe46c5ba73f8431c3fb2e15f6c5c"
     },
     {
       "path": "module/got/daily-content.mjs",
@@ -2489,18 +2499,18 @@
     },
     {
       "path": "module/got/dialogue-core.mjs",
-      "bytes": 21475,
-      "sha256": "be8f018a2ecb187f5289aeaea6c6c5e6820a0dea53a9dc0ab5c125d3e723e205"
+      "bytes": 27891,
+      "sha256": "d1e72cb7d247cd68448802eb3ce50a401fc6c51c7df27e1b3b4ebe5aee9f1ecc"
     },
     {
       "path": "module/got/dialogue-engine.mjs",
-      "bytes": 17666,
-      "sha256": "c88bed0dcd5fd14442ae781863f82efc2468c2274948feef0c9847e30b306dd5"
+      "bytes": 23565,
+      "sha256": "07cf23fdd7e351a8f9c546760dbfc3dc50844e419f62b7c0af701ebecc41a8fa"
     },
     {
       "path": "module/got/dialogue-panel.mjs",
-      "bytes": 14910,
-      "sha256": "98f3ff8ebdc07879aec5cb08d53ae54b8f06093a229900bde5762062b006b6bb"
+      "bytes": 15987,
+      "sha256": "a978ad3da1a55d4a2213dd3941d8f7808e8399f5c0666d41d129b7b0e840dab8"
     },
     {
       "path": "module/got/dialogue-profiles.mjs",
@@ -2509,8 +2519,13 @@
     },
     {
       "path": "module/got/dialogue-runner.mjs",
-      "bytes": 15188,
-      "sha256": "173cb4a326affc171a27d231f1ae13de6d74874a6e645dfbc9ccdd526a9f3fd8"
+      "bytes": 17963,
+      "sha256": "89b245f954bfadd610b8bb29b0628385d9764e50f226c672b739bb72a5075315"
+    },
+    {
+      "path": "module/got/dialogue-settlement.mjs",
+      "bytes": 2761,
+      "sha256": "65bea2d10164b9c78e809b06ec45b1aaea643dc3d3369c9863b8824988f7e925"
     },
     {
       "path": "module/got/era-rules.mjs",
@@ -2520,12 +2535,12 @@
     {
       "path": "module/got/event-cards-data.mjs",
       "bytes": 651226,
-      "sha256": "d22def7b5c88e0675922f5cb43ac8356d88713ac41e098193604603d32731581"
+      "sha256": "387980754871755667dc3b22bd16d173cb628fda3aebb78fe4b0824df5c54322"
     },
     {
       "path": "module/got/event-cards.mjs",
-      "bytes": 29978,
-      "sha256": "ed0d8b5193ab1db19e46cf1db32d92ae684b8d9c81f87819c924cdc2eb40ea39"
+      "bytes": 30056,
+      "sha256": "2ee14d6b05544a3d4c60b7c041570db682112f38fae4249b6183c40269afca57"
     },
     {
       "path": "module/got/event-schedule.mjs",
@@ -2579,8 +2594,8 @@
     },
     {
       "path": "module/got/generation-core.mjs",
-      "bytes": 10418,
-      "sha256": "657904a885bab1f846f50e825690a858f00ba0cddf1b87c554769d6b86172438"
+      "bytes": 10726,
+      "sha256": "eb5597bbf53d8fae153f34565054b700dbc61ecbce601c998c07f27d75a6dbed"
     },
     {
       "path": "module/got/generation-dialog-base.css",
@@ -2619,18 +2634,28 @@
     },
     {
       "path": "module/got/memory-client.mjs",
-      "bytes": 8844,
-      "sha256": "083498ad543bda34358df25c201c166159d2dd92522f95549689c5fcc84e547e"
+      "bytes": 8921,
+      "sha256": "32d3b7800050cf9ef8aabb09c422590057af0029749fe261b0af2724722cd039"
     },
     {
       "path": "module/got/memory-core.mjs",
-      "bytes": 7358,
-      "sha256": "e861a9207409d8d93ed7c7029578f934907e970cfcfa66b9735c85641cd9ca76"
+      "bytes": 7636,
+      "sha256": "b6155b620fc32daee61140e07060bc13e7ede5e58d80a112ebf840ec1c5daaab"
     },
     {
       "path": "module/got/memory-panel.mjs",
       "bytes": 6217,
       "sha256": "97634edd89efd445be855da7507301cf391f736851e00746615a09601f3151c1"
+    },
+    {
+      "path": "module/got/middleware-evidence.mjs",
+      "bytes": 14652,
+      "sha256": "92b03ae8b1decf475dbb5d8e8b054bd78b1eb3814ea596f4dae3d39a1d1f134a"
+    },
+    {
+      "path": "module/got/middleware-json.mjs",
+      "bytes": 1876,
+      "sha256": "54eb47a18883c122b517c313d7ab83e565ac34a6a1fc88c5f356069eb83a328f"
     },
     {
       "path": "module/got/music.mjs",
@@ -2654,8 +2679,8 @@
     },
     {
       "path": "module/got/opening-engine.mjs",
-      "bytes": 31946,
-      "sha256": "561df512646d2bbbbd645d8e85e5faa01856e0b0a30375f120a8cd4e68877b9b"
+      "bytes": 31947,
+      "sha256": "97269c826e8ad7ac985d0d79426f2ade38337a40bb33cd41ffeeb8519e9fb3ea"
     },
     {
       "path": "module/got/opening-panel.mjs",
@@ -2669,8 +2694,8 @@
     },
     {
       "path": "module/got/portrait-data.mjs",
-      "bytes": 4218,
-      "sha256": "2365aac172fbd0b38677503ddf88b0d485c65a363fddd4d8a5a8f6bffd7bea8e"
+      "bytes": 4366,
+      "sha256": "2a5430ac3b348c4b60fac074015963a1c4ec8aa4e70fa24fb674d328dce80e82"
     },
     {
       "path": "module/got/portrait-panel.mjs",
@@ -2714,8 +2739,8 @@
     },
     {
       "path": "module/got/state-runtime.mjs",
-      "bytes": 14055,
-      "sha256": "f24e5a6d451746f68a589a073cef38871c99322f139b4fac434b5be43670cf38"
+      "bytes": 14881,
+      "sha256": "5095955d63a99b840bea61d3fbd140424940f91ce42c5b7cd29754559364f670"
     },
     {
       "path": "module/got/state-validation.mjs",
@@ -2724,8 +2749,8 @@
     },
     {
       "path": "module/got/world-engine.mjs",
-      "bytes": 45399,
-      "sha256": "09c6eb13c7988da2a4e90896914811d3a410cb3dd2283650a8ee02650e7425cc"
+      "bytes": 46034,
+      "sha256": "cb2db25f4d1fa9762c9849fa020b997e6e41981706cd7ee834ed340f88f087c6"
     },
     {
       "path": "module/got/world-panel.mjs",
@@ -2764,8 +2789,8 @@
     },
     {
       "path": "module/json-repair-helper.js",
-      "bytes": 4055,
-      "sha256": "2985bc44b79d5aa436f009cfef75a0cad9a24f8b816fc93617ba4fed0aab959f"
+      "bytes": 4102,
+      "sha256": "39803a041884413990b5945d44be55d6115b53fc1afe69ae140245b724dad609"
     },
     {
       "path": "module/location-runner.js",
@@ -2809,8 +2834,8 @@
     },
     {
       "path": "module/prompt-builder.js",
-      "bytes": 49201,
-      "sha256": "188aceea9b3f2490984e0dc8956afc06d47a9ccd7d8dc6ef110eac4546fb3839"
+      "bytes": 49871,
+      "sha256": "134ee208ddf077f289791f1ed2d25faabaab831852eb771eba9a98019a5f9e2e"
     },
     {
       "path": "module/prompt-data-actions.js",
@@ -2939,8 +2964,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1188,
-      "sha256": "bdda358e88da2474fbdf0a069d961e99187b5b77e947620566f5a421c6b6d0fb"
+      "bytes": 1802,
+      "sha256": "3ae2143ac85831ec50064cb218906ea0cd394718c7e95e8009131e1b32bb6f38"
     },
     {
       "path": "runtime/LICENSE",
@@ -14934,8 +14959,8 @@
     },
     {
       "path": "tools/got/local-build.mjs",
-      "bytes": 2573,
-      "sha256": "7c2e250482543614b3a9dd437d3b6cbdcfd941e8166da6970f7288115ee7d4bd"
+      "bytes": 3061,
+      "sha256": "5b292837a582fcbde3c97154eb87b7d5dd622337275e56fceda4215819dc2438"
     },
     {
       "path": "tools/got/memory-gateway.mjs",
@@ -14954,8 +14979,8 @@
     },
     {
       "path": "tools/serve-local.mjs",
-      "bytes": 5901,
-      "sha256": "63e227672621fe240f2a61b4dc3bae8c199e0be3db1c9d2397154d8eaec13e49"
+      "bytes": 5928,
+      "sha256": "6277615bf013d782eac819d85eb212940e768fd2676f7ba7945213dae649a624"
     },
     {
       "path": "tools/start-local.mjs",
@@ -14985,12 +15010,12 @@
     {
       "path": "VERSION",
       "bytes": 10,
-      "sha256": "c3193ed2b907e82ee5c5a3070aa59e41bc5eb9b76994bc949e982d5e25b979f2"
+      "sha256": "63de6bb2b8b479f1a4688331b0f5ed6ad463d1dce04ebc84e1a2bd0e09ee10ba"
     },
     {
       "path": "先读我.md",
-      "bytes": 1071,
-      "sha256": "1b73407c3d64cd8d442d965247a05a477c8de677a5b85f995016586e63dc0bc1"
+      "bytes": 1802,
+      "sha256": "3ae2143ac85831ec50064cb218906ea0cd394718c7e95e8009131e1b32bb6f38"
     },
     {
       "path": "启动游戏.cmd",

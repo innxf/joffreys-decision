@@ -59,6 +59,14 @@ export async function mountDialogue(runtime,{testMode,namespace=null,refresh}){
    const v=proposalView(g,p),box=document.createElement('div');box.className='panel';para(box,v.title);para(box,describeAction(v.action));para(box,v.cost+'；'+v.duration);if(v.reason)para(box,'尚缺：'+(errors[v.reason]||v.reason));
    const confirm=button(v.title==='送交御前会议讨论'?'送交御前会议':'确认执行这项行动',()=>act({type:'dialogue_execute',proposal_ref:p.id}));confirm.disabled=!v.ready||runner.busy;box.append(confirm,button('撤回这项提案',()=>act({type:'dialogue_discard',proposal_ref:p.id})));candidates.append(box);
   }
+  for(const t of g.dialogue.turns.filter(t=>t.settlement&&!['done'].includes(t.settlement.status))){
+   const job=t.settlement,box=document.createElement('div');box.className='panel';
+   para(box,(profiles[t.actor]?.name||t.actor)+'的对白已保存。'+(job.status==='partial'?'部分事项需要澄清。':runner.postBusy?'书记正在整理。':'文书尚待整理。'));
+   if(job.error)para(box,'整理未完成：'+job.error);
+   for(const issue of job.issues||[])para(box,'待核对：'+issue.reason);
+   if(!['partial','done'].includes(job.status)){const cached=job.response||runner.postResults.has(g.revision.branch_id+'|'+t.id);const retry=button(cached?'继续整理／保存':'重试整理',()=>runner.settle(t.id,{retry:!cached&&job.status==='failed'}));retry.disabled=runner.postBusy;box.append(retry);if(cached&&job.status==='failed'){const regenerate=button('重新请求整理',()=>runner.settle(t.id,{retry:true}));regenerate.disabled=runner.postBusy;box.append(regenerate);}}
+   candidates.append(box);
+  }
   const pending=d&&!['done','discarded','stale'].includes(d.status);
   if($('dialogue-availability')){$('dialogue-availability').hidden=requestsEnabled;$('dialogue-availability').textContent='自由交谈尚未开启。既定选项照常可用；如需生成新内容，可在右上角设置中配置连接，并开启本机服务的模型请求。';}
   if($('dialogue-composer'))$('dialogue-composer').hidden=dailyForActivity(g,activity?.id)?.external===false&&!pending;
@@ -84,7 +92,7 @@ export async function mountDialogue(runtime,{testMode,namespace=null,refresh}){
  const current=()=>{const activity=runtime.read().activities.find(a=>a.status==='active'&&a.participants.includes('U001'));if(!activity)throw Error('请先进入有实际参与者的活动。');return [ $('dialogue-actor').value,activity.id,$('dialogue-input').value ];};
  $('dialogue-send').onclick=run(async()=>{if(!serviceReady||!requestsEnabled)throw Error('本机服务尚未准备好，请按页面上方提示启动。');await runner.start(...current());$('dialogue-input').value='';});$('dialogue-retry').onclick=run(()=>runner.run());$('dialogue-regenerate').onclick=run(()=>runner.run('regenerate'));$('dialogue-discard').onclick=run(()=>runner.discard());$('dialogue-cancel').onclick=()=>runner.cancel();
  $('dialogue-preview').onclick=run(()=>{const s=runner.draft?.requests?.findLast(x=>x.snapshot.stage==='prose')?.snapshot||runner.preview(...current());$('dialogue-request').textContent=JSON.stringify({messages:s.compiled.messages,parameters:s.compiled.parameters,endpoint:s.preview.endpoint,warnings:s.preview.warnings,canon_reference:s.canon_reference||null},null,2);$('dialogue-preview-box').open=true;status('预览不发请求、不走时、不执行行动。');});
- window.addEventListener('got-world-changed',()=>render());window.addEventListener('beforeunload',e=>{if(runner.busy||dirty()){e.preventDefault();e.returnValue='';}});
+ window.addEventListener('got-world-changed',()=>render());window.addEventListener('beforeunload',e=>{if(runner.busy||runner.postBusy||runner.postResults.size||dirty()){e.preventDefault();e.returnValue='';}});
  await runner.init();memory=mountMemory(runtime,client,runner,{namespace:namespace||(testMode?'dialogue-preview':''),refresh:render});render();$('dialogue-mode').textContent=testMode?'隔离测试存档：会面已安排，人物可用于接口检查，不代表正式T0发生了这些安排。':'正式世界：只对已进入活动的人生成发言。委托与回报按时间推进；开局引导见上方会议与日程；旧存档保留原有状态。';
  await checkService();if(namespace==='council-v3-preview'){const n=$('runtime-notice');n.hidden=false;n.textContent='这是隔离的固定演示，不会发出模型请求，也不改变正式进度。';}runner.councilRequestsEnabled=serviceReady&&requestsEnabled;runner.councilAutoResume=!liveCouncil(runtime.read());render();refresh();
  mountAutonomy(runtime,client,runner,memory,{refresh:render,enabled:requestsEnabled&&executionAvailable,available:executionAvailable});
