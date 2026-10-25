@@ -56,7 +56,7 @@ export class DialogueRunner {
     // A world save may have succeeded before the draft checkpoint failed.
     if(this.runtime.read().dialogue?.turns.some(t=>t.id===this.draft.id)||liveCouncil(this.runtime.read())?.session.turns.some(t=>t.id===this.draft.id)){this.draft.status='done';this.draft.stage='done';await this.save();return;}
     this.current();ensure(!['done','discarded'].includes(this.draft.status),'TURN_ALREADY_FINISHED');
-    if(mode==='regenerate'){ensure(this.draft.pre,'NO_PRE_RESULT');this.draft.prose='';this.draft.raw='';this.draft.complete=false;this.draft.post=null;this.draft.commitCandidate=null;}
+    if(mode==='regenerate'){const stage=this.draft.pre?'prose':'pre';ensure(this.draft.pre||this.draft.version>=2,'NO_PRE_RESULT');for(const row of this.draft.requests.filter(x=>x.snapshot.stage===stage))row.superseded=true;this.draft.prose='';this.draft.raw='';this.draft.complete=false;this.draft.post=null;this.draft.commitCandidate=null;}
     this.draft.error=null;this.draft.status='running';await this.save();
     if(!this.draft.pre&&!this.draft.memorySelection){
      const c=this.draft.context,selection=this.recall?await this.recall(c,this.draft.settings,this.abort.signal):{records:[],warning:'未配置语义检索；继续使用已有摘要。'};
@@ -64,6 +64,8 @@ export class DialogueRunner {
     }
     const request=async stage=>{
      this.current();ensure(!this.abort.signal.aborted,'DIALOGUE_CANCELLED');this.draft.stage=stage;
+     const cached=this.draft.version>=2&&this.draft.requests.findLast(x=>x.snapshot.stage===stage&&x.response&&!x.superseded);
+     if(cached){const response=cached.response;ensure(!response.finishReason||response.finishReason==='stop','INCOMPLETE_MODEL_RESPONSE');const value=stage==='prose'&&this.draft.proseFormat===2?proseText(cached.snapshot.compiled.prefix||'',response.content):displayText(cached.snapshot.compiled.prefix||'',response.content);if(stage==='prose'){this.draft.raw=response.content;this.draft.prose=value;this.draft.complete=true;await this.save();}return stage==='prose'?value:parse(value);}
      const s=this.compile(this.draft.context,this.draft.pre,this.draft.prose,stage,this.draft.settings,this.draft.canonSelection);
      const row={snapshot:s,response:null,diagnostic:null};this.draft.requests.push(row);await this.save();
      let raw='',last=0;
@@ -78,7 +80,7 @@ export class DialogueRunner {
       if(stage==='prose'){this.draft.raw=r.content;this.draft.prose=value;this.draft.complete=true;}await this.save();return stage==='prose'?value:parse(value);
      }catch(e){await queue;this.draft.requests.find(x=>x.snapshot.id===s.id).diagnostic=e.diagnostic||{message:e.message};if(stage==='prose'&&e.diagnostic?.content){this.draft.raw=e.diagnostic.content;this.draft.prose=this.draft.proseFormat===2?proseText(s.compiled.prefix||'',e.diagnostic.content,true):displayText(s.compiled.prefix||'',e.diagnostic.content);}throw e;}
     };
-    if(!this.draft.pre){const p=await request('pre');checkPre(this.draft.context,p);this.draft.pre=p;await this.save();}
+    if(!this.draft.pre){const p=await request('pre');this.draft.pre=checkPre(this.draft.context,p);if(this.draft.pre.guidance.length!==p.guidance.length)this.draft.requests.at(-1).diagnostic={code:'UNTYPED_GUIDANCE_OMITTED',count:p.guidance.length-this.draft.pre.guidance.length};await this.save();}
     if(!this.draft.complete&&this.draft.canonFrame&&!this.draft.canonSelection){this.draft.canonSelection=await selectLocalCanon(this.draft.canonFrame,this.draft.context,this.draft.pre,this.canonSearch,this.abort.signal);this.current();await this.save();}
     if(!this.draft.complete)await request('prose');
     if(liveCouncil(this.runtime.read())){
@@ -110,6 +112,7 @@ export class DialogueRunner {
  async pumpPost(){
   if(this.postBusy||this.postPumping)return;this.postPumping=true;
   try{let progress=true;while(progress){progress=false;
+   if(this.queueBranch!==this.runtime.read().revision.branch_id){this.postQueue.clear();this.councilPostQueue.clear();break;}
    for(const id of [...this.postQueue]){const job=this.runtime.read().dialogue.turns.find(t=>t.id===id)?.settlement;if(!job||['done','partial','failed'].includes(job.status)){this.postQueue.delete(id);continue;}try{if(await this.settle(id)){this.postQueue.delete(id);progress=true;}}catch{this.postQueue.delete(id);}}
    for(const id of [...this.councilPostQueue]){try{if(await this.extractCouncil(id)){this.councilPostQueue.delete(id);progress=true;}}catch{this.councilPostQueue.delete(id);}}
   }}finally{this.postPumping=false;}
@@ -125,7 +128,7 @@ export class DialogueRunner {
   }
  }
  async reviewCharacters(){return reviewCharacters(this);}
- async runCouncilWork(){return runCouncilWork(this);}
+ async runCouncilWork(options){return runCouncilWork(this,options);}
  async registerCouncil({regenerate=false}={}){
   ensure(!this.busy,'DIALOGUE_BUSY');ensure(!this.draft||['done','discarded','stale'].includes(this.draft.status),'PENDING_DIALOGUE_EXISTS');
   this.councilError='';this.busy=true;this.notify(this);

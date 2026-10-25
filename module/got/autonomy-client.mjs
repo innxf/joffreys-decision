@@ -1,9 +1,10 @@
 import {requireCharacterInput} from './character-state.mjs';
+import {parseMiddlewareJson} from './middleware-json.mjs';
 // Reuses M3 requests/presets and the existing unique GOT commit, without prose generation.
 import {jobContext,checkJudgment,executionContract} from './autonomy-core.mjs';
 import {compileTask,displayText} from './generation-core.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
-const parse=s=>JSON.parse(s.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+const parse=parseMiddlewareJson;
 export class AutonomyClient{
  constructor({runtime,client,builder,notify=()=>{},isBusy=()=>false,lock,enabled=false}){Object.assign(this,{runtime,client,builder,notify,isBusy,enabled});this.busy=false;this.status='';this.lock=lock||((fn)=>navigator.locks.request('got-generation-request',{ifAvailable:true},async l=>{need(l,'另一个请求正在进行。');return fn();}));}
  async commit(action){const r=await this.runtime.commit(this.runtime.prepareBackgroundAction(action));need(r.status==='committed',r.validation.code);return r;}

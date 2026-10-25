@@ -72,6 +72,8 @@ export async function mountDialogue(runtime,{testMode,namespace=null,refresh}){
   if($('dialogue-composer'))$('dialogue-composer').hidden=dailyForActivity(g,activity?.id)?.external===false&&!pending;
   if(pending&&$('dialogue-composer'))$('dialogue-composer').open=true;
   $('dialogue-retry').textContent=d?.stage==='save'?'重试保存':d?.stage==='post'?'重试整理':'重试生成';
+  if(d?.version>=2&&d.requests.some(x=>x.snapshot.stage===d.stage&&x.response&&!x.superseded))$('dialogue-retry').textContent='继续解析／保存';
+  $('dialogue-regenerate').textContent=d?.pre?'重新生成正文':'重新请求前置判断';
   if(g.opening?.version===2){
    $('dialogue-panel').hidden=!activity;
    for(const id of ['dialogue-mode','dialogue-scenes','dialogue-share','dialogue-preview','dialogue-preview-box','memory-panel','autonomy-panel'])$(id).hidden=true;
@@ -85,7 +87,7 @@ export async function mountDialogue(runtime,{testMode,namespace=null,refresh}){
   
   if(council?.session.version===3)$('dialogue-panel').hidden=true;
   $('dialogue-send').disabled=!serviceReady||!requestsEnabled||runner.busy||pending||!actors.length||(council&&!['intro','discussion','extra'].includes(council.session.phase));$('dialogue-retry').disabled=runner.busy||!pending;
-  $('dialogue-regenerate').disabled=runner.busy||!pending||!d?.pre;$('dialogue-discard').disabled=runner.busy||!d||['done','discarded'].includes(d.status);$('dialogue-cancel').disabled=!runner.busy;
+  $('dialogue-regenerate').disabled=runner.busy||!pending||(!d?.pre&&d?.version<2);$('dialogue-discard').disabled=runner.busy||!d||['done','discarded'].includes(d.status);$('dialogue-cancel').disabled=!runner.busy;
  }
  $('dialogue-prose-api').onclick=()=>window.showConfigModal('prose');$('dialogue-middle-api').onclick=()=>window.showConfigModal('middleware');
  $('dialogue-prompts').onclick=()=>{if(!$('prompt-section').hidden&&!mayLeave())return;$('prompt-section').hidden=!$('prompt-section').hidden;if(!$('prompt-section').hidden)window.promptManagerModal.render($('gs-prompt-manager-root'));};

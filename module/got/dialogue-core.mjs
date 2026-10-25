@@ -65,7 +65,7 @@ export function actorEvidence(g,actor){
  for(const m of g.messages){
   const sent=m.sender===actor&&m.sent_minute<=at,received=m.recipient===actor&&m.status==='已收到'&&m.delivered_minute<=at;
   if(!sent&&!received)continue;
-  const confirmed=m.channel==='执行回报'&&m.basis?.kind==='本卡设计'&&!/未核实|未经核实|待核实|待证实|传闻|据说|听说|可能|没有|并未|并没|并非|未曾|不曾|未被|否认|辟谣|不实|谣言|假消息|尚无可靠/.test(m.content);
+  const confirmed=m.channel==='执行回报'&&m.basis?.kind==='本卡设计'&&!/未核实|未经核实|待核实|待证实|未经证实|证伪|传闻|据说|听说|可能|没有|并未|并没|并非|未曾|不曾|未被|否认|辟谣|不实|谣言|假消息|尚无可靠|如果|假如|倘若|一旦|是否|[？?]/.test(m.content);
   const stage_facts=[];if(confirmed){if(m.basis.refs?.includes('OPEN-JAIME-ADAPTATION')&&g.opening?.events.includes('jaime-report'))stage_facts.push('jaime_captured');if(m.basis.refs?.includes('C03')&&g.commitments.find(c=>c.id==='C03')?.status==='押送南返')stage_facts.push('jaime_released');if(m.basis.refs?.includes('MQ14')&&g.campaign?.battle?.result==='held_with_relief')stage_facts.push('blackwater_victory');}
   known.push({ref:m.id,kind:sent?'own_report':'report',content:(sent?'本人曾发出这份报告：':'')+m.content,at:sent?m.sent_minute:m.delivered_minute,source:m.sender,reliability:confirmed?'confirmed':'reported',visibility:['宫廷公示','公开传达'].includes(m.channel)?'court':'recipient',stage_facts});
  }
@@ -107,7 +107,7 @@ export function checkPre(c,p){
  ensure(list(p.focus_refs)&&p.focus_refs.every(r=>c.known.some(k=>k.ref===r)),'UNKNOWN_EVIDENCE');
  exact(p.agenda,['mode','priorities','basis']);ensure(['keep','update'].includes(p.agenda.mode)&&list(p.agenda.priorities,8)&&p.agenda.priorities.length&&p.agenda.priorities.every(x=>text(x,1000)),'INVALID_AGENDA');
  if(p.agenda.mode==='keep')ensure(same(p.agenda.priorities,c.agenda.priorities)&&same(p.agenda.basis,c.agenda.basis),'AGENDA_CHANGED_WITH_KEEP');else ensure(cited(p.agenda.basis,c),'UNKNOWN_EVIDENCE');
- ensure(list(p.guidance,12),'INVALID_GUIDANCE');for(const r of p.guidance){exact(r,['text','refs',...(Object.hasOwn(r,'kind')?['kind']:[])]);ensure(!r.kind||['performance','fact'].includes(r.kind),'INVALID_GUIDANCE_KIND');ensure(text(r.text,2000)&&Array.isArray(r.refs)&&(cited(r.refs,c)||(!r.refs.length&&(c.version<2||r.kind==='performance'))),'UNKNOWN_EVIDENCE');}
+ ensure(list(p.guidance,12),'INVALID_GUIDANCE');const guidance=[];for(const r of p.guidance){exact(r,['text','refs',...(Object.hasOwn(r,'kind')?['kind']:[])]);ensure(!r.kind||['performance','fact'].includes(r.kind),'INVALID_GUIDANCE_KIND');ensure(text(r.text,2000)&&Array.isArray(r.refs),'INVALID_GUIDANCE');if(c.version>=2&&!Object.hasOwn(r,'kind')&&!r.refs.length)continue;ensure(cited(r.refs,c)||(!r.refs.length&&(c.version<2||r.kind==='performance')),'UNKNOWN_EVIDENCE');guidance.push(r);}
  // Only retained to read a previous frozen request; current contracts and vector
  // retrieval neither request nor consume this former optional field.
  if(p.staging_mood){
@@ -115,7 +115,7 @@ export function checkPre(c,p){
   ensure(['neutral','warm','amused','tense','angry','fearful','sad'].includes(p.staging_mood.value),'INVALID_STAGING_MOOD');
   ensure(p.staging_mood.value==='neutral'&&Array.isArray(p.staging_mood.refs)&&!p.staging_mood.refs.length||cited(p.staging_mood.refs,c),'UNKNOWN_EVIDENCE');
  }
- return p;
+ return {...p,guidance};
 }
 export function decisionTarget(g,c,d){
  const current=target(g,d.target_ref),seen=c.targets.find(t=>t.ref===d.target_ref);
@@ -178,7 +178,9 @@ export function normalizePost(g,c,result,prose){
  for(const type of ['decisions','experiences'])for(const [i,row]of result[type].entries())try{checkPost(g,c,{...post,[type]:[...post[type],row],candidates:[]},prose);post[type].push(row);}catch(e){issues.push({group:type+':'+i,reason:e.message});}
  const blocked=new Set();
  result.candidates.forEach((row,i)=>{try{checkPost(g,c,{consistent:true,summary:result.summary,decisions:[],experiences:[],candidates:[{...row,depends_on:[]}]},prose);ensure(Array.isArray(row.depends_on)&&row.depends_on.every(j=>Number.isInteger(j)&&j>=0&&j<result.candidates.length&&j!==i),'INVALID_DEPENDENCY');}catch(e){blocked.add(i);issues.push({group:'candidate:'+i,reason:e.message});}});
- let changed=true;while(changed){changed=false;result.candidates.forEach((row,i)=>{if(!blocked.has(i)&&((row.depends_on||[]).some(j=>blocked.has(j))||(row.joint_group&&result.candidates.some((p,j)=>p.joint_group===row.joint_group&&blocked.has(j))))){blocked.add(i);issues.push({group:'candidate:'+i,reason:'DEPENDENT_GROUP_WAITING'});changed=true;}});}
+ const cyclic=(i,path=[])=>!blocked.has(i)&&(path.includes(i)||result.candidates[i].depends_on.some(j=>cyclic(j,[...path,i])));
+ const cycles=result.candidates.map((_,i)=>i).filter(i=>cyclic(i));for(const i of cycles){blocked.add(i);issues.push({group:'candidate:'+i,reason:'CANDIDATE_DEPENDENCY_CYCLE'});}
+ let changed=true;while(changed){changed=false;result.candidates.forEach((row,i)=>{if(!blocked.has(i)&&((row.depends_on||[]).some(j=>blocked.has(j))||(row.joint_group&&result.candidates.some((p,j)=>p?.joint_group===row.joint_group&&blocked.has(j))))){blocked.add(i);issues.push({group:'candidate:'+i,reason:'DEPENDENT_GROUP_WAITING'});changed=true;}});}
  const indexes=result.candidates.map((_,i)=>i).filter(i=>!blocked.has(i));post.candidates=indexes.map(i=>({...result.candidates[i],depends_on:result.candidates[i].depends_on.map(j=>indexes.indexOf(j))}));
  try{checkPost(g,c,post,prose);}catch(e){issues.push({group:'candidates',reason:e.message});post.candidates=[];}
  return {post,issues};

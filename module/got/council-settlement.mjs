@@ -3,6 +3,7 @@ import {phaseInput,ensure} from './dialogue-core.mjs';
 import {compileTask,displayText} from './generation-core.mjs';
 import {parseMiddlewareJson} from './middleware-json.mjs';
 import {liveCouncil} from './council-session.mjs';
+import {requireCharacterInput} from './character-state.mjs';
 
 export async function runCouncilExtraction(r,id,{retry=false}={}){
  if(r.postBusy)return false;r.postBusy=true;r.notify(r);
@@ -17,7 +18,7 @@ export async function runCouncilExtraction(r,id,{retry=false}={}){
   if(retry&&job.status==='failed'&&!cached){snapshot=null;response=null;}
   const checkpoint=async(status,error=null,proposals=[])=>commit({type:'council_v3_extract',turn_id:id,branch,status,snapshot,response,error,proposals});
   try{
-   snapshot??=compileTask(turn.settings,'post',phaseInput(turn.context,turn.pre,turn.prose,'post'),r.builder,'normal','',councilContracts.extract);
+   if(!snapshot){const input=phaseInput(turn.context,turn.pre,turn.prose,'post');snapshot=compileTask(turn.settings,'post',input,r.builder,'normal','',councilContracts.extract);requireCharacterInput(snapshot,input);ensure(snapshot.compiled.messages.some(m=>m.content.includes(councilContracts.extract)),'预设缺少方案整理合同，请在原预设面板检查；未发送请求。');}
    if(!response){await checkpoint('running');response=await r.call(snapshot,()=>{},abort.signal);current();ensure(!abort.signal.aborted,'DIALOGUE_CANCELLED');r.postResults.set(key,{snapshot,response});}
    await checkpoint('ready');ensure(!response.finishReason||response.finishReason==='stop','INCOMPLETE_MODEL_RESPONSE');
    const result=parseMiddlewareJson(displayText(snapshot.compiled.prefix||'',response.content));

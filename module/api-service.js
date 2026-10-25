@@ -32,7 +32,6 @@ var apiService = (function() {
         maxContextTokens: 500000,
         streamMode: 'stream',  // 'stream' 流式 | 'non-stream' 非流式（正文与总结统一遵循）
         corsProxyUrl: '',  // 分发包不预置第三方代理；由玩家自行配置
-        // 本机网关负责正常请求，额外代理默认关闭。
         corsProxyEnabled: false
     };
 

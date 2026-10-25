@@ -11,6 +11,15 @@ import {issues,councilReport} from './opening-content.mjs';
 const copy=v=>structuredClone(v);
 const definition=(g,id)=>campaignIssue(g,id)||issues[id];
 const need=(v,s)=>{if(!v)throw new RuleError(s);};
+const actionKey=a=>JSON.stringify(Object.entries(a).sort(([a],[b])=>a.localeCompare(b)));
+// One call represents one frozen adjudication source, never several topics.
+function uniqueCandidates(post){
+ const candidates=[],indexes=[],seen=new Map();
+ for(const p of post.candidates){const key=JSON.stringify([actionKey(p.action),p.speaker,[...p.conditions].sort(),p.joint_group]);if(!seen.has(key)){seen.set(key,candidates.length);candidates.push({...copy(p),depends_on:[]});}indexes.push(seen.get(key));}
+ post.candidates.forEach((p,i)=>{for(const j of p.depends_on){const to=indexes[j];if(to!==indexes[i]&&!candidates[indexes[i]].depends_on.includes(to))candidates[indexes[i]].depends_on.push(to);}});
+ return {...copy(post),candidates};
+}
+const actionDescription=a=>a.type==='night_patrol'?`巡夜：${a.count}人，${a.duration}分钟`:Object.entries(a).map(([k,v])=>`${k}=${typeof v==='string'?v:JSON.stringify(v)}`).join('，');
 export const liveCouncil=g=>g.opening?.meetings.find(m=>m.session&&m.status==='in_progress');
 export const councilBatchContract='你是御前会议的书记整理层。按一个议题完整阅读全部往返和国王最后裁决，只返回JSON：{turns:[{turn_id:"原编号",post:{}}]}。每条原话必须有且只有一条对应记录，顺序不变。每个post使用下述对话解释合同的字段。各条只能引用该条人物资料中的ref及该条原句，不把后来听到的事倒填成先前知识。经历和摘要保留当时说法；decisions及candidates只保留至本议题结束仍有效的答复和提案，已撤回或被后话替代的旧方案不再生成决定或行动。不得更改人物对白。国王最后裁决中的固定事项由程序统一办理，不再生成重复的opening_decide；补充命令须待国王核对。同一项补充行动仅在最后有效原句处提出一次。交换条件不可拆成无条件同意。若含义矛盾不能确定，返回consistent:false，不能自行决定。每条post合同：\n'+taskContracts.post.replace('你是对话解释层，只返回JSON：','');
 export function pendingCouncilBatch(m){
@@ -20,9 +29,11 @@ export function pendingCouncilBatch(m){
 }
 export function checkCouncilBatch(g,batch,result){
  exact(result,['turns']);need(Array.isArray(result.turns)&&result.turns.length===batch.turns.length,'书记的记录遗漏了本项讨论，尚未用印。');
+ result=copy(result);
  for(const [i,t]of batch.turns.entries()){
   const row=result.turns[i];exact(row,['turn_id','post']);need(row.turn_id===t.id,'书记的记录与原话次序不符，尚未用印。');
   checkPost(g,t.context,row.post,t.prose);
+  if(batch.resolution?.binding_version===2&&t.id===batch.resolution.turn){row.post=uniqueCandidates(row.post);checkPost(g,t.context,row.post,t.prose);}
   if(batch.resolution){
    for(const p of row.post.candidates){
     need(!batch.resolution.choice&&t.id===batch.resolution.turn&&p.speaker===(batch.resolution.speaker||'npc')&&(quoteMatches(Array.isArray(p.quote)?p.quote.join('\n'):p.quote,batch.resolution.quote)||quoteMatches(Array.isArray(batch.resolution.quote)?batch.resolution.quote.join('\n'):batch.resolution.quote,p.quote)),'翻译包含未选定的方案，请核对本题裁决。');
@@ -30,7 +41,7 @@ export function checkCouncilBatch(g,batch,result){
     if(batch.resolution.binding_version===2)need((batch.resolution.actions||[]).some(a=>JSON.stringify(Object.entries(a).sort())===JSON.stringify(Object.entries(p.action).sort())),'ACTION_DIFFERS_FROM_SELECTED_PROPOSAL');
    }
   }
-  if(batch.resolution?.binding_version===2&&t.id===batch.resolution.turn)need(row.post.candidates.length===(batch.resolution.actions||[]).length,'SELECTED_ACTION_MISSING');
+  if(batch.resolution?.binding_version===2&&t.id===batch.resolution.turn)need(JSON.stringify(row.post.candidates.map(p=>actionKey(p.action)).sort())===JSON.stringify([...new Set((batch.resolution.actions||[]).map(actionKey))].sort()),'SELECTED_ACTION_MISSING');
   need(t.pre.intent.mode!=='claim'||!row.post.candidates.length,'声称完成不能形成补执行。');
  }
  return result;
@@ -85,7 +96,7 @@ export function applyCouncilAction(g,a,ctx){
   need(['intro','discussion','extra'].includes(s.phase),'书记正在整理，请待本轮完成。');
   need(!s.turns.some(t=>t.id===a.turn_id),'这段话已经保存。');
   const c=buildContext(g,a.context.actor,a.context.activity,a.context.input,a.context.retrieved||[]);
-  need(JSON.stringify(c)===JSON.stringify(a.context),'STALE_DIALOGUE_CONTEXT');checkPre(c,a.pre);
+  need(JSON.stringify(c)===JSON.stringify(a.context),'STALE_DIALOGUE_CONTEXT');a={...a,pre:checkPre(c,a.pre)};
   need(typeof a.prose==='string'&&a.prose.length>0&&a.prose.length<=250000,'正文尚未完整生成。');
   need(Array.isArray(a.request_records)&&!/"(?:key|apiKey|authorization)"\s*:/i.test(JSON.stringify([a.request_records,a.settings])),'请求记录不可包含密钥。');
   s.turns.push({id:a.turn_id,issue:m.current||'extra',context:copy(c),pre:copy(a.pre),prose:a.prose,request_records:copy(a.request_records),settings:copy(a.settings||null),post:null});
@@ -105,9 +116,9 @@ export function applyCouncilAction(g,a,ctx){
  }
  if(a.type==='council_parse_issue'){
   need(s.phase==='registering'&&s.version>=2,'当前不在整理本项文书。');
-  const batch=pendingCouncilBatch(m);need(batch&&batch.issue===a.issue,'这项讨论已处理或已改变。');checkCouncilBatch(g,batch,a.result);
+  const batch=pendingCouncilBatch(m);need(batch&&batch.issue===a.issue,'这项讨论已处理或已改变。');const normalized=checkCouncilBatch(g,batch,a.result);
   need(a.request_record&&!/"(?:key|apiKey|authorization)"\s*:/i.test(JSON.stringify(a.request_record)),'请求记录不可包含密钥。');
-  for(const [i,t]of batch.turns.entries()){t.post=copy(a.result.turns[i].post);t.request_records.push(copy(a.request_record));}
+  for(const [i,t]of batch.turns.entries()){t.post=copy(normalized.turns[i].post);t.request_records.push(copy(a.request_record));}
   if(s.turns.every(t=>t.post))s.phase='review';return 'COUNCIL_BATCH_SAVED';
  }
  if(a.type==='council_approve'){
@@ -130,12 +141,12 @@ export function applyCouncilAction(g,a,ctx){
  }
  if(a.type==='council_finish'){
   need(s.phase==='review'&&s.turns.every(t=>t.post),'书记还有未完成的记录。');
-  const approvedActions=new Set();
-  if(s.version===3)for(const t of s.turns)for(const [i,p]of t.post.candidates.entries())s.approvals[t.id+':'+i]=p.action.type!=='opening_decide'&&!p.conditions.length;
-  for(const t of s.turns)for(const [i,p]of t.post.candidates.entries()){
+  const approvedActions=new Map(),turns=s.turns.map(t=>s.version===3&&s.agenda.find(q=>q.id===t.issue)?.resolution?.binding_version===2?{...t,post:uniqueCandidates(t.post)}:t);
+  if(s.version===3)for(const t of turns)for(const [i,p]of t.post.candidates.entries())s.approvals[t.id+':'+i]=p.action.type!=='opening_decide'&&!p.conditions.length;
+  for(const t of turns)for(const [i,p]of t.post.candidates.entries()){
    if(p.action.type==='opening_decide'){s.approvals[t.id+':'+i]=false;continue;}
    need(typeof s.approvals[t.id+':'+i]==='boolean','书记请您确认补充命令。');
-   if(s.approvals[t.id+':'+i]){const fingerprint=JSON.stringify(Object.entries(p.action).sort(([a],[b])=>a.localeCompare(b)));need(!approvedActions.has(fingerprint),'同一项补充命令出现两次。请书记划去重复的一项，再用印。');approvedActions.add(fingerprint);}
+   if(s.approvals[t.id+':'+i]){const fingerprint=actionKey(p.action),prior=approvedActions.get(fingerprint),title=id=>s.agenda?.find(q=>q.id===id)?.title||definition(g,id)?.title||id;need(!prior,`议题「${title(prior?.issue)}」与「${title(t.issue)}」的补充动作出现两次：${actionDescription(p.action)}。请在“澄清相关议题”中打开相关议题，核对并调整重复安排。`);approvedActions.set(fingerprint,t);}
   }
   const activity=g.activities.find(x=>x.id===m.activity),end=s.started+180;
   // Keep attendees occupied until the end, but process queued world events in time order.
@@ -148,14 +159,14 @@ export function applyCouncilAction(g,a,ctx){
   }
   // Existing action handlers expect an active council; retain the audience during sealing.
   activity.status='active';activity.remaining=0;m.status='in_progress';
-  for(const t of s.turns){
+  for(const t of turns){
    applyDialogueAction(g,{type:'dialogue_finish',turn_id:t.id,context:t.context,pre:t.pre,prose:t.prose,post:t.post,request_records:t.request_records},{...inner,councilFrozen:true});
   }
   for(const e of s.entries||[])if(e.characterReview)saveCharacter(g,e.characterReview.context,e.characterReview.result,e.id);
   const appliedIssues=[];
   const conflict=e=>appliedIssues.length?'；请一并核对本次先前的决定：'+[...new Set(appliedIssues)].join('、'):'';
   for(const c of s.choices){try{if(campaignIssue(g,c.issue))campaignDecision(g,m,c.choice,inner,worldOps,c.issue,id=>applyDialogueAction(g,{type:'dialogue_execute',proposal_ref:id},inner));else applyWorldAction(g,{type:'opening_decide',meeting:m.id,...c},inner);appliedIssues.push(definition(g,c.issue)?.title||c.issue);}catch(e){throw new RuleError('议题「'+(definition(g,c.issue)?.title||c.issue)+'」未能交办：'+e.message+conflict(e));}}
-  for(const t of s.turns){
+  for(const t of turns){
    const ps=g.dialogue.proposals.filter(p=>p.turn_ref===t.id);
    for(const [i,p]of ps.entries())if(p.status==='pending'){
     if(s.approvals[t.id+':'+i]){
@@ -169,7 +180,7 @@ export function applyCouncilAction(g,a,ctx){
   m.status='closed';m.attended=true;s.phase='closed';
   m.minutes=s.version===3?s.agenda.map(q=>({title:q.title,status:'decided',choice:q.summary,orders:[...(m.issues[q.id]?.order_refs||[])]})):s.choices.map(c=>({title:definition(g,c.issue).title,status:m.issues[c.issue].status,choice:definition(g,c.issue).choices.find(x=>x[0]===c.choice)[1],orders:[...m.issues[c.issue].order_refs]}));
   if(s.version===3)for(const q of s.agenda)if(!s.choices.some(c=>c.issue===q.id)){m.issues[q.id].status='decided';m.issues[q.id].decision_ref=ctx.id;}
-  s.minutes=[...m.minutes.map(x=>x.choice),...s.turns.flatMap(t=>t.post.candidates.filter((p,i)=>s.approvals[t.id+':'+i]&&p.action.type!=='opening_decide').map(p=>'另命：'+p.quote))];
+  s.minutes=[...m.minutes.map(x=>x.choice),...turns.flatMap(t=>t.post.candidates.filter((p,i)=>s.approvals[t.id+':'+i]&&p.action.type!=='opening_decide').map(p=>'另命：'+p.quote))];
   observe(g,['U001',...activity.participants],'书记将文书捧到桌前。「陛下，今日的决定已经记下：'+s.minutes.join('；')+'。文书即刻送出。」众人起身，等候国王离席。',m.id+':minutes');
   // Responses accompany the committed minutes; they are not a second execution.
   const responses=(g.campaign?.history||[]).filter(h=>h.choice==='council-decision'&&h.meeting===m.id&&h.reply).map(h=>h.reply);

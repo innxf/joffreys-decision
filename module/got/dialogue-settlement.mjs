@@ -36,4 +36,4 @@ export async function settleDialogue(r,id,{retry=false}={}){
   }finally{r.postAbort=null;}
  });}finally{r.postBusy=false;r.notify(r);setTimeout(()=>r.pumpPost(),0);}
 }
-export function scheduleSettlements(r,id){r.postQueue.add(id);setTimeout(()=>r.pumpPost(),0);}
+export function scheduleSettlements(r,id,council=false){const branch=r.runtime.read().revision.branch_id;if(r.queueBranch!==branch){r.postQueue.clear();r.councilPostQueue.clear();r.queueBranch=branch;}(council?r.councilPostQueue:r.postQueue).add(id);setTimeout(()=>r.pumpPost(),0);}

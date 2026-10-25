@@ -23,10 +23,27 @@ function speechScope(source,parts){
  const bare=parts.map(p=>p.trim().replace(/^[“「『‘"]|[”」』’"]$/g,''));
  const speech=spans.map(([a,b])=>source.slice(a+1,b-1)).join('\n');
  if(!quoteMatches(speech,bare))return null;
- let outside='',last=0;for(const [a,b] of spans){outside+=source.slice(last,a);last=b;}outside+=source.slice(last);
- // A quoted order mentioned as rejected is not permission to execute it.
- if(/(?:没有|没|不|未)(?:曾|能|准|必|要|会)?(?:同意|接受|答应|允许|批准|派|调|安排|授权|决定)|撤回|撤销/.test(outside))return {rejected:true};
+ // Only narration adjacent to the selected speech can qualify that speech.
+ // A remembered old withdrawal elsewhere is not a withdrawal of this order.
+ for(const [i,[a,b]]of spans.entries())if(bare.some(p=>quoteMatches(source.slice(a+1,b-1),p))){
+  const before=source.slice(i?spans[i-1][1]:0,a).split(/[。！？!?\n]/).at(-1);
+  const after=source.slice(b,spans[i+1]?.[0]??source.length).split(/[。！？!?\n]/)[0];
+  const adjacent=rhetoricalAssent(before+'\n'+after).replace(/(?:想起|回忆)[^。！？!?\n]*(?:昨日|昨天|旧令)[^。！？!?\n]*/g,'');
+  if(/(?:没有|没|不|未)(?:曾|能|准|必|要|会)?(?:同意|接受|答应|允许|批准|派|调|安排|授权|决定)|撤回|撤销/.test(adjacent))return {rejected:true};
+ }
  return {speech,parts:bare};
+}
+const rhetoricalAssent=s=>s.replace(/(?:不敢不|不能不|(?:怎么|怎|岂|哪|何)敢不)(?:答应|接受|同意)/g,'遵命');
+// Both evidence and numeric checks use these boundaries. Commas only separate
+// explicit commands, not arbitrary subordinate clauses or per-shift breakdowns.
+function commandClauses(text){
+ const command=/^(?:另|再|现|现在|本次|这次)?(?:加派|改派|改调|抽调|拨出|增派|派|调|安排|授权|撤销|从|由)/;
+ const clauses=[];let start=0;
+ for(const m of text.matchAll(/[，,]/g)){
+  const left=text.slice(start,m.index),right=text.slice(m.index+1).trimStart();
+  if(command.test(right)&&/(?:派|调|安排|授权|撤销|从|由)/.test(left)){clauses.push({start,end:m.index,text:left});start=m.index+1;}
+ }
+ clauses.push({start,end:text.length,text:text.slice(start)});return clauses;
 }
 // A business decision must retain nearby conditions and quantities. Mere
 // substring matching would allow extracting 答应 from 我不答应.
@@ -37,7 +54,6 @@ export function bindingQuoteMatches(source,quote){
  // turning that answer into an unconditional grant.
  let parts=Array.isArray(quote)?quote:[quote];
  const selected=parts.join('\n');
- if((conditionalCommand(source)&&!conditionalCommand(selected))||(explicitCondition(source)&&!explicitCondition(selected)))return false;
  const scope=speechScope(String(source),parts);if(scope?.rejected)return false;
  if(scope){source=scope.speech;parts=scope.parts;}
  const text=String(source).normalize('NFKC'),full=normalizedQuote(text);
@@ -45,8 +61,14 @@ export function bindingQuoteMatches(source,quote){
  let offset=0;
  for(const part of parts){const q=normalizedQuote(part),at=full.indexOf(q,offset);let begin=0,end=text.length,n=0;
   for(let i=0;i<text.length;i++){const len=normalizedQuote(text[i]).length;if(n<=at&&/[。.!！？?\n]/.test(text[i]))begin=i+1;n+=len;if(n>=at+q.length){end=i+1;while(end<text.length&&!/[。.!！？?\n]/.test(text[end]))end++;break;}}
-  const surrounding=normalizedQuote(text.slice(begin,end));const local=surrounding.indexOf(q);
-  if(local>=0&&significant.test(surrounding.slice(0,local)+surrounding.slice(local+q.length)))return false;
+  const sentence=text.slice(begin,end),previous=text.slice(0,begin).replace(/[。.!！？?\n]+$/,'').split(/[。.!！？?\n]/).at(-1)||'';
+  if(conditionalCommand(sentence)&&!conditionalCommand(selected))return false;
+  // A nearby conditional answer remains conditional across a sentence break.
+  // An unrelated, already complete conditional statement does not taint later orders.
+  if(conditionalCommand(previous)&&(/答应|同意|接受|遵命|照办/.test(part)||/才可以|才行|否则不行|为前提|为条件/.test(previous))&&!conditionalCommand(selected))return false;
+  const clause=commandClauses(sentence).find(x=>normalizedQuote(x.text).includes(q));
+  const surrounding=normalizedQuote(clause?.text??sentence),local=surrounding.indexOf(q);
+  if(local>=0&&significant.test(normalizedQuote(operativeNumbers(surrounding.slice(0,local)+surrounding.slice(local+q.length)))))return false;
   if(offset&&significant.test(full.slice(offset,at)))return false;offset=at+q.length;
  }
  return true;
@@ -54,7 +76,7 @@ export function bindingQuoteMatches(source,quote){
 export const quoteText=q=>Array.isArray(q)?q.join('\n'):q;
 export function conditionalCommand(q){return /除非|只有|只要|如果|倘若|(?:^|[，,。；;])若|条件是|先(?:付|支付|交付|给|保证|安排替岗)[\s\S]*再(?:派|调|给|付|接|同意|答应)/.test(quoteText(q));}
 export function explicitCondition(q){
- const s=quoteText(q).replace(/(?:怎么|怎|岂|哪|何)敢不(?:答应|接受|同意)/g,'遵命');
+ const s=rhetoricalAssent(quoteText(q));
  return /(?:我|臣)?(?:不同意|不接受|不答应|不能答应|不会接受)|除非|条件是|只有[\s\S]*才|先(?:把|给|让)[\s\S]*我再(?:接|同意|答应)/.test(s);
 }
 function number(s){if(/^\d+(?:\.\d+)?$/.test(s))return +s;const digits={'零':0,'〇':0,'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};let total=0,n=0,v=0;for(const ch of s){if(ch in digits)v=digits[ch];else{const u={十:10,百:100,千:1000,万:10000}[ch];if(!u)return NaN;if(u===10000){total+=(n+v||1)*u;n=0;v=0;}else{n+=(v||1)*u;v=0;}}}return total+n+v;}
@@ -62,8 +84,8 @@ const nums=(s,units)=>[...s.matchAll(new RegExp('(?<![0-9./])([0-9]+(?:\\.[0-9]+
 const numeral='(?:[0-9]+(?:\\.[0-9]+)?|[零〇一二两三四五六七八九十百千万]+)';
 function operativeNumbers(text){
  return text.split(/([，,。；;！？!?\n])/).map(part=>{
-  const background=/^\s*(?:原有|原先|原定|先前|以前|原计划|现有|已有|库存|原本)/.test(part);
-  const instruction=/再派|再调|另派|另调|这次|现在|本次|改为|改成|而是|仍|继续|保持|照旧|照原|照此/.test(part);
+  const background=/(?:原有|原先|原定|先前|以前|原计划|现有|已有|库存|原本)/.test(part);
+  const instruction=/再派|再调|另派|另调|改派|改调|抽调|拨出|增派|加派|这次|现在|本次|改为|改成|而是|仍|继续|保持|照旧|照原|照此/.test(part);
   return background&&!instruction?'':part;
  }).join('').replace(/(?:不用|不是|不派)[0-9零〇一二两三四五六七八九十百千万]+(?:名|人)(?:[，,；;]|而是)/g,'');
 }
@@ -90,6 +112,9 @@ export const actionParameters={
 };
 export function checkActionEvidence(c,a,quote){
  const s=quoteText(quote),known=c.known||[],all=s+'\n'+known.filter(k=>k.ref==='current-input').map(k=>k.content).join('\n');
+ // A quote containing several numeric commands must be narrowed by the caller;
+ // choosing whichever number happens to match the proposed action is unsafe.
+ if(['count','max_count','amount','duration'].some(k=>a[k]!==undefined))need(commandClauses(s).length===1,'ACTION_PARAMETER_NEEDS_CLARIFICATION:multiple_commands');
  const numeric=operativeNumbers(s);
  const checkNumber=(key,units)=>{if(a[key]===undefined)return;const values=nums(orderedPeople(numeric),units);need(values.length>0&&values.every(n=>n===a[key]),'ACTION_PARAMETER_MISMATCH:'+key);};
  checkNumber('count','名|人');if(!(a.type==='grant_operation_authority'&&['audit_account','register_debt'].includes(a.operation)&&a.max_count===0))checkNumber('max_count','名|人');

@@ -1,6 +1,7 @@
 import {visibleTurns,turnRecord,checkJob,checkSummary,summaryContract} from './memory-core.mjs';
+import {parseMiddlewareJson} from './middleware-json.mjs';
 import {compileTask,displayText} from './generation-core.mjs';
-const parse=s=>JSON.parse(s.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+const parse=parseMiddlewareJson;
 const assert=(v,m)=>{if(!v)throw Error(m);};
 export class MemoryClient {
  constructor({runtime,client,storage,namespace='',builder,upstream,notify=()=>{},isDialoguePending=()=>false,lock}){

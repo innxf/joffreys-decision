@@ -1,11 +1,11 @@
 {
-  "release": "Joffreys Decision v0.2-test",
+  "release": "Joffreys Decision v0.3-test",
   "name": "乔佛里的决定",
-  "version": "0.2-test",
+  "version": "0.3-test",
   "port": 8090,
   "apiEnabledByDefault": true,
   "source": "development snapshot",
-  "created": "2026-10-25",
+  "created": "2026-10-26",
   "files": [
     {
       "path": ".gitignore",
@@ -2114,23 +2114,23 @@
     },
     {
       "path": "docs/release/使用说明.md",
-      "bytes": 1802,
-      "sha256": "3ae2143ac85831ec50064cb218906ea0cd394718c7e95e8009131e1b32bb6f38"
+      "bytes": 1563,
+      "sha256": "19a46610fd3099d1543cd8c9d4fc96b591169508ccc8ea942604d1bcdf2b0074"
     },
     {
       "path": "docs/release/复用清单与后续.md",
-      "bytes": 2240,
-      "sha256": "e352e278673f0977679a18e03ed11968eb6a49706544c2a8b8d8175a68e67945"
+      "bytes": 2100,
+      "sha256": "ef23022fd55e7e719baa8ba74748c669a74407bb1ac5b994b9f5ca168d9e6584"
     },
     {
       "path": "docs/release/更新记录.md",
-      "bytes": 1056,
-      "sha256": "a2e01a098653f131377aff631e7bc1162fa90466dc17b4161a3f30d4e56e11ed"
+      "bytes": 922,
+      "sha256": "9cf81a536e4ac80427e36a769115e38b2dc0355db06d3ab1fb6443621694859b"
     },
     {
       "path": "docs/release/本轮验证.md",
-      "bytes": 2409,
-      "sha256": "5e2560d0adb8a238324425e983d0636947897479d4b93676b722de611da0cc9f"
+      "bytes": 1766,
+      "sha256": "86a4cf3a9ed1880657ea6305a31f3df66b95b1f6d33ead086e45c93d8e39948f"
     },
     {
       "path": "docs/release/音乐资源接入.md",
@@ -2180,7 +2180,7 @@
     {
       "path": "got-state.html",
       "bytes": 6530,
-      "sha256": "4e90d250c7caedcff4e72be58e3319cc756d28115407538fd2321b7a920c8ee7"
+      "sha256": "0e7c7b9225b00bd1f88746fda39342c6ab2f8a80ddb207d40c198dcfec654d5f"
     },
     {
       "path": "got-ui-preview.html",
@@ -2189,8 +2189,8 @@
     },
     {
       "path": "module/api-service.js",
-      "bytes": 23780,
-      "sha256": "aae59196231a2d44a912cde0feeb7de682bd95f97e1b17e27be3f546729f7311"
+      "bytes": 23707,
+      "sha256": "42914b01bd10a4d79d0121d07ac12330de7e3b8a45e5fdcc2cfe5a48536958cf"
     },
     {
       "path": "module/bgm-manager.js",
@@ -2334,13 +2334,13 @@
     },
     {
       "path": "module/got/autonomy-client.mjs",
-      "bytes": 5150,
-      "sha256": "46487fef81eb7a3e49a7cf9fd9e4b21ec01ff811f25588098b206c7f3669ca79"
+      "bytes": 5152,
+      "sha256": "c979e80d61355dbeccea8cc442f1b2f0b0325507393ea5a79bf2e05ee123672b"
     },
     {
       "path": "module/got/autonomy-core.mjs",
-      "bytes": 12810,
-      "sha256": "d3d385f4fb386b61f406dfefde186853baa4a40278eefc8c25fff07d0d2aa11d"
+      "bytes": 12820,
+      "sha256": "25099dbe3c3fe9bb0f756a8d0336c6bf2e571977064ffffcba354228f82bd2a3"
     },
     {
       "path": "module/got/autonomy-panel.mjs",
@@ -2454,13 +2454,13 @@
     },
     {
       "path": "module/got/council-session.mjs",
-      "bytes": 15898,
-      "sha256": "a7b6476e22b9315840377dd49aa438f9aa5ebede911d41f926a1efdd15832420"
+      "bytes": 17427,
+      "sha256": "1db508136d442fe32a30a2271787448430a67901dd13940dfaceaffedd972265"
     },
     {
       "path": "module/got/council-settlement.mjs",
-      "bytes": 2538,
-      "sha256": "bcb380d2d1d7eeeb5bbc51a733b60b49bc04682f35d49780415b40cd33108f77"
+      "bytes": 2842,
+      "sha256": "0bca1eca1fe2f4a929ab00935e01dd4355bf7892902ea5224e81b11644da7da0"
     },
     {
       "path": "module/got/council-v3-demo.mjs",
@@ -2469,18 +2469,18 @@
     },
     {
       "path": "module/got/council-v3-panel.mjs",
-      "bytes": 11047,
-      "sha256": "b74e9a1f7d41edbecb3c1ece64affb2267fa2f833c038ed47a02491ffefb49bf"
+      "bytes": 11310,
+      "sha256": "abcba53a2fbb4853a72ce97203591b6f0d712ed66ca75a70e093be581598bcb9"
     },
     {
       "path": "module/got/council-v3-runner.mjs",
-      "bytes": 7997,
-      "sha256": "42aeb48afbf276c6e89fc3adce695985b4ef0f7867874cda6d1630dbb698a354"
+      "bytes": 9060,
+      "sha256": "41bb052d0599702e26e8ca93e4bafeb839c800c140f254bf80fe3be65b429ed3"
     },
     {
       "path": "module/got/council-v3.mjs",
-      "bytes": 15978,
-      "sha256": "a75edd11a5f893dccaf4821058ae2643f3d40a6a8b2e639c346d93dba6a50427"
+      "bytes": 15991,
+      "sha256": "487ba87b72d0092bb86676214c5aa89a41435ff008a117c75392699b9c2dd135"
     },
     {
       "path": "module/got/court-menu.mjs",
@@ -2499,18 +2499,18 @@
     },
     {
       "path": "module/got/dialogue-core.mjs",
-      "bytes": 27891,
-      "sha256": "d1e72cb7d247cd68448802eb3ce50a401fc6c51c7df27e1b3b4ebe5aee9f1ecc"
+      "bytes": 28403,
+      "sha256": "2323fc5c68c3ce46f94eac23b744e4ac63299d69b1c7f6645093a13116c5caa6"
     },
     {
       "path": "module/got/dialogue-engine.mjs",
-      "bytes": 23565,
-      "sha256": "07cf23fdd7e351a8f9c546760dbfc3dc50844e419f62b7c0af701ebecc41a8fa"
+      "bytes": 23591,
+      "sha256": "baa7ebcc9384af34e17756651bba29fc05343f26d3eb64bc728453591f74c65c"
     },
     {
       "path": "module/got/dialogue-panel.mjs",
-      "bytes": 15987,
-      "sha256": "a978ad3da1a55d4a2213dd3941d8f7808e8399f5c0666d41d129b7b0e840dab8"
+      "bytes": 16251,
+      "sha256": "d6f73a8562f700d24f4807d9d60c367c283a2dc704f62c61f1badc69d99c0e33"
     },
     {
       "path": "module/got/dialogue-profiles.mjs",
@@ -2519,13 +2519,13 @@
     },
     {
       "path": "module/got/dialogue-runner.mjs",
-      "bytes": 17963,
-      "sha256": "89b245f954bfadd610b8bb29b0628385d9764e50f226c672b739bb72a5075315"
+      "bytes": 19057,
+      "sha256": "dabd64853795f3094724ff5a66bc70ec28d3145bddd5b40f7c4242caa69f81a5"
     },
     {
       "path": "module/got/dialogue-settlement.mjs",
-      "bytes": 2761,
-      "sha256": "65bea2d10164b9c78e809b06ec45b1aaea643dc3d3369c9863b8824988f7e925"
+      "bytes": 2949,
+      "sha256": "098c274471fe92867ff2cfbafa0490a47b70902baaa478cb3867508791087fb1"
     },
     {
       "path": "module/got/era-rules.mjs",
@@ -2634,8 +2634,8 @@
     },
     {
       "path": "module/got/memory-client.mjs",
-      "bytes": 8921,
-      "sha256": "32d3b7800050cf9ef8aabb09c422590057af0029749fe261b0af2724722cd039"
+      "bytes": 8923,
+      "sha256": "512aa5bb8116138e25c9410d5377b720c5638fd47d2b37875412fc00d9db9699"
     },
     {
       "path": "module/got/memory-core.mjs",
@@ -2649,8 +2649,8 @@
     },
     {
       "path": "module/got/middleware-evidence.mjs",
-      "bytes": 14652,
-      "sha256": "92b03ae8b1decf475dbb5d8e8b054bd78b1eb3814ea596f4dae3d39a1d1f134a"
+      "bytes": 16760,
+      "sha256": "2f780b98abff589feeaddc219c3567b04df54d580c9f51d31a02e1d9bffb00d2"
     },
     {
       "path": "module/got/middleware-json.mjs",
@@ -2964,8 +2964,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1802,
-      "sha256": "3ae2143ac85831ec50064cb218906ea0cd394718c7e95e8009131e1b32bb6f38"
+      "bytes": 1563,
+      "sha256": "19a46610fd3099d1543cd8c9d4fc96b591169508ccc8ea942604d1bcdf2b0074"
     },
     {
       "path": "runtime/LICENSE",
@@ -15010,12 +15010,12 @@
     {
       "path": "VERSION",
       "bytes": 10,
-      "sha256": "63de6bb2b8b479f1a4688331b0f5ed6ad463d1dce04ebc84e1a2bd0e09ee10ba"
+      "sha256": "5ab53adbe57a8ece7e0f620feac46d2b245e0d50ae8b8a4f8f34b9578ee8081e"
     },
     {
       "path": "先读我.md",
-      "bytes": 1802,
-      "sha256": "3ae2143ac85831ec50064cb218906ea0cd394718c7e95e8009131e1b32bb6f38"
+      "bytes": 1563,
+      "sha256": "19a46610fd3099d1543cd8c9d4fc96b591169508ccc8ea942604d1bcdf2b0074"
     },
     {
       "path": "启动游戏.cmd",

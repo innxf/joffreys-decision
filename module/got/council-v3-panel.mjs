@@ -18,9 +18,9 @@ export function renderCouncilV3(runtime,host,{button,act}){
  if(isolated&&r?.councilWork?.context?.branch===g.revision.branch_id&&r.councilWork.context.activity===m.activity){const snap=r.councilWork.requests?.findLast(x=>x.snapshot.stage==='prose')?.snapshot;if(snap?.canon_reference){const detail=el('details','');el('summary','本轮正文实际采用的原著素材（只读）',detail);el('pre',JSON.stringify(snap.canon_reference,null,2),detail);}}
  el('small',({reports:'大臣陈奏',agenda:'核对议题',agenda_ready:'确认本次议程',topic_review:'核对修订',polishing:'完善命题',speaking:'席间商议',decision:'请国王裁决',clarify:'书记请示',archiving:'记录本题裁决',ready:'诸事议毕',registering:'书记整理文书',review:'文书待用印'})[s.phase]||'御前会议');
  if(demo)el('p','离线演示：下列发言为固定样本，不代表模型判断。');
- const work=async()=>{
+ const work=async(regenerate=false)=>{
   r.councilAutoResume=true;r.councilError='';
-  if(demo)await act(demoWork(runtime.read(),liveCouncil(runtime.read())));else{if(!r.councilRequestsEnabled)throw Error('当前服务未开启模型请求，记录已保留。');await r.runCouncilWork();}
+  if(demo)await act(demoWork(runtime.read(),liveCouncil(runtime.read())));else{if(!r.councilRequestsEnabled)throw Error('当前服务未开启模型请求，记录已保留。');await r.runCouncilWork({regenerate:regenerate===true});}
  };
  const closing=async(regenerate=false)=>{try{
   if(demo){let batch;while((batch=pendingCouncilBatch(liveCouncil(runtime.read()))))await act({type:'council_parse_issue',issue:batch.issue,result:demoBatch(batch),request_record:{source:'isolated-fixed-demo'}});}
@@ -63,7 +63,7 @@ export function renderCouncilV3(runtime,host,{button,act}){
   if(r?.councilWork?.work.id===s.work.id&&r.councilWork.prose&&r.councilWork.status!=='done')speech(host,s.work.actor,r.councilWork.prose+'（尚未记入正式发言）',{id:s.work.id+':draft'});
   if(r?.busy){el('p',s.work.kind==='summary'?'书记正在记录。':'请稍候……');add('停止生成',()=>r.cancel()).disabled=false;}
   else if(!demo&&!r?.councilRequestsEnabled){el('p','当前未开启模型请求，会议在此等候。已经读过的呈报和议题已保存。');if(isolated){const link=el('a','使用隔离的固定演示继续');link.href=location.pathname+'?opening-test=1&council-demo=1';}}
-  else if(r?.councilError){el('p','本步未完成：'+r.councilError);add('重试未完成步骤',work);}
+  else if(r?.councilError){el('p','本步未完成：'+r.councilError);const cached=r.councilWork?.requests?.some(x=>x.response&&!x.superseded&&(x.work_stage||x.snapshot.stage)===r.councilWork.stage);add(cached?'继续解析／保存':'重试未完成步骤',()=>work());if(cached)add('重新请求本步',()=>work(true));}
   else if(!r?.councilAutoResume&&!demo)add('继续会议讨论',work);
   else if(r&&r.councilScheduled!==s.work.id){r.councilScheduled=s.work.id;queueMicrotask(()=>work().catch(e=>{r.councilError=readableError(e.message);r.notify(r);}));}
  }

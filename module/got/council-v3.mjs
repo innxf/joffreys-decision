@@ -105,13 +105,13 @@ export function applyCouncilV3(g,m,a){
   need(s.work&&a.work_id===s.work.id,'这份回复已经失效。');const w=s.work;
   need(a.context&&JSON.stringify(a.context)===JSON.stringify(contextForCouncilWork(g,m)),'STALE_DIALOGUE_CONTEXT');
   need(Array.isArray(a.requests)&&!/["'](?:apiKey|authorization|key)["']\s*:/.test(JSON.stringify(a.requests)),'请求记录不可包含密钥。');
-  const r=a.result;
+  const r=clone(a.result);
   if(w.kind==='topic'){
    need(text(r.title)&&text(r.problem)&&text(r.approach)&&(r.owner===null||g.actors.some(x=>x.id===r.owner))&&text(r.reply),'议题缺少问题、方向或负责人。');
    q.title=r.title;q.problem=r.problem;q.approach=r.approach;q.owner=r.owner;q.revision++;
    if(!q.presenters.length)q.presenters=[w.actor];entry(g,m,w.actor,r.reply,'topic');s.phase='topic_review';s.work=null;
   }else if(w.kind==='speech'){
-   need(typeof r.speak==='boolean','缺少发言或沉默判断。');checkPre(a.context,r.pre);
+   need(typeof r.speak==='boolean','缺少发言或沉默判断。');r.pre=checkPre(a.context,r.pre);
    if(r.speak){
     need(typeof r.prose==='string'&&r.prose.trim().length>0&&r.prose.length<=250000&&Array.isArray(r.proposals)&&r.proposals.length<=8,'人物回复或方案格式不完整。');
     const t={id:w.id,issue:q.id,context:clone(a.context),pre:clone(r.pre),prose:r.prose,request_records:clone(a.requests),settings:a.settings||null,post:null};s.turns.push(t);

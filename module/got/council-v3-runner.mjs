@@ -1,4 +1,5 @@
 import {parseMiddlewareJson} from './middleware-json.mjs';
+import {scheduleSettlements} from './dialogue-settlement.mjs';
 import {freezeCanonFrame,selectLocalCanon,compileWithCanon} from './canon-reference.mjs';
 import {requireCharacterInput} from './character-state.mjs';
 import {compileTask,displayText,proseText} from './generation-core.mjs';
@@ -12,7 +13,7 @@ export const councilContracts={
  topic:'根据国王实际输入和已呈报资料，协助完善议题。返回JSON {title:"议题",problem:"要解决的问题",approach:"初步处理方向",owner:"现有人物编号或null",reply:"当前大臣对国王的简短自然回应"}。负责人尚未确定用null，不替本人接受；不要编造新事实，不新增程序机制。不支持的整体构想仍可讨论，但须说明可先议的有限部分。',
  summary:'你是记录本题裁决的书记，不作新的政治决定。返回JSON {consistent:true或false,summary:"准确记录玩家已采纳的方案、拟负责人、条件及已有费用期限；尚未发令执行",question:"需要国王澄清的关键问题；无则空字符串"}。不增加未获批准的费用或承诺。存在歧义则consistent:false。不能把没有处理器的方案写成已成立的项目。'
 };
-export async function runCouncilWork(r){
+export async function runCouncilWork(r,{regenerate=false}={}){
  ensure(!r.busy,'DIALOGUE_BUSY');const initial=liveCouncil(r.runtime.read());ensure(initial?.session.version===3&&initial.session.work,'没有等待处理的会议发言。');
  r.busy=true;r.councilError='';r.notify(r);
  try{return await r.lock(async()=>{
@@ -20,34 +21,37 @@ export async function runCouncilWork(r){
   let old=await r.storage.readGotGenerationRecord(record),revision=old?.revision??null;
   const binding=g.revision.branch_id+'|'+w.id+'|'+q.revision;
   let d=old?.binding===binding?old:{binding,proseFormat:2,world:g.revision.state_id,work:clone(w),settings:clone(r.client.settings),context:contextForCouncilWork(g,m),responses:{},requests:[],status:'pending'};
+  if(regenerate&&d.status==='failed'&&d.stage){delete d.responses[d.stage];delete d.candidate;for(const row of d.requests.filter(x=>(x.work_stage||x.snapshot.stage)===d.stage))row.superseded=true;}
   if(old?.binding!==binding)d.canonFrame=freezeCanonFrame(g,d.context);
   const current=()=>ensure(r.runtime.read().revision.branch_id===g.revision.branch_id&&(m.session.middleware_version===2||r.runtime.read().revision.state_id===d.world)&&liveCouncil(r.runtime.read())?.session.work?.id===w.id,'STALE_DIALOGUE_CONTEXT');
   const save=async()=>{const value={...clone(d),revision:revision+1};await r.storage.writeGotGenerationRecord(record,value,revision);revision=value.revision;d=value;r.councilWork=d;r.notify(r);};
   const request=async(key,phase,contract,extra={})=>{
    current();if(d.responses[key])return d.responses[key].value;
+   const cached=m.session.middleware_version===2&&d.requests.findLast(x=>(x.work_stage||x.snapshot.stage)===key&&x.response&&!x.superseded);
+   if(cached){ensure(!cached.response.finishReason||cached.response.finishReason==='stop','INCOMPLETE_MODEL_RESPONSE');const content=phase==='prose'&&d.proseFormat===2?proseText(cached.snapshot.compiled.prefix||'',cached.response.content):displayText(cached.snapshot.compiled.prefix||'',cached.response.content);const value=phase==='prose'?content:parse(content);d.responses[key]={value};return value;}
    const input=phaseInput(d.context,d.pre||null,d.prose||'',phase);
    input.guidance+='\n会议主持阶段：'+w.kind+'。只扮演'+input.char+'；不得替国王说话。'+(d.context.utterance_origin==='chair'?'当前input是主持提示，不是国王的发言。':'');
    input.known=JSON.stringify({...JSON.parse(input.known),topic:{title:q.title,problem:q.problem,approach:q.approach,owner:q.owner},resolution:q.resolution,...extra});
    const snapshot=compileWithCanon(input,phase==='prose'?d.canonSelection:null,p=>compileTask(d.settings,phase,p,r.builder,'normal','',contract));requireCharacterInput(snapshot,input);
    ensure(snapshot.compiled.messages.some(x=>x.content.includes(contract)),'预设缺少本任务合同条目，请在原预设面板生成资料适配副本后重试。');
-   d.stage=key;d.status='running';await save();const row={snapshot,response:null},requestIndex=d.requests.length;d.requests.push(row);
+   d.stage=key;d.status='running';await save();const row={work_stage:key,snapshot,response:null},requestIndex=d.requests.length;d.requests.push(row);
    let raw='',pending=Promise.resolve(),last=0;
    try{
     const response=await r.call(snapshot,token=>{if(phase!=='prose')return;raw+=token;d.raw=raw;d.prose=d.proseFormat===2?proseText(snapshot.compiled.prefix||'',raw,true):displayText(snapshot.compiled.prefix||'',raw);r.councilWork=d;r.notify(r);if(Date.now()-last>400){last=Date.now();pending=pending.then(()=>{current();return save();});}},r.abort.signal);
     await pending;current();ensure(!r.abort.signal.aborted,'DIALOGUE_CANCELLED');d.requests[requestIndex].response=clone(response);if(phase==='prose')d.raw=response.content;
-    ensure(!response.finishReason||response.finishReason==='stop','INCOMPLETE_MODEL_RESPONSE');
+    await save();ensure(!response.finishReason||response.finishReason==='stop','INCOMPLETE_MODEL_RESPONSE');
     const content=phase==='prose'&&d.proseFormat===2?proseText(snapshot.compiled.prefix||'',response.content):displayText(snapshot.compiled.prefix||'',response.content),value=phase==='prose'?content:parse(content);d.responses[key]={value};await save();return value;
    }catch(e){await pending;d.requests[requestIndex].diagnostic=e.diagnostic||{message:e.message};throw e;}
   };
   try{
    current();await save();if(m.session.middleware_version===2&&!w.context){const frozen=await r.runtime.commit(r.runtime.prepareAction({type:'council_v3_freeze',work_id:w.id,context:d.context}));ensure(frozen.status==='committed',frozen.validation.code);d.world=r.runtime.read().revision.state_id;await save();}let result;
    if(w.kind==='speech'){
-    const p=await request('pre','pre',councilContracts.pre);ensure(typeof p.speak==='boolean','人物未明确是否发言');checkPre(d.context,p.pre);d.pre=p.pre;
+    const p=clone(await request('pre','pre',councilContracts.pre));ensure(typeof p.speak==='boolean','人物未明确是否发言');d.pre=checkPre(d.context,p.pre);if(d.pre.guidance.length!==p.pre.guidance.length)d.requests.findLast(x=>x.snapshot.stage==='pre').diagnostic={code:'UNTYPED_GUIDANCE_OMITTED',count:p.pre.guidance.length-d.pre.guidance.length};p.pre=d.pre;
     if(p.speak){if(d.canonFrame&&!d.canonSelection){d.canonSelection=await selectLocalCanon(d.canonFrame,d.context,d.pre,r.canonSearch,r.abort.signal);current();await save();}const prose=await request('prose','prose',taskContracts.prose);d.prose=prose;if(m.session.middleware_version===2)result={speak:true,pre:p.pre,prose:d.prose,proposals:[],defer_extract:true};else{const e=await request('extract','post',councilContracts.extract);result={speak:true,pre:p.pre,prose:d.prose,proposals:e.proposals};}}
     else result={speak:false,pre:p.pre};
    }else result=await request(w.kind,'post',councilContracts[w.kind]);
    current();d.candidate??=r.runtime.prepareAction({type:'council_v3_result',work_id:w.id,context:d.context,result,requests:d.requests,settings:d.settings});await save();
-   const saved=await r.runtime.commit(d.candidate);ensure(saved.status==='committed',saved.validation.code);d.status='done';d.error=null;await save();if(result.defer_extract){r.councilPostQueue.add(w.id);setTimeout(()=>r.pumpCouncilPost(),0);}
-  }catch(e){d.status='failed';d.error=e.message;if(e.message!=='SAVE_FAILED'){delete d.candidate;if(d.stage)delete d.responses[d.stage];}try{await save();}catch{}r.councilError=e.message;throw e;}
+   const saved=await r.runtime.commit(d.candidate);ensure(saved.status==='committed',saved.validation.code);d.status='done';d.error=null;await save();if(result.defer_extract)scheduleSettlements(r,w.id,true);
+  }catch(e){d.status='failed';d.error=e.message;if(e.message!=='SAVE_FAILED'){delete d.candidate;if(m.session.middleware_version!==2&&d.stage)delete d.responses[d.stage];}try{await save();}catch{}r.councilError=e.message;throw e;}
  });}finally{r.abort=null;r.busy=false;r.notify(r);}
 }
