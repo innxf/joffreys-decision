@@ -1,3 +1,5 @@
+import {absentActor} from './custody-state.mjs';
+import {availableLabor} from './labor-capacity.mjs';
 import '../special-event.js';
 // Finite authored work uses the original order queue, reservations and reports.
 // A model cannot submit a definition or an arbitrary world-field patch here.
@@ -51,11 +53,12 @@ export function runEventWork(g,t,ctx,o){
  if(t.kind!=='event_work'||t.phase==='return')return false;
  const row=g.campaign.history.find(h=>h.choice==='work-issued'&&h.task_ref===t.id),b=row?.contract;
  o.need(b,'这项旧委托缺少已保存的工作内容。');
+ const involved=b.effect==='rosby'?['P060']:b.effect==='release-redwyne'?['P064','P065']:[];
+ if(involved.some(id=>absentActor(g,id))){o.waitTask(g,t,'当事人无法自由行动，原委托等待明确解除限制；不自动释放或改押。',o);return true;}
  if(t.phase==='start'){
   if(!conditionsMet(g,b.requires)){o.waitTask(g,t,'原先约定的办理条件尚未成立。',o);return true;}
   if((b.materials||[]).some(x=>g.resources.find(r=>r.id===x.resource)?.quantity.value<x.amount)){o.waitTask(g,t,'RESOURCE_UNAVAILABLE',o);return true;}
-  const occupied=g.execution.tasks.filter(x=>x.id!==t.id&&x.kind==='event_work'&&x.status==='executing'&&x.phase==='finish').reduce((n,x)=>n+(g.campaign.history.find(h=>h.task_ref===x.id&&h.choice==='work-issued')?.contract.labor||0),0);
-  if((b.labor||0)+occupied>(g.resources.find(r=>r.id==='RES-LABOR')?.quantity.value||0)){o.waitTask(g,t,'工班正在办理其他工程，等待原班次交接。',o);return true;}
+  if((b.labor||0)>availableLabor(g)){o.waitTask(g,t,'工班正在办理其他工程，等待原班次交接。',o);return true;}
   if(b.troops){
    const f=g.forces.find(f=>f.id==='FORCE01');
    if(o.freeGroup(g,f,4)<b.troops){o.waitTask(g,t,'PERSONNEL_UNAVAILABLE',o);return true;}

@@ -1,3 +1,4 @@
+import {custodyUnavailable} from './custody-state.mjs';
 import {dailyDefinitions} from './daily-content.mjs';
 import {places,scenes} from './opening-content.mjs';
 import {placeRegions,travelMinutes} from './navigation-data.mjs';
@@ -37,6 +38,7 @@ export function mealCandidates(g,meal){
  return [...new Set(ids)].filter(id=>person(g,id));
 }
 export function invitationReason(g,id){
+ if(custodyUnavailable(g,id))return '目前无法到场';
  const a=person(g,id);if(!a||a.life!=='存活')return '无法赴席';
  if(!placeRegions[placeOf(a.location)]&&!/红堡|君临/.test(a.location))return '不在君临或正在途中';
  if(g.activities.some(x=>x.status==='active'&&x.participants.includes(id))||g.execution.tasks.some(t=>t.actor_ref===id&&t.status==='executing')||g.assignments.some(t=>t.task_commander===id&&!['returned','cancelled'].includes(t.status))||g.opening.appointments.some(p=>p.actor===id&&['scheduled','travelling'].includes(p.status)))return '已有事务或预约';
@@ -65,7 +67,7 @@ function start(g,r,def,ctx,o){
  if(active(g)||g.campaign?.scene||g.opening.travel)return;
  const participants=['U001',...r.invited.filter(id=>person(g,id)?.location===places[def.place]&&!invitationReason(g,id))];
  // An arrived invitation is not a reason to exclude its recipient.
- for(const p of g.opening.appointments.filter(p=>p.source===r.id&&p.status==='arrived'))if(!participants.includes(p.actor)&&person(g,p.actor)?.location===places[def.place])participants.push(p.actor);
+ for(const p of g.opening.appointments.filter(p=>p.source===r.id&&p.status==='arrived'))if(!custodyUnavailable(g,p.actor)&&!participants.includes(p.actor)&&person(g,p.actor)?.location===places[def.place])participants.push(p.actor);
  const a={id:o.key(g,'ACT'),kind:def.kind,participants,location:places[def.place],nodes:[r.duration||def.duration],node:0,remaining:r.duration||def.duration,status:'active',started_at:now(g),ended_at:null};g.activities.push(a);
  for(const id of participants)g.dialogue.presence.push({activity_ref:a.id,actor:id,present:true,at:now(g),source_ref:r.id});
  r.activity=a.id;r.status='active';r.finish=now(g)+a.remaining;synchronizeGuardPresence(g,ctx.id);
@@ -103,7 +105,7 @@ export function settleDaily(g,ctx,o,definitions=dailyDefinitions){
    if(r.external){if(a?.status==='ended'){r.status='done';r.finished=now(g);}continue;}
    if(a?.status==='ended'){r.status='done';r.finished=now(g);continue;}
    a.remaining=Math.max(0,r.finish-now(g));
-   for(const p of g.opening.appointments.filter(p=>p.source===r.id&&p.status==='arrived'))if(person(g,p.actor)?.location===a.location&&!a.participants.includes(p.actor)){a.participants.push(p.actor);g.dialogue.presence.push({activity_ref:a.id,actor:p.actor,present:true,at:now(g),source_ref:r.id});recordHousehold(g,a.participants,'来迟的宾客刚刚落座。',r.id+':arrival:'+p.actor);}
+   for(const p of g.opening.appointments.filter(p=>p.source===r.id&&p.status==='arrived'))if(!custodyUnavailable(g,p.actor)&&person(g,p.actor)?.location===a.location&&!a.participants.includes(p.actor)){a.participants.push(p.actor);g.dialogue.presence.push({activity_ref:a.id,actor:p.actor,present:true,at:now(g),source_ref:r.id});recordHousehold(g,a.participants,'来迟的宾客刚刚落座。',r.id+':arrival:'+p.actor);}
    if(now(g)>=r.finish)finish(g,r);
   }
   if(['pending','deferred','offered','inviting'].includes(r.status)&&now(g)>=r.expires){r.status='expired';r.finished=now(g);}
@@ -189,7 +191,7 @@ export function applyDailyAction(g,a,ctx,o,definitions=dailyDefinitions){
  }
  if(a.type==='daily_topic'){
   o.exact(a,['occurrence','input']);o.need(r.status==='active'&&!r.external&&(!r.queue||r.queue.status==='done'),'本轮餐叙尚未结束。');o.need(typeof a.input==='string'&&a.input.trim()&&a.input.length<=30000,'请先说出话题。');
-  const act=g.activities.find(a=>a.id===r.activity),speakers=r.invited.filter(id=>act.participants.includes(id)&&person(g,id)?.location===act.location);
+  const act=g.activities.find(a=>a.id===r.activity),speakers=r.invited.filter(id=>!custodyUnavailable(g,id)&&act.participants.includes(id)&&person(g,id)?.location===act.location);
   o.need(speakers.length,'这次没有其他用餐者。');r.queue={id:ctx.id,input:a.input,actors:speakers,index:0,turns:[],status:'pending'};return 'MEAL_TOPIC_SAVED';
  }
  if(a.type==='daily_topic_end'){o.exact(a,['occurrence']);o.need(r.queue,'没有餐叙话题。');r.queue.status='done';return 'MEAL_TOPIC_ENDED';}

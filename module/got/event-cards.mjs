@@ -1,3 +1,4 @@
+import {custodyUnavailable,custodyClerkReport} from './custody-state.mjs';
 const observe=(g,ids,...args)=>originalObserve(g,ids.includes('U001')?physicalAudience(g,ids):ids,...args);
 import {physicalAudience,synchronizeGuardPresence,guardPrivacy} from './household-guards.mjs';
 import {conditionsMet,issueEventWork,eventFact} from './event-work.mjs';
@@ -79,7 +80,7 @@ export function eventCardIssue(g,id){
   choices:[...(p&&p.status==='pending'&&!(q.proposal_refs||[p.id]).some(id=>g.dialogue.proposals.find(x=>x.id===id)?.conditions.length)?[['execute','按这项提案交办；仍须满足原有权限、资源与人物答复。']]:[]),['keep','保留原安排，不发新令。']]};
 }
 export function eventCardReport(g,id,who=[]){
- const d=eventCardIssue(g,id);if(!d)return null;
+ const d=eventCardIssue(g,id);if(!d)return null;const missing=custodyClerkReport(g,d.presenters,who);if(missing)return missing;
  if(!card(id))return '书记展开国王交来的提案。「'+d.question+'」'+(queued(g).find(h=>h.queue_id===id)?.kind==='repair'?'工料尚未报价。本次只保留请求，未经核实不安排施工。':'');
  let text=d.open;
  if(d.implementation!=='prototype')return sceneText(g,d);
@@ -141,7 +142,7 @@ export function commitCardDecision(g,m,id,choice,ctx,o,planWork,executeProposal)
 }
 const eligible=(g,c)=>{
  const day=Math.floor(now(g)/1440),hour=((now(g)+360)%1440)/60,p=actor(g,c.actor);
- return c.route!=='council'&&conditionsMet(g,c.requires)&&day>=c.days[0]&&day<=c.days[1]&&hour>=c.hours[0]&&hour<c.hours[1]&&!g.campaign.private_done.includes(c.id)&&p?.life==='存活'&&c.places.some(k=>places[k]===actor(g,'U001').location&&places[k]===p.location)&&[c.actor,...(c.companions||[])].every(id=>actor(g,id)?.life==='存活'&&actor(g,id).location===p.location&&!g.execution.tasks.some(t=>t.actor_ref===id&&t.status==='executing')&&!g.activities.some(a=>a.status==='active'&&a.participants.includes(id)));
+ return c.route!=='council'&&conditionsMet(g,c.requires)&&day>=c.days[0]&&day<=c.days[1]&&hour>=c.hours[0]&&hour<c.hours[1]&&!g.campaign.private_done.includes(c.id)&&p?.life==='存活'&&!custodyUnavailable(g,p.id)&&c.places.some(k=>places[k]===actor(g,'U001').location&&places[k]===p.location)&&[c.actor,...(c.companions||[])].every(id=>!custodyUnavailable(g,id)&&actor(g,id)?.life==='存活'&&actor(g,id).location===p.location&&!g.execution.tasks.some(t=>t.actor_ref===id&&t.status==='executing')&&!g.activities.some(a=>a.status==='active'&&a.participants.includes(id)));
 };
 export function eventCardNext(g,next){
  for(const c of eventCards.filter(c=>c.route!=='council'&&!g.campaign.private_done.includes(c.id)))

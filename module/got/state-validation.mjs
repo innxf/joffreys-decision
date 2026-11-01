@@ -1,3 +1,7 @@
+import {custodyErrors} from './custody-state.mjs';
+import {mechErrors} from './stance-engine.mjs';
+import {audienceRequestErrors} from './audience-requests.mjs';
+import {reformErrors} from './reform-engine.mjs';
 import {householdErrors} from './daily-engine.mjs';
 import {navigationErrors} from './navigation-engine.mjs';
 import {campaignErrors} from './campaign-engine.mjs';
@@ -53,7 +57,7 @@ const resultSchema = {type:'object',properties:{status:{enum:['committed'],type:
   required:['status','replayed','settlement_ref','world_revision','validation'],additionalProperties:false};
 export const runtimeSchema = {type:'object',properties:{
   version:{type:'string',enum:['m2-state-v1','m2-world-v2','m2-political-v3']},contract_version:{type:'string',enum:['c1.2']},
-  rule_version:{type:'string',enum:['m2-state-1','m2-world-2','m2-political-3']},run_id:str,source_sha256:str,
+  rule_version:{type:'string',enum:['m2-state-1','m2-world-2','m2-political-3','m2-political-3-reform-1']},run_id:str,source_sha256:str,
   briefing_reads:{type:'array',uniqueItems:true,items:str},
   receipts:{type:'array',items:{type:'object',properties:{id:str,fingerprint:str,result:resultSchema},required:['id','fingerprint','result'],additionalProperties:false}}
 },required:['version','contract_version','rule_version','run_id','source_sha256','briefing_reads','receipts'],additionalProperties:false};
@@ -64,18 +68,23 @@ export function validateWorld(got, schema, sourceHash) {
   const politicalMode=_runtime?.version==='m2-political-v3';
   const worldMode=_runtime?.version==='m2-world-v2'||politicalMode;
   const policyErrors=[];
+  if(Array.isArray(base.actors))base.actors=base.actors.map(a=>{
+    if(!Object.hasOwn(a,'mech_profile'))return a;
+    const {mech_profile,...record}=a;
+    policyErrors.push(...mechErrors(mech_profile,got));return record;
+  });
   if(Array.isArray(base.projects))base.projects=base.projects.map(p=>{
     if(!Object.hasOwn(p,'policy'))return p;
     const {policy,...record}=p;
     if(!worldMode)policyErrors.push('legacy save cannot carry policy');
-    validateSchema(policy,policySchema,'$.projects.policy',policyErrors);return record;
+    if(policy.template==='general_reform')policyErrors.push(...reformErrors(p,got));else validateSchema(policy,policySchema,'$.projects.policy',policyErrors);return record;
   });
   const effectiveSchema=structuredClone(schema);
   if(autonomy)effectiveSchema.properties.orders.items.properties.status.enum.push('等待条件');
   if(finale)effectiveSchema.properties.kingsguard.items.properties.holder.type=['string','null'];
   const errors = validateSchema(base,effectiveSchema);
   errors.push(...householdErrors(got));errors.push(...openingErrors(got));errors.push(...navigationErrors(got));
-  errors.push(...campaignErrors(got));
+  errors.push(...campaignErrors(got));errors.push(...audienceRequestErrors(got),...custodyErrors(got));
   errors.push(...finaleErrors(finale,got));
   errors.push(...dialogueErrors(dialogue,got));
   errors.push(...memoryErrors(memory,got));
@@ -85,7 +94,7 @@ export function validateWorld(got, schema, sourceHash) {
     for(const [key,s] of Object.entries(executionSchemas))validateSchema(got[key],s,'$.'+key,errors);
     if(politicalMode)validateSchema(politics,politicsSchema,'$.politics',errors);else if(politics!==undefined)errors.push('legacy political extension mismatch');
     if(!errors.length)errors.push(...worldInvariantErrors(got));
-    if(_runtime.rule_version!==(politicalMode?'m2-political-3':'m2-world-2'))errors.push('rule version mismatch');
+    if(_runtime.rule_version!==(politicalMode?(got.projects.some(p=>p.policy?.template==='general_reform')?'m2-political-3-reform-1':'m2-political-3'):'m2-world-2'))errors.push('rule version mismatch');
   }else if([administration,authorities,assignments,activities,execution,politics].some(v=>v!==undefined))errors.push('legacy extension mismatch');
   validateSchema(_runtime,runtimeSchema,'$._runtime',errors);
   if (got.model_id !== 'got-phase1-state' || got.model_version !== '1.1.0') errors.push('unsupported baseline version');

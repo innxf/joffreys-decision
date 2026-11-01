@@ -1,3 +1,4 @@
+import {custodyUnavailable} from './custody-state.mjs';
 import {recordSleep,wakeDaily,morningWashPending,afterDinner} from './daily-engine.mjs';
 import {guardDeparture,guardArrival,guardsInside,moveWithGuards,recordHousehold} from './household-guards.mjs';
 import {places} from './opening-content.mjs';
@@ -17,7 +18,7 @@ export function appointmentPass(g,region){
  return region==='Z03'&&i?.status==='agreed'&&g.messages.some(m=>m.id===i.report&&m.status==='已收到')&&now(g)>=i.at-90&&now(g)<=i.at+120&&!g.opening.visits.some(v=>v.scene==='barristan'&&g.activities.find(a=>a.id===v.activity)?.status==='ended');
 }
 const special=g=>!!g.finale||(!g.opening?.household?(!!g.campaign?.scene||active(g)?.kind==='council'||g.opening?.visits.some(v=>['cersei','barristan'].includes(v.scene)&&v.activity===active(g)?.id)):(['battle','battle-result'].includes(g.campaign?.scene)||!!g.campaign?.scene||active(g)?.kind==='council'||g.opening?.visits.some(v=>v.scene==='barristan'&&v.activity===active(g)?.id&&g.opening.invitation?.status==='agreed'&&now(g)<=g.opening.invitation.at+180))); // Continuous scenes close at their next safe boundary; no new ordinary activity after 02:00.
-function move(g,id,p){if(id==='U001'&&g.opening?.household){moveWithGuards(g,places[p]);return;}const a=actor(g,id);if(a){a.location=places[p];a.location_precision='具体地点';a.last_updated_minute=now(g);}}
+function move(g,id,p){if(id==='U001'&&g.opening?.household){moveWithGuards(g,places[p]);return;}const a=actor(g,id);if(a&&!custodyUnavailable(g,id)){a.location=places[p];a.location_precision='具体地点';a.last_updated_minute=now(g);}}
 export function destination(g,place,{secret=false,pending=false}={}){
  let reason='';const to=placeRegions[place],from=playerRegion(g),n=g.opening?.navigation;
  if(!to)reason='这里尚未开放。';

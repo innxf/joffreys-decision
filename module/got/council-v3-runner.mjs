@@ -1,3 +1,4 @@
+import {reformInstructions,reformExtraInstructions,supportInstructions} from './reform-contract.mjs';
 import {parseMiddlewareJson} from './middleware-json.mjs';
 import {scheduleSettlements} from './dialogue-settlement.mjs';
 import {freezeCanonFrame,selectLocalCanon,compileWithCanon} from './canon-reference.mjs';
@@ -13,6 +14,9 @@ export const councilContracts={
  topic:'根据国王实际输入和已呈报资料，协助完善议题。返回JSON {title:"议题",problem:"要解决的问题",approach:"初步处理方向",owner:"现有人物编号或null",reply:"当前大臣对国王的简短自然回应"}。负责人尚未确定用null，不替本人接受；不要编造新事实，不新增程序机制。不支持的整体构想仍可讨论，但须说明可先议的有限部分。',
  summary:'你是记录本题裁决的书记，不作新的政治决定。返回JSON {consistent:true或false,summary:"准确记录玩家已采纳的方案、拟负责人、条件及已有费用期限；尚未发令执行",question:"需要国王澄清的关键问题；无则空字符串"}。不增加未获批准的费用或承诺。存在歧义则consistent:false。不能把没有处理器的方案写成已成立的项目。'
 };
+councilContracts.extract+=' '+reformInstructions+' '+reformExtraInstructions+' '+supportInstructions;
+councilContracts.pre+=' 改革按已呈报的来源和时点发言，结合本人立场、利益与职责提出建议；未收到的内部进度不知情。检查点没有真实问题时报告达成或偏差，不为剧情编造阻碍。探索性的预案先评估，不当成国王命令。';
+councilContracts.summary+=' 改革按选定的完整合同归档；准备/执行/初效不等于已完成。普通工作自动记录，重要阶段待决。';
 export async function runCouncilWork(r,{regenerate=false}={}){
  ensure(!r.busy,'DIALOGUE_BUSY');const initial=liveCouncil(r.runtime.read());ensure(initial?.session.version===3&&initial.session.work,'没有等待处理的会议发言。');
  r.busy=true;r.councilError='';r.notify(r);

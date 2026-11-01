@@ -1,3 +1,4 @@
+import {reformActionText} from './reform-approval.mjs';
 import {speech,story,renderCouncilSeats} from './portrait-panel.mjs';
 import {profiles} from './dialogue-core.mjs';
 import {topicOf} from './council-v3.mjs';
@@ -30,7 +31,8 @@ export function renderCouncilV3(runtime,host,{button,act}){
   await act({type:'council_finish'});
  }catch(e){r.councilError=readableError(e.message);throw e;}};
  if(s.phase==='reports'){
-  {const report=s.entries.filter(e=>e.kind==='report').at(-1);story(host,report?.content||'大臣展开卷宗。',{speaker:report?.speaker});}
+  const batch=q?.report_batch?s.agenda.filter(x=>x.id===q.id||x.report_batch===q.id):[q];
+  for(const item of batch){const report=s.entries.findLast(e=>e.kind==='report'&&e.issue===item?.id);story(host,report?.content||'大臣展开卷宗。',{speaker:report?.speaker});if(item?.reform_ref&&item.report_only)action('讨论：'+item.title,{type:'council_v3_discuss',issue:item.id});if(item?.requested_discussion)el('p','已列入随后讨论；当前尚未改变原计划。');}
   action(s.index<s.order.length-1?'继续听取陈奏':'陈奏已毕，核对议题',{type:'council_v3_read'});
  }else if(['agenda','topic_review','agenda_ready'].includes(s.phase)){
   if(q){el('h3',q.title);el('p','要解决的问题：'+q.problem);el('p','初步方向：'+q.approach);el('p','拟负责人：'+(q.owner?name(q.owner):'由本次讨论决定'));
@@ -42,9 +44,10 @@ export function renderCouncilV3(runtime,host,{button,act}){
   const recent=s.entries.filter(e=>e.issue===q?.id&&e.kind!=='report'&&e.kind!=='silence');
   const e=recent.filter(e=>e.content).at(-1);if(e)speech(host,e.speaker,e.content,{id:e.id});
   if(s.phase==='decision'&&!s.input){
+   if(q.reform_ref)action('暂不决定，保留待议',{type:'council_v3_defer'});
    action('采用席间提出的方案',{type:'council_v3_menu'});action('提出修改或另一种办法',{type:'council_v3_edit'});
    if(s.selectionMenu){const list=el('section','');list.className='council-proposals';const ps=q.proposals.filter(p=>p.status==='active');if(!ps.length)el('p','席间尚无人提出可直接采用的办法。可以提出自己的意见。',list);
-    for(const p of ps){const b=button(name(p.actor)+'：'+p.summary,()=>{if(r)r.councilAutoResume=true;return act({type:'council_v3_select',proposal:p.id});});b.disabled=!!r?.busy;list.append(b);el('small','拟负责人：'+(p.owner?name(p.owner):'依原职权或待明确')+(p.conditions.length?'；条件：'+p.conditions.join('；'):''),list);if(p.detail)el('small',p.detail,list);if(p.actions?.length)el('p','执行范围：'+p.actions.map(a=>Object.entries(a).filter(([k])=>k!=='type').map(([k,v])=>({count:'人数',duration:'分钟',amount:'数量',source:'调出方',destination:'调入方',person:'人选',commander:'指挥者',title:'名称',name:'名称',organization_ref:'机构',operation:'事务',end_at:'截止分钟',expires_at:'权限截止分钟',posts:'岗位',template:'工作类型',responsibilities:'职责',target_ref:'对象'}[k]||k)+'：'+v).join('；')).join(' / '),list);if(p.choice)el('p','实际采用：'+(defChoice(q,p.choice,g)||p.summary),list);}
+    for(const p of ps){const b=button(name(p.actor)+'：'+p.summary,()=>{if(r)r.councilAutoResume=true;return act({type:'council_v3_select',proposal:p.id});});b.disabled=!!r?.busy;list.append(b);el('small','拟负责人：'+(p.owner?name(p.owner):'依原职权或待明确')+(p.conditions.length?'；条件：'+p.conditions.join('；'):''),list);if(p.detail)el('small',p.detail,list);if(p.actions?.length)el('p','执行范围：'+p.actions.map(a=>['reform_propose','reform_revise'].includes(a.type)?reformActionText(a):Object.entries(a).filter(([k])=>k!=='type').map(([k,v])=>({count:'人数',duration:'分钟',amount:'数量',source:'调出方',destination:'调入方',person:'人选',commander:'指挥者',title:'名称',name:'名称',organization_ref:'机构',operation:'事务',end_at:'截止分钟',expires_at:'权限截止分钟',posts:'岗位',template:'工作类型',responsibilities:'职责',target_ref:'对象'}[k]||k)+'：'+v).join('；')).join(' / '),list);if(p.choice)el('p','实际采用：'+(defChoice(q,p.choice,g)||p.summary),list);}
    }
   }
   if(s.phase==='clarify')el('p',s.clarification);

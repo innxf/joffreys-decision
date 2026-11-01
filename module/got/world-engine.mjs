@@ -1,3 +1,11 @@
+import {settleEconomy,economyNext,earmarks,paymentTax} from './reform-economy.mjs';
+import {custodyRows,absentActor,custodyUnavailable} from './custody-state.mjs';
+import {leakPathAvailable} from './arrest-stance.mjs';
+import {applyArrestAction,runArrestTask,syncArrestOutcomes} from './arrest-engine.mjs';
+import {settleSupport,interceptLeak,recallSupport,supportNext} from './reform-support.mjs';
+import {reviewNext,settleReviewDates} from './reform-meetings.mjs';
+import {settleAudienceRequests,applyAudienceAction} from './audience-requests.mjs';
+import {applyReformAction,runReformTask,accrueReforms,cancelReform,reformView} from './reform-engine.mjs';
 import {dailyNext,settleDaily,applyDailyAction,dailyBlocking,currentDaily} from './daily-engine.mjs';
 import {applyGuardAction,synchronizeGuardPresence,settleGuards} from './household-guards.mjs';
 import {runEventWork} from './event-work.mjs';
@@ -6,7 +14,7 @@ import {initializeNavigation,navigationNext,navigationSettle,navigationTarget,in
 import {campaignNext,campaignSettle,applyCampaignAction,runCampaignWork,campaignHandover} from './campaign-engine.mjs';
 import {ERA_REFERENCES,eraDuration} from './era-rules.mjs';
 import {startWork as startOpeningWork,applyOpeningAction,openingNext,openingSettle,runOpeningWork} from './opening-engine.mjs';
-import {initializeAutonomy,control,describeTask,waitTask,recoverable,queueJudgment,refreshWaits,applyJudgment,taskConflicts,acceptedTask} from './autonomy-core.mjs';
+import {initializeAutonomy,control,describeTask,waitTask,recoverable,queueJudgment,refreshWaits,applyJudgment,taskConflicts,acceptedTask,judgmentChanged} from './autonomy-core.mjs';
 import {target,observe,profiles,actorEvidence} from './dialogue-core.mjs';
 import {initializePolitics,applyPoliticalAction,runPoliticalTask,politicalNextEvent,settlePolitics,cancelPolitical,blockPolitical,politicalPayment,politicalView,politicalWorkers} from './political-engine.mjs';
 
@@ -52,16 +60,22 @@ function report(g,sender,text,refs=[],recipient='U001',delay=15){
 function reserve(g,ctx,target,value){need(amount(value)&&available(g,'RES-CASH')>=value,'RESOURCE_UNAVAILABLE');const id=key(g,'RSV');
   g.reservations.push({id,resource_id:'RES-CASH',amount:value,owner:'U001',target_id:target,purpose:'明确批准的有限预算',status:'有效',start_minute:now(g),end_minute:null,release_rule:'仅释放尚未使用的额度',basis:basis('预算不等于付款',[ctx.id])});return id;}
 function release(g,id){const r=g.reservations.find(r=>r.id===id);if(r&&activeReservation(r)){r.status='已释放';r.end_minute=now(g);}}
-function spend(g,ctx,value,reservation,reason,refs){const r=g.reservations.find(r=>r.id===reservation&&activeReservation(r));const held=r?.amount||0;
-  need(amount(value)&&available(g,'RES-CASH')+held>=value,'RESOURCE_UNAVAILABLE');
-  if(r){need(r.resource_id==='RES-CASH','INVALID_RESERVATION','invalid');r.amount=rounded(Math.max(0,held-value));r.status=r.amount?'部分使用':'已用尽';if(!r.amount)r.end_minute=now(g);}
-  change(g,ctx,'RES-CASH',-value,reason,refs);
+function paymentFunds(g,reservation,refs=[]){
+ const primary=g.reservations.find(r=>r.id===reservation&&activeReservation(r));
+ return available(g,'RES-CASH')+(primary?.amount||0)+earmarks(g,refs).filter(r=>r.id!==primary?.id).reduce((n,r)=>n+r.amount,0);
 }
-function actorFreeAt(g,actor){let end=now(g);
+function spend(g,ctx,value,reservation,reason,refs){
+ const primary=g.reservations.find(r=>r.id===reservation&&activeReservation(r)),grants=earmarks(g,refs).filter(r=>r.id!==primary?.id);
+  need(amount(value)&&paymentFunds(g,reservation,refs)>=value,'RESOURCE_UNAVAILABLE');
+ let remaining=value;for(const r of [primary,...grants].filter(Boolean)){const take=Math.min(remaining,r.amount);r.amount=rounded(r.amount-take);remaining-=take;r.status=r.amount?'部分使用':'已用尽';if(!r.amount)r.end_minute=now(g);if(remaining<=0)break;}
+ change(g,ctx,'RES-CASH',-value,reason,refs);
+ const pay=g.obligations.find(p=>refs.includes(p.id)&&p.amount>=value&&p.status!=='已支付');paymentTax(g,pay,value,ctx,ops,g.settlements.at(-1).id);
+}
+function actorFreeAt(g,actor){if(custodyUnavailable(g,actor))return now(g)+60;let end=now(g);
   if(g.opening?.travel?.actors.includes(actor))end=Math.max(end,g.opening.travel.arrive);
   for(const a of g.opening?.appointments||[])if(a.actor===actor&&a.status==='travelling')end=Math.max(end,a.arrive);
   for(const a of g.activities.filter(a=>a.status==='active'&&a.participants.includes(actor)))end=Math.max(end,now(g)+a.remaining+a.nodes.slice(a.node+1).reduce((x,y)=>x+y,0));
-  for(const t of g.execution.tasks.filter(t=>t.actor_ref===actor&&t.status==='executing'&&['event_work','opening_work','inspect_payment','project','request_document','tunnel_inspect',...politicalWorkers].includes(t.kind)))end=Math.max(end,t.next_at);
+  for(const t of g.execution.tasks.filter(t=>t.actor_ref===actor&&t.status==='executing'&&['event_work','opening_work','inspect_payment','project','request_document','tunnel_inspect','arrest',...politicalWorkers].includes(t.kind)))end=Math.max(end,t.next_at);
   for(const a of g.assignments.filter(a=>a.task_commander===actor&&(a.authority_ref||g.execution.tasks.some(t=>t.kind==='campaign_work'&&t.assignment_ref===a.id))&&!['returned','cancelled'].includes(a.status)))end=Math.max(end,a.return_at||a.end_at+60);
   return end;
 }
@@ -72,7 +86,7 @@ function task(g,ctx,kind,actor,params,delay=15,issuer='U001'){
     report_message_id:null,event_refs:[],reservation_refs:[],authority:issuer==='U001'?'OFF-KING；仅限已实现的有限动作':'原委托范围内的职责；核验只索取相关凭据，已批准常规付款不扩大预算或人员',execution_condition:'送达、可用人员资源、无已知阻碍；不免除具体权限',cancellation_order_id:null,basis:basis(issuer==='U001'?'M2固定规则；不是原著命令':'2E执行者在原委托内主动补件',[ctx.id,...(issuer==='U001'?[]:[params.source])])});
   g.execution.tasks.push(t);control(g,t);return t;
 }
-function finish(g,t,text,reportDelay=15){const o=order(g,t);t.status='completed';o.status='已完成';o.completed_minute=now(g);control(g,t).wait=null;observe(g,[t.actor_ref],text,o.id);o.report_message_id=report(g,t.actor_ref,text,[o.id],o.issuer,reportDelay);}
+function finish(g,t,text,reportDelay=15){const o=order(g,t);t.status='completed';o.status='已完成';o.completed_minute=now(g);control(g,t).wait=null;observe(g,[t.actor_ref],text,o.id);o.report_message_id=report(g,t.actor_ref,text,[o.id],t.kind==='reform'?t.actor_ref:o.issuer,reportDelay);}
 function block(g,t,code){t.status='blocked';if(t.assignment_ref){const as=g.assignments.find(a=>a.id===t.assignment_ref);as.status='returning';as.return_at=now(g)+60;t.phase='return';t.next_at=as.return_at;t.status='executing';}order(g,t).status='执行失败';order(g,t).report_message_id=report(g,t.actor_ref,'事务受阻：'+code,[t.order_ref]);
   blockPolitical(g,t);
   if(t.params.project_ref){const p=g.projects.find(p=>p.id===t.params.project_ref);p.status='blocked';p.progress=code;p.policy.next_check_minute=null;}}
@@ -92,36 +106,42 @@ function detailReady(g,p){const a=g.authorities.find(a=>a.id===p.authority_ref&&
 function scheduleStart(g,t){t.next_at=now(g);if(t.kind==='night_patrol'){const tod=(now(g)+360)%1440;t.next_at=now(g)+(tod<1200?1200-tod:tod>=1320?1440-tod+1200:0);}if(t.kind==='payment')t.next_at=Math.max(now(g),g.obligations.find(x=>x.id===t.params.obligation_ref).due_minute);}
 function executeTask(g,t,ctx){
   const o=order(g,t),p=t.params;
+  if(custodyUnavailable(g,t.actor_ref)&&!['cancel','arrest','release_prisoner'].includes(t.kind)||absentActor(g,t.actor_ref)&&t.kind!=='cancel'){waitTask(g,t,'执行者无法自由行动，原任务保留，等待实际恢复。',ops);return;}
+  if(runArrestTask(g,t,ctx,ops))return;
   if(campaignHandover(g,t,ctx,ops))return;
+  if(runReformTask(g,t,ctx,ops))return;
   if(t.phase==='delivery'){
     o.delivered_minute=now(g);o.status='已送达';
     if(t.kind==='review_plan'&&JSON.stringify(control(g,t).request_scope)!==JSON.stringify(describeTask(g,t))){t.status='cancelled';control(g,t).wait=null;o.status='已撤销';o.report_message_id=report(g,t.actor_ref,'送达前方案已经修改，旧征询未作为新方案的答复。',[o.id]);return;}
-    observe(g,[t.actor_ref],'实际收到的委托：'+JSON.stringify(describeTask(g,t)),o.id);
+    observe(g,[t.actor_ref],'实际收到的委托：'+JSON.stringify(describeTask(g,t)),o.id,(t.kind==='reform'||(t.kind==='review_plan'&&p.source==='reform_execution'))?[target(g,p.target_ref)].filter(Boolean):[]);
     if(t.kind==='cancel'){
       const target=g.orders.find(o=>o.id===p.target_ref);const original=g.execution.tasks.find(x=>x.order_ref===target.id);
+      if(custodyRows(g).some(r=>r.task_ref===original?.id&&['escorting','held'].includes(r.status))){finish(g,t,'撤令送达时目标已被控制；拘押保留，解除限制须明确办理释放。');return;}
+      if(target.status==='已完成'&&recallSupport(g,original)){finish(g,t,'撤岗命令已送达；已部署人员开始归队，60分钟后释放占用，原改革交付历史保留。');return;}
       if(target.status==='已完成'){finish(g,t,'撤令已送达；原命令此前已完成，既成结果保留。');return;}
       target.status='已撤销';target.cancellation_order_id=o.id;
       if(target.id==='ORD01'){
         const f=g.forces.find(f=>f.id==='FORCE01');f.allocations[4].count+=f.allocations[2].count;f.allocations[2].count=0;
       }
       if(original){
-        cancelPolitical(g,original,ops);
+        cancelPolitical(g,original,ops);cancelReform(g,original,ops);
         if(['event_work','campaign_work'].includes(original.kind)&&original.params.reservation)release(g,original.params.reservation);
         if(original.kind==='opening_work'){const j=g.opening.jobs.find(j=>j.task===original.id);if(j?.reservation)release(g,j.reservation);}
         if(original.assignment_ref){const a=g.assignments.find(a=>a.id===original.assignment_ref);a.status='returning';a.return_at=now(g)+60;original.phase='return';original.next_at=a.return_at;original.status='executing';}
         else original.status='cancelled';
-        if(original.params.project_ref){const pr=g.projects.find(p=>p.id===original.params.project_ref);pr.status='cancelled';pr.progress='取消未来工作，已支出与已完成部分保留';release(g,pr.active_reservation_id);}
+        if(original.params.project_ref){const pr=g.projects.find(p=>p.id===original.params.project_ref);if(pr.policy?.template!=='general_reform'||pr.policy.task_ref===original.id){pr.status='cancelled';pr.progress='取消未来工作，已支出与已完成部分保留';release(g,pr.active_reservation_id);}}
       }
       finish(g,t,'撤令已送达并处理；已执行部分不倒退。');target.report_message_id=o.report_message_id;return;
     }
     const conflict=g.execution.obstacles.find(x=>x.active&&[o.recipient,o.id,p.target_ref,p.obligation_ref].includes(x.target_ref));
+    if(t.kind==='reform'&&!g.execution.decisions.some(d=>d.actor===t.actor_ref&&d.kind==='reform_execution'&&d.target_ref===p.project_ref&&d.status==='accepted')){control(g,t).resume_phase='start';queueJudgment(g,t,ops,'请负责人就实际收到的改革合同确认接受、提出条件或拒绝；不代其他人同意。');return;}
     if(t.kind==='review_plan'||conflict){control(g,t).resume_phase='start';queueJudgment(g,t,ops,conflict?.reason||'请当事人就已送达方案作出明确答复。');return;}
     o.accepted_minute=now(g);o.status='已接受';t.status='accepted';t.phase='start';
     scheduleStart(g,t);
     return;
   }
   if(t.phase==='start'){
-    if(['event_work','opening_work','inspect_payment','project','request_document','tunnel_inspect',...politicalWorkers].includes(t.kind)){const free=actorFreeAt(g,t.actor_ref);if(free>now(g)){t.next_at=free;control(g,t).wait='queue';control(g,t).reason='执行者已有工作，按实际空闲时段开始。';return;}}
+    if(['event_work','opening_work','inspect_payment','project','request_document','tunnel_inspect','arrest',...politicalWorkers].includes(t.kind)){const free=actorFreeAt(g,t.actor_ref);if(free>now(g)){t.next_at=free;control(g,t).wait='queue';control(g,t).reason='执行者已有工作，按实际空闲时段开始。';return;}}
     if(taskConflicts(g,t).length&&!acceptedTask(g,t)){queueJudgment(g,t,ops,'执行前出现新的职责或利益冲突。');return;}
     control(g,t).wait=null;
     t.status='executing';t.started_at=now(g);o.status='执行中';
@@ -185,14 +205,17 @@ function consume(g,to,ctx){
   }
 }
 function deliver(g,m){
+  if(m.channel==='秘密传话'&&!leakPathAvailable(g,m.sender,m.recipient)){m.status='失联';return;}
   if(m.obstruction){m.status='失联';return;}
+  if(interceptLeak(g,m,ops))return;
   m.status='已收到';m.delivered_minute=now(g);
   g.beliefs.push({id:key(g,'BEL'),actor:m.recipient,fact_refs:[...m.fact_refs],confidence:'有限掌握',assessment:'收到报告：'+m.content+'；相信程度与解释尚待人物判断',
     evidence_refs:[m.id],public_stance:'未自动转述或公开',updated_minute:now(g),basis:basis('送达不等于证明报告真实',[m.id])});
   const doc=g.autonomy?.documents.find(d=>d.message_ref===m.id);if(doc){doc.delivered_at=now(g);if(doc.valid){const account=g.politics.accounts.find(x=>x.id===doc.target_ref);if(account){account.receipt_present=true;account.source_refs.push(m.id);}}else{const t=g.execution.tasks.find(t=>t.kind==='audit'&&t.params.target_ref===doc.target_ref&&t.status==='blocked');if(t){const c=control(g,t);c.wait='decision';c.reason='已收到材料，但缺少可核验凭据，不能完成对账。';order(g,t).report_message_id=report(g,t.actor_ref,c.reason,[m.id,t.order_ref]);}}}
 }
-function nextEvent(g,target){let next=target;
-  next=politicalNextEvent(g,next);
+function nextEvent(g,target){let next=economyNext(g,supportNext(g,target));
+  for(const a of g.assignments.filter(a=>a.location.startsWith('改革驻守:')&&['active','returning'].includes(a.status))){const end=a.status==='returning'?a.return_at:a.end_at;if(end>now(g))next=Math.min(next,end);}
+  next=reviewNext(g,politicalNextEvent(g,next));
   next=Math.min(next,(Math.floor(now(g)/(28*1440))+1)*28*1440);
   for(const t of g.execution.tasks.filter(t=>['sent','accepted','executing'].includes(t.status)))next=Math.min(next,Math.max(now(g),t.next_at));
   for(const m of g.messages.filter(m=>m.status==='在途'))next=Math.min(next,Math.max(now(g),m.arrival_window_minutes[1]));
@@ -202,6 +225,8 @@ function nextEvent(g,target){let next=target;
   return dailyNext(g,navigationNext(g,campaignNext(g,openingNext(g,next))));
 }
 function settleAt(g,ctx){
+  settleSupport(g);settleEconomy(g,ctx,ops);
+  syncArrestOutcomes(g);settleReviewDates(g);
   initializeAutonomy(g);
   openingSettle(g,ctx,ops);
   campaignSettle(g,ctx,ops);
@@ -215,7 +240,7 @@ function settleAt(g,ctx){
   for(const tr of g.transfers.filter(t=>t.in_transit>0&&t.arrival_minute!==null&&t.arrival_minute<=now(g))){
     const r=resource(g,tr.destination_pool);change(g,ctx,r.id,tr.in_transit,'实际入库',[tr.id]);tr.received+=tr.in_transit;tr.in_transit=0;tr.status='已到货';
   }
-  settlePolitics(g,ctx,ops);
+  settlePolitics(g,ctx,ops);settleEconomy(g,ctx,ops);
   for(const m of g.messages.filter(m=>m.status==='在途'&&m.arrival_window_minutes[1]<=now(g)))deliver(g,m);
   refreshWaits(g,ops);
   }while(g.execution.tasks.some(t=>['sent','accepted','executing'].includes(t.status)&&t.next_at<=now(g)));
@@ -234,6 +259,7 @@ function settleAt(g,ctx){
   campaignSettle(g,ctx,ops);
   navigationSettle(g,ctx,ops);
   settleDaily(g,ctx,ops);
+  syncArrestOutcomes(g);settleAudienceRequests(g,ops);
 }
 export function financialReport(g,from,to){
   const rows=g.settlements.filter(s=>s.target_id==='RES-CASH'&&(s.at_minute>from||(from===0&&s.at_minute===0))&&s.at_minute<=to);
@@ -247,7 +273,7 @@ export function advance(g,target,ctx,interrupt=false){
   initializeNavigation(g);ctx={...ctx,routineTarget:target};
   need(minute(target)&&target>=now(g)&&target-now(g)<=31*1440,'INVALID_DURATION','invalid');let turns=0;
   while(now(g)<target||nextEvent(g,Infinity)<=now(g)){
-    need(++turns<10000,'EVENT_LOOP_LIMIT');const priorActivity=g.activities.find(a=>a.status==='active'&&a.participants.includes('U001'))?.id;const old=now(g),next=nextEvent(g,target);g.clock.elapsed_minutes=next;
+    need(++turns<10000,'EVENT_LOOP_LIMIT');const priorActivity=g.activities.find(a=>a.status==='active'&&a.participants.includes('U001'))?.id;const old=now(g),next=nextEvent(g,target);accrueReforms(g,next);g.clock.elapsed_minutes=next;
     if(ctx.activity_ref){const act=g.activities.find(a=>a.id===ctx.activity_ref);if(act.status==='active')act.remaining=Math.max(0,act.remaining-(next-old));}
     consume(g,next,ctx);
     const before=new Set(g.messages.filter(m=>m.status==='已收到').map(m=>m.id)),jobs=new Set((g.autonomy?.jobs||[]).map(j=>j.id));settleAt(g,ctx);target=navigationTarget(g,target);
@@ -268,9 +294,12 @@ export function advance(g,target,ctx,interrupt=false){
 }
 
 export function applyWorldAction(g,a,ctx){
+  if(a.type.startsWith('audience_'))return applyAudienceAction(g,a,ctx,ops);
+  if(a.type.startsWith('reform_')){try{return applyReformAction(g,a,ctx,ops);}catch(e){if(e instanceof RuleError)throw e;throw new RuleError(e.message,'invalid');}}
   initializeAutonomy(g);initializeNavigation(g);
   need(ctx.councilCommit||a.type.startsWith('guard_')||a.type==='daily_preferences'||!g.opening?.meetings.some(m=>m.session&&m.status==='in_progress'),'请先完成会议。');
   need(ctx.councilCommit||!g.campaign?.scene||a.type==='campaign_choose','请先完成眼前的场景。');
+  if(['order_arrest','release_prisoner'].includes(a.type))return applyArrestAction(g,a,ctx,ops);
   if(a.type.startsWith('guard_'))return applyGuardAction(g,a,ctx,ops);
   if(a.type.startsWith('daily_'))return applyDailyAction(g,a,ctx,ops);
   if(a.type.startsWith('nav_')){const result=applyNavigation(g,a,ctx,ops);if(a.type==='nav_move'){if(g.opening?.household)openingSettle(g,ctx,ops);campaignSettle(g,ctx,ops);}return result;}
@@ -294,7 +323,7 @@ export function applyWorldAction(g,a,ctx){
     need(!currentDaily(g)||currentDaily(g).activity!==act.id||currentDaily(g).external,'请用本次日程的结束选项完成活动。');
     if(a.type==='end_activity'){
       act.status='ended';act.ended_at=now(g);
-      for(const t of g.execution.tasks.filter(t=>t.status==='accepted'&&t.phase==='start'&&['event_work','opening_work','inspect_payment','project','request_document','tunnel_inspect',...politicalWorkers].includes(t.kind)&&act.participants.includes(t.actor_ref)))t.next_at=Math.min(t.next_at,now(g));
+      for(const t of g.execution.tasks.filter(t=>t.status==='accepted'&&t.phase==='start'&&['event_work','opening_work','inspect_payment','project','request_document','tunnel_inspect','arrest',...politicalWorkers].includes(t.kind)&&act.participants.includes(t.actor_ref)))t.next_at=Math.min(t.next_at,now(g));
       settleAt(g,ctx);return 'ACTIVITY_ENDED';
     }
     if(a.type==='extend_activity'){need([15,30].includes(a.minutes),'INVALID_DURATION','invalid');act.nodes.push(a.minutes);return 'ACTIVITY_EXTENDED';}
@@ -304,7 +333,7 @@ export function applyWorldAction(g,a,ctx){
   if(a.type==='reserve_funds'){exact(a,['target_ref','amount']);need(known(g,a.target_ref)||g.projects.some(p=>p.id===a.target_ref),'UNKNOWN_TARGET');reserve(g,ctx,a.target_ref,a.amount);return 'RESERVED';}
   if(a.type==='release_funds'){exact(a,['reservation_ref']);const r=g.reservations.find(r=>r.id===a.reservation_ref);need(r&&r.owner==='U001'&&activeReservation(r),'NO_AUTHORITY');need(!g.projects.some(p=>p.active_reservation_id===r.id&&!['completed','cancelled','failed'].includes(p.status)),'PROJECT_BUDGET_IN_USE');release(g,r.id);return 'RELEASED';}
   if(a.type==='inspect_payment'){
-    exact(a,['obligation_ref']);need(['PAY01','PAY02'].includes(a.obligation_ref),'PAYMENT_RULE_NOT_IMPLEMENTED','unsupported');need(!g.execution.tasks.some(t=>t.kind===a.type&&t.params.obligation_ref===a.obligation_ref&&!['cancelled','blocked','completed'].includes(t.status)),'DUPLICATE_WORK');
+    exact(a,['obligation_ref']);need(['PAY01','PAY02','PAY06','PAY10'].includes(a.obligation_ref)||g.projects.some(p=>p.policy?.effects?.some(e=>e.runtime?.kind==='service'&&e.runtime.invoice_ref===a.obligation_ref)),'PAYMENT_RULE_NOT_IMPLEMENTED','unsupported');need(!g.execution.tasks.some(t=>t.kind===a.type&&t.params.obligation_ref===a.obligation_ref&&!['cancelled','blocked','completed'].includes(t.status)),'DUPLICATE_WORK');
     task(g,ctx,a.type,'P005',{obligation_ref:a.obligation_ref});return 'ORDER_ISSUED';
   }
   if(a.type==='pay_obligation'){
@@ -365,13 +394,13 @@ export function applyWorldAction(g,a,ctx){
   const political=applyPoliticalAction(g,a,ctx,ops);if(political)return political;
   throw new RuleError('ACTION_NOT_IMPLEMENTED','unsupported');
 }
-export const worldOps={startOpeningWork,advance,settle:settleAt,apply:applyWorldAction,need,basis,key,amount,exact,report,reserve,release,spend,change,actorFreeAt,task,finish,freeGroup,order,waitTask,control,scheduleStart};
+export const worldOps={startOpeningWork,advance,settle:settleAt,apply:applyWorldAction,need,basis,key,amount,exact,report,reserve,release,paymentFunds,spend,change,actorFreeAt,task,finish,freeGroup,order,waitTask,control,scheduleStart};
 function autonomousAction(g,a,ctx){
  try{
   if(a.type==='autonomy_request_review'){
    exact(a,['actor','target_ref','kind']);const obj=target(g,a.target_ref);
    need(obj&&profiles[a.actor]&&g.actors.some(x=>x.id===a.actor&&x.life==='存活'&&(x.location.includes('红堡')||x.location.includes('君临'))),'EXECUTOR_UNAVAILABLE');
-   need((a.kind==='guard_command'&&a.actor==='P016'&&obj.kind==='guard_plan')||(a.kind==='permanent_transfer'&&a.actor==='P020'&&obj.kind==='guard_plan')||(a.kind==='appointment'&&obj.kind==='appointment'&&obj.holder===a.actor),'INVALID_REVIEW');
+   need((a.kind==='guard_command'&&a.actor==='P016'&&obj.kind==='guard_plan')||(a.kind==='permanent_transfer'&&a.actor==='P020'&&obj.kind==='guard_plan')||(a.kind==='appointment'&&obj.kind==='appointment'&&obj.holder===a.actor)||(a.kind==='reform_execution'&&obj.kind==='reform'&&(obj.owner===a.actor||obj.plan.steps.some(s=>(s.effect.commander===a.actor||s.effect.counterparty===a.actor)))),'INVALID_REVIEW');
    const prior=g.autonomy.jobs.findLast(j=>j.status==='done'&&j.actor===a.actor&&j.scope.parameters.target_ref===a.target_ref&&j.scope.parameters.source===a.kind);
    need(!prior||JSON.stringify(prior.scope.plan)!==JSON.stringify(obj)||prior.resume_basis!==JSON.stringify(actorEvidence(g,a.actor)),'已有相同方案的答复；没有新材料或条件变化，不再重复征询。');
    need(!g.execution.tasks.some(t=>t.kind==='review_plan'&&t.actor_ref===a.actor&&t.params.target_ref===a.target_ref&&(['sent','accepted','executing'].includes(t.status)||t.status==='blocked'&&control(g,t).wait==='judgment')),'DUPLICATE_WORK');
@@ -379,7 +408,7 @@ function autonomousAction(g,a,ctx){
   }
   if(a.type==='autonomy_resume'){
    exact(a,['task_ref']);const t=g.execution.tasks.find(t=>t.id===a.task_ref);need(t&&t.status==='blocked','TASK_NOT_WAITING');const c=control(g,t);need(['condition','decision'].includes(c.wait),'REQUIRES_NEW_DECISION');
-   if(c.wait==='decision'){const j=g.autonomy.jobs.findLast(j=>j.task_ref===t.id&&j.status==='done');if(j&&['conditional','clarify'].includes(j.result.choice)){need(j.resume_basis!==JSON.stringify(actorEvidence(g,t.actor_ref))||JSON.stringify(j.scope)!==JSON.stringify(describeTask(g,t)),'尚无新材料或条件变化，保留原答复。');j.status='stale';queueJudgment(g,t,ops,'国王要求按当前条件重新核对，先前条件答复不能当成同意。');return 'REVIEW_REQUIRED';}}
+   if(c.wait==='decision'){const j=g.autonomy.jobs.findLast(j=>j.task_ref===t.id&&j.status==='done');if(j&&['conditional','clarify'].includes(j.result.choice)){need(judgmentChanged(g,t,j),'尚无新材料或条件变化，保留原答复。');j.status='stale';queueJudgment(g,t,ops,'国王要求按当前条件重新核对，先前条件答复不能当成同意。');return 'REVIEW_REQUIRED';}}
    c.wait='condition';refreshWaits(g,ops);settleAt(g,ctx);return 'TASK_RECHECKED';
   }
   if(a.type==='autonomy_continue_time'){
@@ -393,7 +422,7 @@ function autonomousAction(g,a,ctx){
  }catch(e){if(e instanceof RuleError)throw e;throw new RuleError(e.message,'invalid');}
 }
 
-export function executionView(g){return {
+export function executionView(g){return {reforms:reformView(g),
   ...politicalView(g),
   activities:g.activities.filter(a=>a.participants.includes('U001')).map(a=>structuredClone(a)),
   messages:g.messages.filter(m=>m.recipient==='U001'&&m.status==='已收到').map(m=>({id:m.id,text:m.content,at:m.delivered_minute})),

@@ -42,7 +42,7 @@ export class DialogueRunner {
  compileCouncil(batch,settings){
   const input={user:'乔弗里',char:'会议书记',personality:'核对原话与最终裁决，不代替人物作出决定。',scenario:'散会前整理同一议题。尚未发令或执行。',
    known:JSON.stringify({council_batch:true,issue:batch.issue,resolution:batch.resolution,final_choice:batch.choice?{...batch.choice,text:batch.turns[0].context.meeting?.choices.find(c=>c[0]===batch.choice.choice)?.[1]}:null,...councilEvidence(batch,phaseInput)}),
-   guidance:'evidence是去重后的证据表，每条只能使用allowed_evidence指向的条目，编号是数组下标。各人的资料分别限定。最后裁决为准，撤回的提案只保留讨论经历。有resolution时，只在选定方案的原发言中提取行动；有choice的固定方案由程序办理，不再生成任何candidate；conditions必须保留。主持提示不是国王说过的话。',input:'请逐条保存本项原话，只保留最后仍有效的行动与答复。',latest:'',previous:[],recent:[],recalled:[]};
+   guidance:'mechanism_catalogue是共享的动作字段说明，每条仅使用其mechanisms_ref所指向的目录；这不会扩大该人物权限。evidence是去重后的证据表，每条只能使用allowed_evidence指向的条目，编号是数组下标。各人的资料分别限定。最后裁决为准，撤回的提案只保留讨论经历。有resolution时，只在选定方案的原发言中提取行动；有choice的固定方案由程序办理，不再生成任何candidate；conditions必须保留。主持提示不是国王说过的话。',input:'请逐条保存本项原话，只保留最后仍有效的行动与答复。',latest:'',previous:[],recent:[],recalled:[]};
   const s=compileTask(settings,'post',input,this.builder,'normal','',councilBatchContract);
   ensure(s.compiled.messages.some(m=>m.content.includes(councilBatchContract)),'预设缺少本任务合同条目，请在原预设面板生成资料适配副本后重试。');return s;
  }

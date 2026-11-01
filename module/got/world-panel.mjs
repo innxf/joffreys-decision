@@ -15,6 +15,9 @@ export function renderExecution(v,{button,act}){
   $('org-name').disabled=!v;if(!v){$('activity-status').textContent='请先建立或载入存档。';return;}
   const activity=v.activities.find(a=>a.status==='active');
   const add=(id,label,action,confirmation)=>$(id).append(button(label,()=>act(typeof action==='function'?action():action,confirmation)));
+  for(const r of v.reforms||[])if(r.status!=='cancelled')for(const force of [...new Set(r.supply_forces||[])])add('action-controls','核对供饷并送将领：'+force,{type:'reform_supply_report',force_ref:force});
+  for(const r of v.reforms||[])for(const network of r.networks||[])add('action-controls','请求港口观察回报',{type:'reform_intel_report',network_ref:network});
+  for(const r of v.reforms||[])for(const op of r.operations||[]){textRow($('action-controls'),op.text);for(const b of op.actions)add('action-controls',b.label,b.action,b.confirmation);}
   const names={documents:'处理文书',meal:'用餐',private_talk:'私人会谈',short_visit:'短探视',council:'御前会议'};
   if(activity){
     $('activity-status').textContent=`当前活动：${names[activity.kind]||activity.kind}；第${activity.node+1}/${activity.nodes.length}节点，剩余${activity.remaining}分钟。`;

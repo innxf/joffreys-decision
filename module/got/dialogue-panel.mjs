@@ -1,3 +1,4 @@
+import {reformActionText} from './reform-approval.mjs';
 import {speech} from './portrait-panel.mjs';
 import {dailyForActivity} from './daily-engine.mjs';
 import {campaignIssue} from './campaign-engine.mjs';
@@ -13,8 +14,8 @@ import {mountAutonomy} from './autonomy-panel.mjs';
 const $=id=>document.getElementById(id);
 const names={pre:'整理人物认知',prose:'生成正文草稿',post:'解释对白',save:'保存正式结果',done:'已正式保存'};
 const states={pending:'等待开始',running:'进行中',interrupted:'已中断',cancelled:'已取消',failed:'未完成',truncated:'输出被截断',stale:'旧版本草稿',discarded:'已放弃'};
-const fieldNames={name:'机构名称',responsibilities:'职责',organization_ref:'所属机构',title:'职务／事项',person:'执行人',commander:'指挥者',count:'人数',duration:'持续分钟',end_at:'结束时间（开局后分钟）',expires_at:'授权截止（开局后分钟）',plan_ref:'转属方案',authority_ref:'授权依据',acceptance_ref:'人物答复',order_ref:'命令',obligation_ref:'付款事项',operation:'操作范围',target_ref:'操作对象',max_count:'人数上限',posts:'原岗位安排',template:'项目类型',source:'来源',destination:'去向',amount:'数量'};
-function describeAction(a){return Object.entries(a).filter(([k])=>k!=='type').map(([k,v])=>`${fieldNames[k]||k}：${profiles[v]?.name||({keep_same_posts:'保留原岗位',permanent_transfer:'永久转属',temporary_detail:'临时借调',prepare_records:'整理目录'}[v])||(Array.isArray(v)?v.join('、'):v)}`).join('；');}
+const fieldNames={target:'抓捕对象',executor:'执行者',force:'所用部队',group:'现有班组',area:'行动范围',secrecy:'公开程度',reason:'命令事由',arrest_ref:'拘押记录',name:'机构名称',responsibilities:'职责',organization_ref:'所属机构',title:'职务／事项',person:'执行人',commander:'指挥者',count:'人数',duration:'持续分钟',end_at:'结束时间（开局后分钟）',expires_at:'授权截止（开局后分钟）',plan_ref:'转属方案',authority_ref:'授权依据',acceptance_ref:'人物答复',order_ref:'命令',obligation_ref:'付款事项',operation:'操作范围',target_ref:'操作对象',max_count:'人数上限',posts:'原岗位安排',template:'项目类型',source:'来源',destination:'去向',amount:'数量'};
+function describeAction(a){if(['reform_propose','reform_revise'].includes(a.type))return reformActionText(a);return Object.entries(a).filter(([k])=>k!=='type').map(([k,v])=>`${fieldNames[k]||k}：${profiles[v]?.name||({keep_same_posts:'保留原岗位',permanent_transfer:'永久转属',temporary_detail:'临时借调',prepare_records:'整理目录'}[v])||(Array.isArray(v)?v.join('、'):v)}`).join('；');}
 const errors={STALE_DIALOGUE_CONTEXT:'当前活动、存档或世界已经改变；旧草稿未采用。请放弃这份草稿，再按当前状态开始。',PENDING_DIALOGUE_EXISTS:'还有一轮未提交的对话，请继续、重写或放弃草稿。',UNKNOWN_EVIDENCE:'返回引用了人物尚未知晓的资料，未提交。',DIALOGUE_CONTRADICTION:'正文和可执行结果不相容，保留草稿；可以重试解析或重写正文。',CONDITIONAL_NOT_ACCEPTED:'答复仍有条件，不能当成无条件接受。',SAVE_FAILED:'正式结果没有保存成功；重试保存不会重新请求模型。',ACTOR_NOT_PRESENT:'此人尚未确认在本场活动中。',PRESENCE_WITHOUT_ACTIVITY:'缺少本场到场记录。',...executionErrors};
 export async function mountDialogue(runtime,{testMode,namespace=null,refresh}){
  const client=new GenerationClient(storageService);window.gotGeneration=client;await client.init();

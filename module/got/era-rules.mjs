@@ -1,4 +1,5 @@
-// Author-approved design constants, not historical development speeds.
+// Legacy contracts retain their original constants. General reforms use the
+// 2026-10-26 playable initial-delivery windows below, not these old penalties.
 export const ERA_DAYS=Object.freeze({E0:[0,0],E1:[90,180],E2:[365,730],E3:[1095,1825]});
 export const ERA_REFERENCES=Object.freeze(Object.fromEntries(Array.from({length:12},(_,i)=>['REF'+String(i+1).padStart(2,'0'),'E0'])));
 export function eraDuration(classification,phase,evidence=[],now=0,stageRef=''){
@@ -14,4 +15,11 @@ export function eraDuration(classification,phase,evidence=[],now=0,stageRef=''){
 export function remainingEra(classification,phase,elapsed,evidence,now,stageRef){
   if(!Number.isSafeInteger(elapsed)||elapsed<0)throw Error('INVALID_ERA_ELAPSED');
   return Math.max(0,eraDuration(classification,phase,evidence,now,stageRef)-elapsed);
+}
+
+export function reformEraWindow(level,{economic=false,personnel=false}={}){
+  if(!['native','slight','moderate','remote','unknown'].includes(level))throw Error('REFORM_ERA_UNCLASSIFIED');
+  const long=level==='remote'||level==='unknown';
+  return {minimum:level==='slight'?30:level==='moderate'?75:personnel?3:economic?0:14,
+    maximum:level==='slight'?60:level==='moderate'?90:personnel?7:economic?21:90,long};
 }

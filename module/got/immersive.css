@@ -86,3 +86,7 @@
  .court-folio #opening-panel .scene-notice{width:calc(100vw - 32px);top:38%;padding:20px;font-size:22px}
  .court-folio #opening-panel .room-routine>.scene-notice{width:auto;padding:0 0 14px}
 }
+
+/* Optional guard message: visible without taking focus or blocking the current scene. */
+#court-audience-notice:not(:empty){position:fixed;right:16px;bottom:72px;z-index:95;width:min(360px,calc(100vw - 32px));max-height:32vh;overflow:auto;padding:12px;background:#f5ead4;color:#39271d;border:1px solid #ae8c55;box-shadow:0 4px 20px #08050955}
+#court-audience-notice p{margin:0 0 8px}#court-audience-notice button{margin:4px;min-height:40px}

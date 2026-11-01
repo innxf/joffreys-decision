@@ -1,3 +1,4 @@
+import {custodyUnavailable} from './custody-state.mjs';
 import {moveWithGuards,guardArrival,synchronizeGuardPresence,physicalAudience,guardsInside} from './household-guards.mjs';
 import {validateCouncilV3} from './council-v3.mjs';
 import {initializeNavigation,applyNavigation,clockMinute} from './navigation-engine.mjs';
@@ -10,7 +11,7 @@ const actor=(g,id)=>g.actors.find(a=>a.id===id);
 const active=g=>g.activities.find(a=>a.status==='active'&&a.participants.includes('U001'));
 const location=(g,id)=>actor(g,id)?.location;
 const at=(g,id,p)=>location(g,id)===places[p];
-const move=(g,id,p)=>{if(id==='U001'&&g.opening?.household){moveWithGuards(g,places[p]);return;}const a=actor(g,id);if(a){a.location=places[p];a.location_precision='具体地点';a.last_updated_minute=now(g);}};
+const move=(g,id,p)=>{if(id==='U001'&&g.opening?.household){moveWithGuards(g,places[p]);return;}const a=actor(g,id);if(a&&!custodyUnavailable(g,id)){a.location=places[p];a.location_precision='具体地点';a.last_updated_minute=now(g);}};
 const meeting=(g,id)=>g.opening.meetings.find(m=>m.id===id);
 const heard=(g,text,source,listeners)=>observe(g,physicalAudience(g,listeners||[...new Set(['U001',...(active(g)?audience(g,active(g).id):[])])]),text,source);
 const issueState=()=>Object.fromEntries(Object.keys(issues).map(k=>[k,{status:'pending',reported:false,choice:null,decision_ref:null,order_refs:[]}]));
@@ -29,7 +30,7 @@ export function openingNext(g,next){
  const s=g.opening;if(!s)return next;
  const times=[];
  if(s.version===2&&!s.events.includes("jaime-report"))times.push(540);
- for(const a of s.appointments)if(a.status!=='arrived')times.push(a.status==='scheduled'?a.depart:a.arrive);
+ for(const a of s.appointments)if(a.status!=='arrived'&&!custodyUnavailable(g,a.actor))times.push(a.status==='scheduled'?a.depart:a.arrive);
  if(s.travel)times.push(s.travel.arrive);
  for(const m of s.meetings.filter(m=>m.type==='regular')){
   if(!m.reminded)times.push(m.scheduled-30);
@@ -45,6 +46,7 @@ export function openingNext(g,next){
  return Math.min(next,...times.map(t=>Math.max(now(g),t)));
 }
 function recordPresence(g,a,id,present,source){
+ if(present&&custodyUnavailable(g,id))return;
  if(!a.participants.includes(id))a.participants.push(id);
  let p=g.dialogue.presence.find(p=>p.activity_ref===a.id&&p.actor===id);
  if(p){p.present=present;p.at=now(g);p.source_ref=source;}
@@ -58,7 +60,7 @@ function beginActivity(g,ctx,o,kind,participants,place,nodes){
 }
 export function openingSettle(g,ctx,o){
  const s=g.opening;if(!s)return;
- for(const ap of s.appointments.filter(a=>a.status!=='arrived')){
+ for(const ap of s.appointments.filter(a=>a.status!=='arrived'&&!custodyUnavailable(g,a.actor))){
   if(ap.status==='scheduled'&&ap.depart<=now(g)){
    const free=o.actorFreeAt(g,ap.actor);if(free>now(g)){ap.arrive+=free-now(g);ap.depart=free;continue;}
    ap.status='travelling';const a=actor(g,ap.actor);a.location='赴约途中';a.last_updated_minute=now(g);
@@ -97,7 +99,7 @@ export function openingSettle(g,ctx,o){
  if(!s.events.includes('cersei-recount')&&now(g)>=900){
   s.events.push('cersei-recount');
   // One bounded report of Sansa's actual experience, never the whole meeting ledger.
-  if(o.actorFreeAt(g,'P012')<=now(g)&&location(g,'P012')?.includes('红堡')){
+  if(!custodyUnavailable(g,'P001')&&o.actorFreeAt(g,'P012')<=now(g)&&location(g,'P012')?.includes('红堡')){
    const heardBySansa=g.dialogue.observations.filter(x=>x.actors.includes('P012')&&x.source.startsWith('COUNCIL-'));
    move(g,'P012','R03');observe(g,['P001','P012'],'珊莎按瑟曦要求复述自己亲耳听见的呈报与决定：'+(heardBySansa.map(x=>x.content).join('\n')||'没有可复述的会议呈报。'),ctx.id);
   }else o.report(g,'ORG-HOUSEHOLD','珊莎尚未到场复述，太后暂未收到她的说明。',[ctx.id],'P001',0);
@@ -194,7 +196,7 @@ export function applyOpeningAction(g,a,ctx,o){
  }
  if(a.type==='opening_council'){
   exact(['meeting']);idle();const m=meeting(g,a.meeting);o.need(m&&m.status!=='closed'&&now(g)>=m.scheduled,'会议尚未到预约时间，或已经散会。');o.need(at(g,'U001','R07'),'请先前往议事厅。');
-  const present=(g.campaign&&m.week>1?[...new Set([...councilRoster,'P001','P003','P002'])]:councilRoster).filter(p=>at(g,p,'R07')&&o.actorFreeAt(g,p)<=now(g));
+  const present=(g.campaign&&m.week>1?[...new Set([...councilRoster,'P001','P003','P002'])]:councilRoster).filter(p=>!custodyUnavailable(g,p)&&at(g,p,'R07')&&o.actorFreeAt(g,p)<=now(g));
   const previous=g.activities.find(x=>x.id===m.activity);
   const remaining=m.session?[180]:s.version===2?[180]:previous?(previous.node<previous.nodes.length?[previous.remaining,...previous.nodes.slice(previous.node+1)]:[30]):[30,30,30];
   const act=beginActivity(g,ctx,o,'council',['U001',...present],'R07',remaining);m.activity=act.id;m.status='in_progress';

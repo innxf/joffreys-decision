@@ -1,10 +1,13 @@
+import {absentActor,custodyUnavailable,custodyClerkReport} from './custody-state.mjs';
+import {reformMeetingIssue} from './reform-meetings.mjs';
+import {reformIncome,reformCapability,reformProcedure} from './reform-engine.mjs';
 import {guardOnDuty,moveWithGuards,physicalAudience} from './household-guards.mjs';
 import {routineOccupied} from './daily-engine.mjs';
 import {cardRoutine,extraRoutineRoster,additionalDaily,annualGuests,annualCards} from './event-schedule.mjs';
 import {conditionsMet,eventWorkErrors} from './event-work.mjs';
 import {eventCards,eventCardNext,eventCardErrors,eventCardIssue,eventCardReport,commitCardDecision,settleEventCards,cardSceneView,chooseCardScene,queueCampaignOperation} from './event-cards.mjs';
 import {characterState,pendingCharacters,characterSceneCue} from './character-state.mjs';
-import {actorEvidence} from './dialogue-core.mjs';
+import {actorEvidence,audience} from './dialogue-core.mjs';
 import {placeRegions,travelMinutes} from './navigation-data.mjs';
 ﻿// Annual author events use the existing clock, task queue, ledger and commit transaction.
 import {campaignCatalog} from './campaign-catalog.mjs';
@@ -12,7 +15,7 @@ import {weeklyDefinition,operations,privateScenes,politicalScenes,specialCouncil
 import {places} from './opening-content.mjs';
 import {observe} from './dialogue-core.mjs';
 const DAY=1440,now=g=>g.clock.elapsed_minutes,day=g=>Math.floor(now(g)/DAY),person=(g,id)=>g.actors.find(a=>a.id===id);
-const busy=(g,id)=>g.activities.some(a=>a.status==='active'&&a.participants.includes(id))||g.execution.tasks.some(t=>t.actor_ref===id&&t.status==='executing')||g.opening?.travel?.actors.includes(id)||g.opening?.appointments.some(a=>a.actor===id&&a.status==='travelling');
+const busy=(g,id)=>custodyUnavailable(g,id)||g.activities.some(a=>a.status==='active'&&a.participants.includes(id))||g.execution.tasks.some(t=>t.actor_ref===id&&t.status==='executing'&&t.kind!=='reform')||g.opening?.travel?.actors.includes(id)||g.opening?.appointments.some(a=>a.actor===id&&a.status==='travelling');
 const ongoing=g=>g.activities.some(a=>a.status==='active'&&a.participants.includes('U001'))||g.opening?.travel;
 const basis=(detail,refs=[])=>({kind:'本卡设计',refs,detail});
 const has=(g,key)=>g.campaign.completed.some(r=>r.operation===key);
@@ -30,7 +33,7 @@ export function initializeCampaign(g){
  for(const r of campaignCatalog.roster)if(!person(g,r.id))addActor(g,r.id,r.name,r.stages[0].location);
  g.campaign={version:1,catalog_version:campaignCatalog.version,events:[],completed:[],decisions:[],scene:null,scene_step:0,history:[],private_done:[],schedule_stamp:'',standing:false,periods:[],battle:null,tywin:'overbearing',tyrion:'cautious',tyrell:'bargaining',ceremony:'MARGAERY_WEDDING',north:'pending',sansa:'other',tommen:'cautious',marriage_protected:false,qyburn:false};
 }
-export const campaignIssue=(g,id)=>g.campaign?(eventCardIssue(g,id)||(/^annual-\d+$/.test(id)?weeklyDefinition(Number(id.slice(7))):null)):null;
+export const campaignIssue=(g,id)=>reformMeetingIssue(g,id)||(g.campaign?(eventCardIssue(g,id)||(/^annual-\d+$/.test(id)?weeklyDefinition(Number(id.slice(7))):null)):null);
 export const annualMeeting=g=>g.opening?.meetings.find(m=>m.type==='regular'&&!m.missed&&m.status!=='closed'&&m.week>1);
 export function setWeeklyAgenda(g,m){
  if(!g.campaign||m.week<2)return;
@@ -44,6 +47,7 @@ function addActor(g,id,name,location){
 }
 function deliverScene(g,id,text,actors=['U001']){observe(g,actors.includes('U001')?physicalAudience(g,actors):actors,text,id);}
 export function campaignReport(g,m,who){
+ const missing=custodyClerkReport(g,(campaignIssue(g,m.current)||weeklyDefinition(m.week)).presenters,who);if(missing)return missing;
  const cardReport=eventCardReport(g,m.current,who);if(cardReport)return cardReport;
  const d=campaignIssue(g,m.current)||weeklyDefinition(m.week);const presenter=d.presenters.find(id=>who.includes(id));
  const name=campaignCatalog.roster.find(r=>r.id===presenter)?.name||'持有卷宗的书记';
@@ -57,7 +61,14 @@ export function campaignReport(g,m,who){
   37:'书记将已经收到的饷粮与工程回执放在桌上。「这是眼下能够核实的部分。未到期的不是欠款，未交付的也不能写作已经备好。」',
   46:'瓦里斯谈到北方的宴请。「有请柬，不等于有谋杀证据，陛下。要让远方的人改变安排，得有他们肯相信的理由。」书记只记录席间真正呈报的内容，没有展开国王的私人信件。'
  };
- return `${name}开始呈报。\n${variants[m.week]||d.report}`+(actual.length?'\n本次带来的回执：\n'+actual.join('\n'):'');
+ const partial={
+  30:'书记核对现有供养卷宗：缺钱、缺粮与在途款货分别记录，未到回执不能据此断言已交付或有人贪污。',
+  32:reported('defense')?'书记转呈已收到的本局城防修缮回执；只证明已验收范围，其余部分不能一起报竣工。':'书记说明：没有可据以报竣工的新回执。未完工程须等原负责人实际交付。',
+  35:reported('alliance')?'卷宗有已送达的谈判答复，但答应磋商不等于援军已经交给国王指挥。':'书记说明：没有本局已送达的谈判答复，不能先声称盟友作出承诺。',
+  37:'书记只核对已送达的饷粮与工程回执；未到期的不是欠款，未交付的不能写作已经备好。',
+  46:'北方事项仅限本次实际呈报的消息。国王私人信件没有因会议召开而公开给在场人物。'
+ };
+ return `${name}开始呈报。\n${(d.presenters.every(id=>who.includes(id))?variants[m.week]:partial[m.week])||d.report}`+(actual.length?'\n本次带来的回执：\n'+actual.join('\n'):'');
 }
 export function campaignIntro(g,m){const d=weeklyDefinition(m.week),title=m.type==='emergency'?Object.keys(m.issues).map(id=>campaignIssue(g,id)?.title||'刚到的呈报').join('、'):d.title;return '众人等国王坐定，书记才展开卷宗。\n「陛下，先议'+title+'。旧事务的回执也一并带来了。若您另有吩咐，随后可以再议。」';}
 function schedule(g){
@@ -126,13 +137,13 @@ function schedules(g){const rows=[];
  return rows;
 }
 function autoPay(g,ctx,o){
- if(!g.campaign.standing)return;
+ if(!g.campaign.standing&&!reformProcedure(g,'payment_review'))return;
  for(const p of g.obligations.filter(p=>p.due_minute<=now(g)&&p.status!=='已支付')){
   const qualified=['PAY01','PAY02','PAY06','PAY07','PAY08','PAY10'].includes(p.id)||p.id.startsWith('CPAY-')||g.politics.debts.some(d=>d.dues.some(x=>x.obligation_ref===p.id&&x.kind==='interest'));
-  if(!qualified||usable(g)+(g.reservations.find(r=>r.id===p.reservation_id&&['有效','部分使用'].includes(r.status))?.amount||0)<p.amount)continue;
+   if(!qualified||o.paymentFunds(g,p.reservation_id,[p.id])<p.amount)continue;
   if(g.execution.tasks.some(t=>t.params.obligation_ref===p.id&&['sent','accepted','executing','blocked'].includes(t.status)))continue;
   if(g.politics.debts.some(d=>d.dues.some(x=>x.obligation_ref===p.id))){o.apply(g,{type:'pay_bond_interest',obligation_ref:p.id},ctx);continue;}
-  const source=result(g,'service')?.source_ref;
+  const source=result(g,'service')?.source_ref||reformProcedure(g,'payment_review');
   if(!source)continue;
   if(!g.execution.inspections.some(x=>x.target_ref===p.id&&x.result==='verified')){
    // Reuse the real inspection task: delivery, staff time and conflicts still apply.
@@ -145,10 +156,11 @@ function autoPay(g,ctx,o){
 }
 export function campaignSettle(g,ctx,o){
  const c=g.campaign;if(!c||!g.opening?.finished||g.finale?.freeze)return;
- const event=(id,t,fn)=>{if(now(g)>=t&&!c.events.includes(id)){c.events.push(id);fn();}};
+ const needs={tyrion:['P003','P017'],renly:['P007'],'jaime-release':['P015'],postwar:['P002','P030','P033'],'rose-arrival':['P031','P032'],inheritance:['P003','P002'],'sansa-proposal':['P005'],'sansa-arrangement':['P002','P003','P012'],dorne:['P002','P061'],'rosby-return-start':['P060'],'rosby-return-arrival':['P060'],'red-wedding':['P008','P009']};
+ const event=(id,t,fn)=>{if(now(g)>=t&&!c.events.includes(id)){c.events.push(id);if((needs[id]||[]).some(a=>absentActor(g,a)))return;fn();}};
  for(const p of annualGuests)event('guest:'+p.id,p.arrival*DAY,()=>{addActor(g,p.id,p.name,places[p.place]);move(g,p.id,places[p.place]);o.report(g,'ORG-HOUSEHOLD',p.name+'已抵达预约接洽处。',['event-guest:'+p.id],'U001',15);});
  event('tyrion',14*DAY,()=>{move(g,'P003',places.R09);move(g,'P017',places.R09);const off=g.offices.find(x=>x.id==='OFF-ACTING');if(!off.holder){off.holder='P003';off.status='在任';off.basis=basis('D14到任及已送达的泰温授权',['KL04']);}observe(g,['P003'],'你已抵达君临，带着泰温委派你代理国王之手的书信。你尚未因此核清王室账目，也不知道国王此前的全部私下安排。','KL04');o.report(g,'P003','提利昂已经抵达君临，带来泰温委派处理政务的书信。',['KL04'],'U001',0);});
- event('renly',180*DAY,()=>{const a=person(g,'P007');if(a.life==='存活'){a.life='已故';a.location='风息堡';}const marriage=g.commitments.find(c=>c.id==='C06');marriage.status='因死亡终止';marriage.terms='蓝礼死亡，原婚姻已终止；河湾政治联盟另行选择';for(const id of ['U001','P001','P003','P004','P018'])o.report(g,'ORG-ENVOY','南方战报：蓝礼死亡，军队分流。河湾尚须另谈；史坦尼斯的威胁正在增加。',['RE02'],id,0);});
+ event('renly',180*DAY,()=>{const a=person(g,'P007');if(a.life==='存活'&&!absentActor(g,a.id)){a.life='已故';a.location='风息堡';}const marriage=g.commitments.find(c=>c.id==='C06');marriage.status='因死亡终止';marriage.terms='蓝礼死亡，原婚姻已终止；河湾政治联盟另行选择';for(const id of ['U001','P001','P003','P004','P018'])o.report(g,'ORG-ENVOY','南方战报：蓝礼死亡，军队分流。河湾尚须另谈；史坦尼斯的威胁正在增加。',['RE02'],id,0);});
  event('jaime-release',210*DAY,()=>{const a=person(g,'P015'),captivity=g.commitments.find(c=>c.id==='C03');if(a.life==='存活'&&captivity.status==='实际拘押'){captivity.status='押送南返';captivity.terms='凯特琳安排詹姆由布蕾妮押送南返；尚未抵达君临';o.report(g,'ORG-ENVOY','北方来信：詹姆离开了奔流城的囚所，正在押送南返。行程仍未结束。',['C03'],'P001',5*DAY);}});
  event('postwar',271*DAY,()=>{if(c.battle?.result==='city_lost')return;for(const id of ['P002','P030','P033'])move(g,id,places.R09);o.report(g,'ORG-ENVOY','泰温与河湾将领已入红堡，封赏、军费与职位安排即将商议。',['TW03'],'U001',0);});
  event('rose-arrival',280*DAY,()=>{for(const id of ['P031','P032'])move(g,id,places.R05);o.report(g,'ORG-HOUSEHOLD','高庭的女眷已经抵达，王室婚盟与家人安排仍待议定。',['MQ17'],'U001',0);});
@@ -156,19 +168,19 @@ export function campaignSettle(g,ctx,o){
  event('sansa-proposal',294*DAY,()=>{o.report(g,'P005','高庭提出珊莎与维拉斯的婚配意向。泰温倾向抢先安排提利昂，目前尚未订婚；请在三周内明确王室安排。',['C5-11-A','C5-11-B'],'U001',0);});
  event('sansa-arrangement',315*DAY,()=>{if(!c.marriage_protected){applyMarriage(g,'P003','C5-11-C');for(const id of ['U001','P012','P003'])o.report(g,'P002','在没有获接受的替代安排下，泰温落实了珊莎与提利昂的订婚文书。尚未举行婚礼。',['CAMP-MARRIAGE-SANSA'],id,0);}});
  event('dorne',322*DAY+720,()=>{if(has(g,'dorne'))return;const a=person(g,'P061');if(a.life!=='存活')return;
-  const promise={...structuredClone(g.commitments.find(c=>c.id==='C01')),id:'CAMP-MYRCELLA',parties:['P061','ORG-CROWN','P036'],status:'已成立',terms:'战后与多恩议定弥赛菈婚盟及护送；非黑水河之前出发',basis:basis('本版改编的战后默认外交',['MQ17'])};g.commitments.push(promise);a.location='赴多恩途中';a.last_updated_minute=now(g);o.report(g,'P002','弥赛菈依战后协议启程前往多恩。国王此前没有取得并落实替代安排。',[promise.id],'U001',0);});
+  const promise={...structuredClone(g.commitments.find(c=>c.id==='C01')),id:'CAMP-MYRCELLA',parties:['P061','ORG-CROWN','P036'],status:'已成立',terms:'战后与多恩议定弥赛菈婚盟及护送；非黑水河之前出发',basis:basis('本版改编的战后默认外交',['MQ17'])};g.commitments.push(promise);if(absentActor(g,a.id))return;a.location='赴多恩途中';a.last_updated_minute=now(g);o.report(g,'P002','弥赛菈依战后协议启程前往多恩。国王此前没有取得并落实替代安排。',[promise.id],'U001',0);});
  event('rosby-return-start',267*DAY,()=>{const a=person(g,'P060');if(a?.life==='存活'&&a.location==='罗斯比城·避险住处'){a.location='自罗斯比城返堡途中';o.report(g,'ORG-ENVOY','护送队已接到托曼，两日后返抵红堡。',['EXP-W20-C'],'U001',15);}});
  event('rosby-return-arrival',269*DAY,()=>{const a=person(g,'P060');if(a?.life==='存活'&&a.location==='自罗斯比城返堡途中'){a.location=places.R05;o.report(g,'ORG-HOUSEHOLD','托曼已随护送人员回到红堡。',['EXP-W20-C'],'U001',15);}});
  event('oberyn',345*DAY,()=>{addActor(g,'R001','奥柏伦·马泰尔',places.G06);o.report(g,'ORG-HOUSEHOLD','多恩亲王的弟弟奥柏伦已到君临。',['FIN-CAST-R001'],'U001',0);});
  event('wedding-contract',350*DAY,()=>{if(c.ceremony==='MARGAERY_WEDDING'){const old=g.commitments.find(x=>x.id==='C01');if(old.status==='有效'){old.status='已解除';old.terms='战后王室与高庭婚盟成立，乔弗里与珊莎原婚约解除';}g.commitments.push({...structuredClone(old),id:'CAMP-ROYAL-WEDDING',parties:['U001','P032'],status:'有效',terms:'王室与高庭已订立婚约，待盛典履行',basis:basis('本局沿用婚盟；此前允许改为庆典',['MQ19'])});o.report(g,'ORG-HOUSEHOLD','王室与高庭婚约已经登记，盛典按婚礼准备。',['CAMP-ROYAL-WEDDING'],'U001',0);}});
  event('north-lead',301*DAY,()=>{if(has(g,'intelligence'))o.report(g,'ORG-ENVOY','北方密报：佛雷正在筹备婚宴，另一路回执证实有人异常调整宾客护卫。尚不足以公开定罪，却足以提出正式预警、请求改变宴会。',['INTERVENTION_RED'],'U001',DAY);});
- event('red-wedding',330*DAY+840,()=>{c.north=has(g,'warning')?'north_alive':'red_wedding';if(c.north==='red_wedding')for(const id of ['P008','P009']){const a=person(g,id);if(a?.life==='存活'){a.life='已故';a.location='孪河城';}}o.report(g,'ORG-ENVOY',c.north==='north_alive'?'北方回报：警讯已被采信，原定宴会安排改变。罗柏和凯特琳仍在世，后续外交尚待协商。':'北方传来噩耗：孪河城婚宴发生屠杀，罗柏与凯特琳遇害。',['INTERVENTION_RED'],'U001',5*DAY);});
+ event('red-wedding',330*DAY+840,()=>{c.north=has(g,'warning')?'north_alive':'red_wedding';if(c.north==='red_wedding')for(const id of ['P008','P009']){const a=person(g,id);if(a?.life==='存活'&&!absentActor(g,id)){a.life='已故';a.location='孪河城';}}o.report(g,'ORG-ENVOY',c.north==='north_alive'?'北方回报：警讯已被采信，原定宴会安排改变。罗柏和凯特琳仍在世，后续外交尚待协商。':'北方传来噩耗：孪河城婚宴发生屠杀，罗柏与凯特琳遇害。',['INTERVENTION_RED'],'U001',5*DAY);});
  // Each projected receipt has a single actual delivery. The wartime reduction is authored, not hidden tax theft.
  const w=Math.floor(now(g)/10080);
  for(let i=1;i<=Math.min(w,52);i++)if(!c.events.includes('tax:'+i)){
   c.events.push('tax:'+i);let r=g.receivables.find(x=>x.id==='INC'+String(i).padStart(2,'0'));
   if(!r){r={...structuredClone(g.receivables[0]),id:'CINC-'+i,earliest_minute:i*10080,expected_amount:i>=27&&i<=39?600:1000,status:'预计未入库',basis:basis('年度商路续期；危机期缩减预测，非原著数字',['INC04'])};g.receivables.push(r);}
-  if(!g.settlements.some(x=>x.evidence_refs.includes(r.id)&&x.delta>0)&&r.status!=='已到账'){o.change(g,ctx,'RES-CASH',r.expected_amount,'本期税款实际缴库',[r.id]);r.status='已到账';o.report(g,'P005',`本期港口与市税实际缴库${r.expected_amount}金龙。`,[r.id]);}
+  if(!g.settlements.some(x=>x.evidence_refs.includes(r.id)&&x.delta>0)&&r.status!=='已到账'){const actual=reformIncome(g,r,r.expected_amount,ctx,o);o.change(g,ctx,'RES-CASH',actual,'本期税款实际缴库（含已交付改革的有效期间）',[r.id]);r.status='已到账';o.report(g,'P005',`本期港口与市税实际缴库${actual}金龙。`,[r.id]);}
  }
  for(const row of schedules(g))event(row.id,row.at,()=>{const base=g.obligations.find(p=>p.id===row.ref),extra=row.ref==='PAY10'?Math.max(0,g.consumption.find(x=>x.id==='USE02').rate_per_day-2000)*0.02*14:0;g.obligations.push({...structuredClone(base),id:'CPAY-'+row.id,amount:Math.round((row.amount+extra)*10000)/10000,reservation_id:null,due_minute:row.at,status:'待核验或支付',reason:'原职责续期核验：'+base.reason,basis:basis('沿原供养口径续期；人数变化单列',['PAY10','PAY07','PAY08'])});});
  autoPay(g,ctx,o);
@@ -203,7 +215,7 @@ export function campaignMissed(g,m,ctx,o){
  const d=weeklyDefinition(m.week);if(!d)return;
  // A missed week's unapproved proposal does not cancel already operating projects.
  g.campaign.decisions.push({id:m.id,operation:'review',at:now(g),source_ref:'DEFAULT:'+m.id,status:'missed'});
- o.report(g,day(g)>=271?'P002':day(g)>=14?'P003':'P001','本周未候到国王亲临，'+d.title+'按现有职责维持；未获批准的新安排没有执行。',[m.id]);
+ o.report(g,absentActor(g,day(g)>=271?'P002':day(g)>=14?'P003':'P001')?'ORG-HOUSEHOLD':day(g)>=271?'P002':day(g)>=14?'P003':'P001','本周未候到国王亲临，'+d.title+'按现有职责维持；未获批准的新安排没有执行。',[m.id]);
  for(const card of annualCards.filter(x=>!x.parent&&x.week===m.week&&x.route!=='scene'&&conditionsMet(g,x.requires))){
   if(g.campaign.history.some(h=>h.scene===card.id&&['council-decision','missed-council'].includes(h.choice)))continue;
   if(!g.messages.some(x=>x.recipient==='U001'&&x.status==='已收到'&&x.event_refs.includes(card.id)))continue;
@@ -226,9 +238,9 @@ function authority(g,op,ctx,o){
 export function powerLevels(g){
  const c=g.campaign;if(!c)return Object.fromEntries(['finance','military','administration','intelligence'].map(k=>[k,'unformed']));
  const guard=g.politics.guard_plans.some(p=>p.status==='completed'&&g.forces.some(f=>f.id===p.force_ref&&f.strength.value>0));
- const trained=has(g,'training'),funded=g.resources.find(r=>r.id==='RES-FOOD-WATCH').quantity.value>0;
+ const trained=has(g,'training')||reformCapability(g,'training','FORCE01')>=100,funded=g.resources.find(r=>r.id==='RES-FOOD-WATCH').quantity.value>0;
  const paymentAuthority=g.authorities.some(a=>a.subject==='U001'&&a.status==='active'&&a.starts_at<=now(g)&&a.expires_at>now(g)&&a.delivery_refs.length&&a.scope.actions.includes('approved_payment_review'));
- const finance=has(g,'treasury')&&paymentAuthority?(c.periods.slice(-2).length===2&&c.periods.slice(-2).every(p=>p.clear)?'stable':'initial'):'unformed';
+ const finance=(has(g,'treasury')||reformProcedure(g,'payment_review'))&&paymentAuthority?(c.periods.slice(-2).length===2&&c.periods.slice(-2).every(p=>p.clear)?'stable':'initial'):'unformed';
  const military=guard?(trained&&funded&&g.assignments.some(a=>a.status==='returned')?'stable':'initial'):'unformed';
  const administration=has(g,'autonomy')?'stable':finance!=='unformed'||guard?'initial':'unformed';
  const intelligence=has(g,'intelligence')?(has(g,'crosscheck')?'stable':'initial'):'unformed';
@@ -264,7 +276,7 @@ export function campaignDecision(g,m,choice,ctx,o,issue=null,executeProposal=nul
  q.choice=choice;q.status='decided';q.decision_ref=ctx.id;q.order_refs=g.orders.slice(before).map(x=>x.id);m.attended=true;
  g.campaign.decisions.push({id:m.id,operation:choice,at:now(g),source_ref:ctx.id,status:'decided'});
  // Replies are delivered when the accepted work starts, never asserted for a refused proposal.
- if(choice==='review')observe(g,g.activities.find(x=>x.id===m.activity).participants,operations.review.reply,m.id+':reply');
+ if(choice==='review')observe(g,audience(g,m.activity),operations.review.reply,m.id+':reply');
 }
 export function runCampaignWork(g,t,ctx,o){
  if(t.kind!=='campaign_work'||t.phase==='return')return false;
@@ -317,7 +329,7 @@ export function runCampaignWork(g,t,ctx,o){
  if(p.operation==='records'){
   // Legacy in-flight orders get a bounded window, never a new global audit.
   p.audit_window??={from:Math.max(0,t.started_at-28*DAY),to:t.started_at,settlement_refs:g.settlements.filter(x=>x.target_id==='RES-CASH'&&x.at_minute>Math.max(0,t.started_at-28*DAY)&&x.at_minute<=t.started_at).map(x=>x.id)};
-  const rows=g.settlements.filter(x=>p.audit_window.settlement_refs.includes(x.id)),ref=o.key(g,'ACCOUNT'),received=rows.filter(x=>x.delta>0&&x.reason.includes('税款')).reduce((s,x)=>s+x.delta,0),paid=-rows.filter(x=>x.delta<0).reduce((s,x)=>s+x.delta,0);
+  const rows=g.settlements.filter(x=>p.audit_window.settlement_refs.includes(x.id)),ref=o.key(g,'ACCOUNT'),received=rows.filter(x=>x.delta>0&&(x.reason.includes('税款')||x.reason==='已付款合同扣缴税实收')).reduce((s,x)=>s+x.delta,0),paid=-rows.filter(x=>x.delta<0).reduce((s,x)=>s+x.delta,0);
   g.politics.accounts.push({id:ref,expected:received,received,held:0,holder:'P005',receipt_present:true,transfer_ref:'',transfer_received:0,source_refs:[t.order_ref]});
   const text=`本次核账止于第${Math.floor(p.audit_window.to/DAY)+1}日的受理时刻：这批凭据记有税款入库${received.toFixed(2)}金龙、现金支出${paid.toFixed(2)}金龙。借款另列，旧债缺项与未缴款没有据此核清；之后送来的凭据留待下次。这是对既有收付的核对，没有追回款。`;
   const msg=o.report(g,'ORG-TREASURY',text,[ref]);
@@ -390,7 +402,7 @@ export function campaignView(g){
  if(c.scene==='battle'){
   const b=c.battle,role={wall:'你留在城墙后方。传令兵沿阶梯跑上来，把湿透的纸递到你面前。',reserve:'你留在预备队的集合处。两个信使先后闯进来，一个要援兵，另一个说通路挤满了伤者。',palace:'你留在王室住区。城外的火光照进窗户，守门的军官把前线送来的请求念给你听。'};
   const texts=[
-   '史坦尼斯的舰队已经进入黑水河。桅杆挤在暗色的河面上，城头的人只能分辨火把，分辨不出每条船上的旗。\n提利昂把手按在城防图上。\n「等开战以后，三道命令未必能送到同一个人手里。陛下先定好留在哪里；前线、预备队、王室住区，各有要守的东西。」\n军官报过轮值。还在训练、护送和其他差事上的人没有被再点一次名。'+(has(g,'defense')?'\n城门修缮的验收回执已经送到，修过的那段通路可以使用。':'\n城防官没有交来那段修缮的竣工回执。这一仗仍须依赖旧有城门与既定守备。'),
+   '史坦尼斯的舰队已经进入黑水河。桅杆挤在暗色的河面上，城头的人只能分辨火把，分辨不出每条船上的旗。\n提利昂把手按在城防图上。\n「等开战以后，三道命令未必能送到同一个人手里。陛下先定好留在哪里；前线、预备队、王室住区，各有要守的东西。」\n军官报过轮值。还在训练、护送和其他差事上的人没有被再点一次名。'+((has(g,'defense')||reformCapability(g,'defense','FORCE01'))?'\n城门修缮的验收回执已经送到，修过的那段通路可以使用。':'\n城防官没有交来那段修缮的竣工回执。这一仗仍须依赖旧有城门与既定守备。'),
    (role[b?.role]||'传令兵带来了城门的消息。')+'\n河面忽然亮了。一团绿火沿水面展开，紧接着是迟来的巨响。有人高声欢呼，军官却还望着陆地方向。\n「敌人还在上岸！」\n报信的人扶住桌沿。「城门要人，伤兵也要路。两件事不能都把同一批人写进去。」'+(b?.readiness?`\n点名后，这次能用于国王所选任务的机动守兵有${b.readiness.count}人。${b.readiness.fed?'现有口粮足以支撑这一段战斗。':'口粮不足；他们仍能接令，但不能按补给齐备计算表现。'}${b.readiness.trained?'其中有已完成基础轮换训练的人员。':'没有足够的已完成轮训人员可用于这次任务。'}`:''),
    '天色暗下来以后，城外出现了新的旗帜。逃回来的士兵先说是另一支敌军，后一名信使却认出了兰尼斯特的狮子。\n河湾的骑兵投入战场，进攻城门的人开始回头。城里仍有火，仍有人在找失散的同伴。\n提利昂的书记抱来一叠被水浸过的纸。\n「陛下，名册要重新点。谁留下，谁出去，谁带人回来，都得有人作证。」\n胜利已经有了许多人争着宣告。现在需要写下的，是你实际下过的命令，以及命令交出去以后发生了什么。'
   ];
@@ -431,19 +443,20 @@ export function applyCampaignAction(g,a,ctx,o){
     const escorted=!g.opening.household&&person(g,'P016')?.location===person(g,'U001').location,location={wall:'君临·临河城墙',reserve:'君临·城门内预备集合处',palace:places.R01}[a.choice];move(g,'U001',location);if(escorted)move(g,'P016',location);
     const count=Math.min(200,Math.max(0,o.freeGroup(g,g.forces.find(f=>f.id==='FORCE01'),4)));
     const paid=!g.obligations.some(p=>(p.id==='PAY01'||p.id==='PAY10'||p.id.startsWith('CPAY-WATCH:'))&&p.status!=='已支付'&&p.due_minute+7*DAY<now(g));
-    c.battle.readiness={count,trained:has(g,'training')&&count>=100,fed:g.resources.find(r=>r.id==='RES-FOOD-WATCH').quantity.value>=watchHeadcount(g)/4,paid,defense:has(g,'defense')};
+    c.battle.readiness={count,trained:(has(g,'training')||reformCapability(g,'training','FORCE01')>=100)&&count>=100,fed:g.resources.find(r=>r.id==='RES-FOOD-WATCH').quantity.value>=watchHeadcount(g)/4,paid,equipped:count>0&&reformCapability(g,'equipment','FORCE01')>=count,defense:has(g,'defense')||reformCapability(g,'defense','FORCE01')};
    }
    if(c.scene_step===1)c.battle.tactic=a.choice;
    c.scene_step++;
    if(c.scene_step===3){
-    const f=g.forces.find(f=>f.id==='FORCE01'),ready=c.battle.readiness||{count:Math.min(200,o.freeGroup(g,f,4)),trained:has(g,'training'),fed:g.resources.find(r=>r.id==='RES-FOOD-WATCH').quantity.value>0,paid:false,defense:has(g,'defense')},protectedWorks=ready.defense;
-    const effective=ready.count>=100&&ready.trained&&ready.fed&&ready.paid&&protectedWorks;
+    const f=g.forces.find(f=>f.id==='FORCE01'),ready=c.battle.readiness||{count:Math.min(200,o.freeGroup(g,f,4)),trained:has(g,'training')||reformCapability(g,'training','FORCE01')>=100,fed:g.resources.find(r=>r.id==='RES-FOOD-WATCH').quantity.value>0,paid:false,defense:has(g,'defense')||reformCapability(g,'defense','FORCE01')},protectedWorks=ready.defense;
+    const equipped=ready.equipped===true;
+   const effective=ready.count>=100&&ready.trained&&ready.fed&&ready.paid&&(protectedWorks||(equipped&&c.battle.role==='reserve'));
     const losses=Math.min(o.freeGroup(g,f,4),ready.count,effective?40:100+(ready.fed?0:20));f.allocations[4].count-=losses;f.strength.value-=losses;f.strength.as_of_minute=now(g);g.consumption.find(c=>c.id==='USE02').rate_per_day-=losses;c.battle.losses=losses;
     c.battle.result=c.battle.tactic==='abandon'&&!protectedWorks?'city_lost':'held_with_relief';
     c.battle.prestige=c.battle.result==='city_lost'||c.battle.tactic==='abandon'?'no_political_capital':effective?'important_political_capital':ready.count>=50&&ready.fed&&(c.battle.tactic==='rescue'||protectedWorks)?'recognized_contribution':'no_political_capital';
     if(c.battle.result==='city_lost'){c.scene='defeat';deliverScene(g,'BLACKWATER','城门失守，红堡无法恢复城防。本局在这里结束，保留已发生的改革与人物记录。');return 'CAMPAIGN_DEFEAT';}
     const task={hold:'支援城门',rescue:'接应伤兵、维持撤离通路',abandon:'撤回红堡'}[c.battle.tactic];
-    c.battle.account=`钟声渐渐停了。君临守住了，城外飘着狮子与玫瑰的旗，街上的人还在往门口送水。\n军官带着重新点过的名册来见你。「陛下，您在${{wall:'城墙后方督战',reserve:'预备队集合处协调',palace:'王室住区留守'}[c.battle.role]}时，交给我们的差事是${task}。出动${ready.count}人，确认损失${losses}人。别处的名册还没齐，我不敢一并报。」\n`+({important_political_capital:'他指着名册上的几行。「这些人是轮训过的，认得换班的号令。饷粮齐，门也修过，我们才把这段差事撑下来。」\n书记留下了签名与回报。明日再有人说国王只是等着援军来救，至少会有人能拿出另一份说法。',recognized_contribution:'「您交办的事，有人做到了，也有人能作证。」书记说。他把这一页夹进战报，却没有划去首相与援军的名字。',no_political_capital:'书记抄下命令，问起办成了多少。军官没有夸口。没有足够的人手、供给或交付回报，那几行字便不能写成一场大功。\n明日封赏时，带来援军的人不会忘记这一点。'}[c.battle.prestige])+(ready.paid?'':'\n军官临走前又停下。「旧饷还欠着，陛下。弟兄们也会问。」')+(has(g,'alliance')?'\n使者将河湾那封回信重新送到案头。战前答应继续谈的条件，现在轮到胜利者坐下来谈了。':'');
+    c.battle.account=`钟声渐渐停了。君临守住了，城外飘着狮子与玫瑰的旗，街上的人还在往门口送水。\n军官带着重新点过的名册来见你。「陛下，您在${{wall:'城墙后方督战',reserve:'预备队集合处协调',palace:'王室住区留守'}[c.battle.role]}时，交给我们的差事是${task}。出动${ready.count}人，确认损失${losses}人。别处的名册还没齐，我不敢一并报。」\n`+({important_political_capital:'他指着名册上的几行。「这些人是轮训过的，认得换班的号令。饷粮和战前准备都有回执，我们才把这段差事撑下来。」\n书记留下了签名与回报。明日再有人说国王只是等着援军来救，至少会有人能拿出另一份说法。',recognized_contribution:'「您交办的事，有人做到了，也有人能作证。」书记说。他把这一页夹进战报，却没有划去首相与援军的名字。',no_political_capital:'书记抄下命令，问起办成了多少。军官没有夸口。没有足够的人手、供给或交付回报，那几行字便不能写成一场大功。\n明日封赏时，带来援军的人不会忘记这一点。'}[c.battle.prestige])+(ready.paid?'':'\n军官临走前又停下。「旧饷还欠着，陛下。弟兄们也会问。」')+(has(g,'alliance')?'\n使者将河湾那封回信重新送到案头。战前答应继续谈的条件，现在轮到胜利者坐下来谈了。':'');
     const preparations=[['engine-repaired','补修的机件已经交付城防官'],['firebreak','公会外登记的防火隔带已经清理'],['river-scout','渡口观察队已归队，地形回报交给了当值军官'],['royal-shelter','留城王室成员的照料与护卫职责已有签收']].filter(([tag])=>g.execution.evidence.some(e=>e.category==='event:'+tag&&e.status==='realized'));
     if(preparations.length)c.battle.account+='\n军官另交来先前差事的回执：'+preparations.map(([,text])=>text).join('；')+'。这些实物与安排各按原用途使用，没有被重复记作新兵或第二份战功。';
     c.scene=null;for(const id of ['U001','P003'])o.report(g,'ORG-ENVOY',c.battle.account,['MQ14'],id,0);

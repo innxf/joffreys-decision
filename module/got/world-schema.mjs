@@ -1,4 +1,4 @@
-﻿// Runtime additions to the unchanged author baseline 1.1.0.
+// Runtime additions to the unchanged author baseline 1.1.0.
 const s={type:'string'}, n={type:'number',minimum:0}, i={type:'integer',minimum:0}, b={type:'boolean'};
 const list=items=>({type:'array',items});
 export const record=(properties,required=Object.keys(properties))=>({type:'object',properties,required,additionalProperties:false});
@@ -15,7 +15,7 @@ export const executionSchemas={
   authorities:list(authority),assignments:list(assignment),
   activities:list(record({id:s,kind:choice('short_visit','private_talk','council','meal','documents'),participants:refs,location:s,nodes:list(i),node:i,remaining:i,status:choice('active','ended'),started_at:i,ended_at:{type:['integer','null']}})),
   execution:record({
-    tasks:list(record({id:s,order_ref:s,kind:choice('event_work','tunnel_inspect','campaign_work','opening_work','review_plan','request_document','inspect_payment','payment','project','cancel','night_patrol','transfer','temporary_detail','notify_authority','guard_transfer','audit','recovery','bond_open','bond_interest','bond_principal'),actor_ref:s,params,
+    tasks:list(record({id:s,order_ref:s,kind:choice('arrest','release_prisoner','reform','event_work','tunnel_inspect','campaign_work','opening_work','review_plan','request_document','inspect_payment','payment','project','cancel','night_patrol','transfer','temporary_detail','notify_authority','guard_transfer','audit','recovery','bond_open','bond_interest','bond_principal'),actor_ref:s,params,
       status:choice('sent','accepted','executing','completed','cancelled','blocked'),phase:choice('delivery','start','finish','prepare_done','handover','return_start','return'),next_at:i,started_at:{type:['integer','null']},assignment_ref:s})),
     inspections:list(record({id:s,target_ref:s,order_ref:s,at:i,result:s})),
     decisions:list(record({id:s,actor:s,kind:s,target_ref:s,status:s,source_refs:refs,at:i,terms:record({amount:n,rate_bps:i,period_minutes:i,maturity_minutes:i})},['id','actor','kind','target_ref','status','source_refs','at'])),
@@ -26,6 +26,8 @@ export const executionSchemas={
     serial:i
   })
 };
+executionSchemas.execution.properties.audience_requests=list(record({id:s,actor:s,place:choice('R09','R22','R10'),source_ref:s,project_ref:s,node_ref:s,revision:i,created_at:i,status:choice('pending','notified','deferred','met','resolved','expired'),message_ref:{type:['string','null']},notified_ref:{type:['string','null']}}));
+executionSchemas.execution.properties.arrests=list(record({id:s,target:s,executor:s,force:s,group:i,count:i,area:choice('red_keep','city'),secrecy:choice('secret','public'),reason:s,status:choice('ordered','judgment','searching','escorting','held','released','refused','failed','escaped','unreachable','cancelled'),task_ref:s,custodian:s,place:s,assignment_ref:s,report_ref:s,ordered_at:i,updated_at:i,direct:b,escape_roll:i,last_location:s,release_task:s}));
 export const politicsSchema=record({
   guard_plans:list(record({id:s,organization_ref:s,count:i,commander:s,posts:choice('keep_same_posts','replace_from_reserve'),status:s,order_ref:s,force_ref:s,source_refs:refs})),
   payroll_routes:list(record({id:s,force_ref:s,obligation_ref:s,payer:s,payee:s,headcount:i,wage_amount:n,status:s,paid_at:{type:['integer','null']}})),
@@ -79,7 +81,7 @@ export function worldInvariantErrors(g){
   for(const a of g.assignments)if(!g.forces.some(f=>f.id===a.force_ref&&f.allocations[a.group_index]))out.push('assignment origin missing');
   for(const t of g.execution.tasks)if(!g.orders.some(o=>o.id===t.order_ref))out.push('task order missing');
   for(const p of g.projects.filter(p=>p.policy)){
-    const s=p.policy;
+    const s=p.policy;if(s.template==='general_reform')continue;
     const rules={records_inventory:['REF03',30,90],guard_transfer:['REF02',60,120],audit:['REF03',60,180],bond_open:['REF06',60,120]},r=rules[s.template];
     if(!r||s.era_ref!==r[0]||s.era_class!=='E0'||s.base_prepare!==r[1]||s.base_execute!==r[2]||s.additional_prepare!==0||s.additional_execute!==0)out.push('unsupported or modified project rule');
   }

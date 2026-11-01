@@ -1,3 +1,5 @@
+import {settleReviewDates} from './reform-meetings.mjs';
+import {settleAudienceRequests} from './audience-requests.mjs';
 import {initializeHousehold,settleDaily} from './daily-engine.mjs';
 import {settleGuards,synchronizeGuardPresence} from './household-guards.mjs';
 import {worldOps} from './world-engine.mjs';
@@ -73,7 +75,7 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
     });
   }
   function startNew(snapshot=baseline) {const copy=clone(snapshot);return serial(async()=>{await persist(fresh(copy));return read();});}
-  function upgrade(got){initializeNavigation(got);if(enableCourtLife)initializeHousehold(got);if(got._runtime.version==='m2-state-v1')initializeExecution(got);else if(got._runtime.version==='m2-world-v2')initializePolitics(got);got._runtime.version='m2-political-v3';got._runtime.rule_version='m2-political-3';initializeDialogue(got);initializeMemory(got);initializeAutonomy(got);queueMemory(got);}
+  function upgrade(got){initializeNavigation(got);if(enableCourtLife)initializeHousehold(got);if(got._runtime.version==='m2-state-v1')initializeExecution(got);else if(got._runtime.version==='m2-world-v2')initializePolitics(got);got._runtime.version='m2-political-v3';got._runtime.rule_version=got.projects.some(p=>p.policy?.template==='general_reform')?'m2-political-3-reform-1':'m2-political-3';initializeDialogue(got);initializeMemory(got);initializeAutonomy(got);queueMemory(got);}
   function prepareAction(action,sourceRefs=[]){
     if(!formal)throw Error('NO_GAME');
     return {contract_version:'c1.2',id:id(),branch_id:formal.revision.branch_id,parent_revision:formal.revision.state_id,
@@ -104,7 +106,7 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
       const old=formal._runtime.receipts.find(r=>r.id===c.id);
       if(old) return old.fingerprint===fingerprint ? {...clone(old.result),replayed:true} : failure('invalid','DUPLICATE_ID_MISMATCH');
       if(c.origin!=='dialogue_worker'&&(c.parent_revision!==formal.revision.state_id || c.as_of_minute!==formal.clock.elapsed_minutes)) return failure('stale','STALE_REVISION');
-      if(pendingDialogue&&(/^(guard_|nav_|daily_|wait$|start_activity|end_activity|advance_activity|opening_|campaign_|council_begin)/.test(c.action.type))){const draft=await pendingDialogue();if(draft&&draft.context?.branch===formal.revision.branch_id&&!['done','discarded','stale'].includes(draft.status)&&!formal.dialogue.turns.some(t=>t.id===draft.id))return failure('blocked','当前发言尚未完成，请先保存或取消这轮对话。');}
+      if(pendingDialogue&&(/^(guard_|nav_|daily_|wait$|start_activity|end_activity|advance_activity|opening_|campaign_|council_begin|audience_visit|order_arrest|release_prisoner)/.test(c.action.type))){const draft=await pendingDialogue();if(draft&&draft.context?.branch===formal.revision.branch_id&&!['done','discarded','stale'].includes(draft.status)&&!formal.dialogue.turns.some(t=>t.id===draft.id))return failure('blocked','当前发言尚未完成，请先保存或取消这轮对话。');}
       const next=read(),resultRevision='state-'+id();let code='BRIEFING_READ_ONLY';
       if(c.action.type==='acknowledge_briefing'){
       if(Object.keys(c.action).sort().join(',')!=='briefing_id,type' || c.source_refs.length!==1 || c.source_refs[0]!==c.action.briefing_id)
@@ -129,6 +131,7 @@ export function createGotRuntime({baseline,schema,sourceHash,storage,variables,f
             if(enableCourtLife&&!next.opening?.household)initializeHousehold(next);
             settleGuards(next);synchronizeGuardPresence(next,c.id);
             if(next.opening?.household&&!next.finale)settleDaily(next,{...c,result_revision:resultRevision},worldOps);
+            settleReviewDates(next);settleAudienceRequests(next,worldOps);
             queueMemory(next);
           }
         }

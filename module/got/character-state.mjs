@@ -31,7 +31,8 @@ export function checkCharacter(c,r){
  need(c.character.options.some(a=>a.id===r.attitude),'CHARACTER_NOT_AUTHORED');
  need(r.basis.every(ref=>c.known.some(k=>k.ref===ref)),'CHARACTER_UNKNOWN_EVIDENCE');
  if(r.mode!=='select')need(r.attitude===c.character.state.attitude,'CHARACTER_KEEP_CHANGED');
- if(r.mode==='select'&&r.attitude!==c.character.state.attitude)need(r.basis.some(ref=>c.known.some(k=>k.ref===ref&&!['initial','heard_claim'].includes(k.kind))),'CHARACTER_CHANGE_WITHOUT_EXPERIENCE');
+ // A mechanism snapshot explains the actor, but only its recorded changes are experiences.
+ if(r.mode==='select'&&r.attitude!==c.character.state.attitude)need(r.basis.some(ref=>c.known.some(k=>k.ref===ref&&!['initial','heard_claim','own_mechanism'].includes(k.kind))),'CHARACTER_CHANGE_WITHOUT_EXPERIENCE');
 }
 export function saveCharacter(g,c,r,source){
  if(!r)return;checkCharacter(c,r);

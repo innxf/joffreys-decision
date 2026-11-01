@@ -1,3 +1,4 @@
+import {absentActor,custodyRows} from './custody-state.mjs';
 import {advance,RuleError} from './world-engine.mjs';
 const clone=structuredClone;
 const need=(v,code='FINALE_COMPATIBILITY_GAP')=>{if(!v)throw new RuleError(code,'invalid');};
@@ -214,6 +215,7 @@ export function applyFinaleAction(g,a,ctx,content){
  if(a.type==='finale_enter'){
   need(Object.keys(a).length===1);need(g.finale?.entry,'FINALE_ENTRY_MISSING');const f=g.finale;
   if(f.freeze)return 'FINALE_ALREADY_ENTERED';
+   need(!custodyRows(g).some(r=>['escorting','held','escaped'].includes(r.status)),'当前拘押或失踪与固定终章的出场冲突；本次未进入终章，也未自动释放任何人。需先处理拘押，失踪分支尚需作者内容支持。');
   for(const id of ['U001','P001','P002','P003','P060','R001'])need(actor(g,id).life==='存活','FINALE_CAST_INCOMPATIBLE');
   if(f.entry.tommen_hook_qualified)need(actor(g,'R007').life==='存活','FINALE_CARE_INCOMPATIBLE');
   f.content=clone(content);f.freeze=compileFreeze(f.entry,{freeze_id:'freeze-'+ctx.id,campaign_id:g._runtime.run_id,branch_id:g.revision.branch_id,source_world_version:g.revision.state_id,frozen_at:g.clock.elapsed_minutes,source_refs:clone(f.entry.source_refs)},content);

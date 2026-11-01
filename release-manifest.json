@@ -1,11 +1,11 @@
 {
-  "release": "Joffreys Decision v0.3-test",
+  "release": "Joffreys Decision v0.4-test",
   "name": "乔佛里的决定",
-  "version": "0.3-test",
+  "version": "0.4-test",
   "port": 8090,
   "apiEnabledByDefault": true,
   "source": "development snapshot",
-  "created": "2026-10-26",
+  "created": "2026-11-01",
   "files": [
     {
       "path": ".gitignore",
@@ -2114,23 +2114,23 @@
     },
     {
       "path": "docs/release/使用说明.md",
-      "bytes": 1563,
-      "sha256": "19a46610fd3099d1543cd8c9d4fc96b591169508ccc8ea942604d1bcdf2b0074"
+      "bytes": 4555,
+      "sha256": "b4c938c20e2d54380ef301608749c183df759f3358c2dcc0ae2cfe4bf20ca210"
+    },
+    {
+      "path": "docs/release/发行说明-v0.4.md",
+      "bytes": 4555,
+      "sha256": "b4c938c20e2d54380ef301608749c183df759f3358c2dcc0ae2cfe4bf20ca210"
     },
     {
       "path": "docs/release/复用清单与后续.md",
-      "bytes": 2100,
-      "sha256": "ef23022fd55e7e719baa8ba74748c669a74407bb1ac5b994b9f5ca168d9e6584"
-    },
-    {
-      "path": "docs/release/更新记录.md",
-      "bytes": 922,
-      "sha256": "9cf81a536e4ac80427e36a769115e38b2dc0355db06d3ab1fb6443621694859b"
+      "bytes": 2771,
+      "sha256": "15d1b5b67b6e390ada8b29ac4512d15f6ab004aef32381a84838093dfd5e4536"
     },
     {
       "path": "docs/release/本轮验证.md",
-      "bytes": 1766,
-      "sha256": "86a4cf3a9ed1880657ea6305a31f3df66b95b1f6d33ead086e45c93d8e39948f"
+      "bytes": 4555,
+      "sha256": "b4c938c20e2d54380ef301608749c183df759f3358c2dcc0ae2cfe4bf20ca210"
     },
     {
       "path": "docs/release/音乐资源接入.md",
@@ -2180,7 +2180,7 @@
     {
       "path": "got-state.html",
       "bytes": 6530,
-      "sha256": "0e7c7b9225b00bd1f88746fda39342c6ab2f8a80ddb207d40c198dcfec654d5f"
+      "sha256": "f1f745184b69fc118e957598ec244f18e4aa5c5cccb1c4f5c99368bbef6b1011"
     },
     {
       "path": "got-ui-preview.html",
@@ -2323,6 +2323,31 @@
       "sha256": "83a22210210f2803912bba848df55bf04599234b559c3123d1f5a4b6a532c773"
     },
     {
+      "path": "module/got/arrest-engine.mjs",
+      "bytes": 16233,
+      "sha256": "75c9908a3fe66693b95edce8c44c69db507b0e25a46b5b913f43a44d1c57f59c"
+    },
+    {
+      "path": "module/got/arrest-evidence.mjs",
+      "bytes": 1817,
+      "sha256": "bebb1c8db76ee31a283c90b54ee5497040ee1d6179b023aebb0e9ff63541dfbc"
+    },
+    {
+      "path": "module/got/arrest-panel.mjs",
+      "bytes": 2243,
+      "sha256": "a6f89460946e9ef175d2b79685aab402f49cc101b66eea1563dd1d9fc64bad3f"
+    },
+    {
+      "path": "module/got/arrest-stance.mjs",
+      "bytes": 3843,
+      "sha256": "6a214ba7fc8dffa330dbdcb4a176df07371ac90366ab21c4cd196f2de7938a53"
+    },
+    {
+      "path": "module/got/audience-requests.mjs",
+      "bytes": 6467,
+      "sha256": "99412b0182b798e155fb2c266fcc6157ad977234e65cd56ae2ff92cfac216d02"
+    },
+    {
       "path": "module/got/authored-council.mjs",
       "bytes": 1577,
       "sha256": "e992677eac38f996c905d092b818783fb542c7968ec6b99cb304e6939294f670"
@@ -2334,13 +2359,13 @@
     },
     {
       "path": "module/got/autonomy-client.mjs",
-      "bytes": 5152,
-      "sha256": "c979e80d61355dbeccea8cc442f1b2f0b0325507393ea5a79bf2e05ee123672b"
+      "bytes": 5174,
+      "sha256": "ac962660a0b4e7a7631dc83b1aeae486b147dedb43e8fc081d53e2bfb1094c5a"
     },
     {
       "path": "module/got/autonomy-core.mjs",
-      "bytes": 12820,
-      "sha256": "25099dbe3c3fe9bb0f756a8d0336c6bf2e571977064ffffcba354228f82bd2a3"
+      "bytes": 13797,
+      "sha256": "1721af6142ffb56dc5ddaf4af7f6794807fd169abc2d3d5dc154daa9b818d11b"
     },
     {
       "path": "module/got/autonomy-panel.mjs",
@@ -2359,8 +2384,8 @@
     },
     {
       "path": "module/got/campaign-engine.mjs",
-      "bytes": 66346,
-      "sha256": "7cb491c986509ec4bb0536db07ca321c4b1539381036cdf600020f4a7a960568"
+      "bytes": 68842,
+      "sha256": "6dd4ae226fbf5e723d269581572c45cab25480793b5aa880554a60ca654955fc"
     },
     {
       "path": "module/got/campaign-panel.mjs",
@@ -2384,8 +2409,8 @@
     },
     {
       "path": "module/got/character-state.mjs",
-      "bytes": 6616,
-      "sha256": "27678a371df82c4a61c4ee71ca5dd0e24eeb1077062bb9b6fc8ff260612726bc"
+      "bytes": 6725,
+      "sha256": "5f7b7ba5876919eeedb808c4ff29a6ad217dc2c4bd989df12bdfefd8f17517d2"
     },
     {
       "path": "module/got/chronicle.mjs",
@@ -2454,8 +2479,8 @@
     },
     {
       "path": "module/got/council-session.mjs",
-      "bytes": 17427,
-      "sha256": "1db508136d442fe32a30a2271787448430a67901dd13940dfaceaffedd972265"
+      "bytes": 18057,
+      "sha256": "9cca07788c5941edbc441095a05104990ad9be59d0c170492e70e104e3c752ae"
     },
     {
       "path": "module/got/council-settlement.mjs",
@@ -2469,23 +2494,28 @@
     },
     {
       "path": "module/got/council-v3-panel.mjs",
-      "bytes": 11310,
-      "sha256": "abcba53a2fbb4853a72ce97203591b6f0d712ed66ca75a70e093be581598bcb9"
+      "bytes": 11781,
+      "sha256": "236bf28984afb85708ea7183096c582cd6eb90ecbbdb24ec0809ebd5943d97fa"
     },
     {
       "path": "module/got/council-v3-runner.mjs",
-      "bytes": 9060,
-      "sha256": "41bb052d0599702e26e8ca93e4bafeb839c800c140f254bf80fe3be65b429ed3"
+      "bytes": 9721,
+      "sha256": "c2534ad1704f4b096abf17660e7120f2078df1b5be00bf97e4885c053ee5557b"
     },
     {
       "path": "module/got/council-v3.mjs",
-      "bytes": 15991,
-      "sha256": "487ba87b72d0092bb86676214c5aa89a41435ff008a117c75392699b9c2dd135"
+      "bytes": 19191,
+      "sha256": "add6da4206a38ad91db70968cf1d775d66cde38871127a9c11323d4f7795f803"
     },
     {
       "path": "module/got/court-menu.mjs",
-      "bytes": 11122,
-      "sha256": "6314dce4fd6ab33c35236831356b34d1ac9afe46c5ba73f8431c3fb2e15f6c5c"
+      "bytes": 15818,
+      "sha256": "361b0ad689da5d756efbd8fa67c7cf4405e0341dba39dad95893b60eb6404b21"
+    },
+    {
+      "path": "module/got/custody-state.mjs",
+      "bytes": 2550,
+      "sha256": "7fa510044b5d6bf09747c662a9fdd40ce4a58b0f1409b429c98b8aa2d9876c61"
     },
     {
       "path": "module/got/daily-content.mjs",
@@ -2494,23 +2524,23 @@
     },
     {
       "path": "module/got/daily-engine.mjs",
-      "bytes": 20455,
-      "sha256": "17a650f4a2571a1a58f1ce0ad81e02d1bfae24abe5e64eb086e3c7ccf5f6191d"
+      "bytes": 20662,
+      "sha256": "7ca8db063c77288edf9ccfe01fe0d7a2d246ae1b2cf44711beb4802993452f87"
     },
     {
       "path": "module/got/dialogue-core.mjs",
-      "bytes": 28403,
-      "sha256": "2323fc5c68c3ce46f94eac23b744e4ac63299d69b1c7f6645093a13116c5caa6"
+      "bytes": 33567,
+      "sha256": "c388756dbf3c52bfc705c162fef02f1cd1d3d4f534e950fd307d0057139f3c83"
     },
     {
       "path": "module/got/dialogue-engine.mjs",
-      "bytes": 23591,
-      "sha256": "baa7ebcc9384af34e17756651bba29fc05343f26d3eb64bc728453591f74c65c"
+      "bytes": 24564,
+      "sha256": "9beb07f65df3faab467f65ef17c0b15bc77046adec33d58dac9e88b4889e6685"
     },
     {
       "path": "module/got/dialogue-panel.mjs",
-      "bytes": 16251,
-      "sha256": "d6f73a8562f700d24f4807d9d60c367c283a2dc704f62c61f1badc69d99c0e33"
+      "bytes": 16464,
+      "sha256": "c4188999d58090c0142e90ae9f11ae00a232f78cf2fc0f09460f897079ff2c4a"
     },
     {
       "path": "module/got/dialogue-profiles.mjs",
@@ -2519,8 +2549,8 @@
     },
     {
       "path": "module/got/dialogue-runner.mjs",
-      "bytes": 19057,
-      "sha256": "dabd64853795f3094724ff5a66bc70ec28d3145bddd5b40f7c4242caa69f81a5"
+      "bytes": 19195,
+      "sha256": "afa8bbc7a8fd4c587b2edcf0d7256a38fe9e6f309c7114624d351a3c0c09caef"
     },
     {
       "path": "module/got/dialogue-settlement.mjs",
@@ -2529,8 +2559,8 @@
     },
     {
       "path": "module/got/era-rules.mjs",
-      "bytes": 1182,
-      "sha256": "6e8bc19a1e2e9659c1407e487091a7068c779b9c260f6482657520dbb9498d3f"
+      "bytes": 1683,
+      "sha256": "61da86a19fe46359f39c1c9cc93975f3b9da72e414cc6709f79caa95f2344b90"
     },
     {
       "path": "module/got/event-cards-data.mjs",
@@ -2539,8 +2569,8 @@
     },
     {
       "path": "module/got/event-cards.mjs",
-      "bytes": 30056,
-      "sha256": "2ee14d6b05544a3d4c60b7c041570db682112f38fae4249b6183c40269afca57"
+      "bytes": 30267,
+      "sha256": "9f62521c271a6bebf5481d00e5208345624a0b044a65ab6d9942a9d69dc9133c"
     },
     {
       "path": "module/got/event-schedule.mjs",
@@ -2549,13 +2579,13 @@
     },
     {
       "path": "module/got/event-work.mjs",
-      "bytes": 9995,
-      "sha256": "48800d26f92341f4b7ef7cc905da0b64e0e9d095b86f054749bde223b7f2c9d6"
+      "bytes": 10073,
+      "sha256": "1919fefc5d2861250a6bd7dbce6dd0d71d8bfea88ad72fe53917fd3d299a5b36"
     },
     {
       "path": "module/got/finale-engine.mjs",
-      "bytes": 27923,
-      "sha256": "871016537a0c9099a1fe3293ed4e5d1549baac90bf00e09bd79fcac67867d526"
+      "bytes": 28242,
+      "sha256": "12bd00f857c82931a1d3aa359fc7f28caae3876ffa49e8c3b1f86b72eb3d376e"
     },
     {
       "path": "module/got/finale-fixtures.mjs",
@@ -2619,18 +2649,28 @@
     },
     {
       "path": "module/got/household-guards.mjs",
-      "bytes": 10267,
-      "sha256": "b992efab23d0e098be15fd9030232db37c089045e9e78f0d311f697176aa8c8c"
+      "bytes": 10431,
+      "sha256": "d0c8f92b9db9dbab771609a63894815d10b4a9dfd64fa04d5c5e27c536aef6f7"
     },
     {
       "path": "module/got/household-panel.mjs",
-      "bytes": 11741,
-      "sha256": "9cfb4724255b3b25c48086b5372e0ecefad1cadb0f4a3905042b8e2d7da5687d"
+      "bytes": 11832,
+      "sha256": "0f090f23db3216230810ba23f66b642f878ca632d802b88389e6b4bf770b8d5d"
     },
     {
       "path": "module/got/immersive.css",
-      "bytes": 11579,
-      "sha256": "814819e700929d8e160be9920b21046b35adf9f0b6812a582a33e36213d71fa9"
+      "bytes": 12026,
+      "sha256": "a1569d541740e44251f1d6318d41c7e636cf5301d69f80ac6f1c6983e795f587"
+    },
+    {
+      "path": "module/got/labor-capacity.mjs",
+      "bytes": 707,
+      "sha256": "b2c2168db39afaa5734c2882dc3803c2e42fc647f05874881c890dc09a60c4e8"
+    },
+    {
+      "path": "module/got/mech-state.mjs",
+      "bytes": 5862,
+      "sha256": "95d917bb8ec4b1e0b5b1294024c7880f4489dca1012a38ffb6c926688e30a6bf"
     },
     {
       "path": "module/got/memory-client.mjs",
@@ -2649,8 +2689,8 @@
     },
     {
       "path": "module/got/middleware-evidence.mjs",
-      "bytes": 16760,
-      "sha256": "2f780b98abff589feeaddc219c3567b04df54d580c9f51d31a02e1d9bffb00d2"
+      "bytes": 20580,
+      "sha256": "319390fc443204876f535a13c590975d9ed5414eab51c22537848293ef49a0cb"
     },
     {
       "path": "module/got/middleware-json.mjs",
@@ -2669,8 +2709,8 @@
     },
     {
       "path": "module/got/navigation-engine.mjs",
-      "bytes": 13197,
-      "sha256": "a262600ea31f8130299c68a6e0491d64e8c0f61137ef8d244a466739f1a6557a"
+      "bytes": 13281,
+      "sha256": "51b15c3f607faf0129225105a4944a0ca7bc7777f2bf465d32a030d2e51cb874"
     },
     {
       "path": "module/got/opening-content.mjs",
@@ -2679,8 +2719,8 @@
     },
     {
       "path": "module/got/opening-engine.mjs",
-      "bytes": 31947,
-      "sha256": "97269c826e8ad7ac985d0d79426f2ade38337a40bb33cd41ffeeb8519e9fb3ea"
+      "bytes": 32199,
+      "sha256": "0d5ed296354ef4ef65f79cc3046ecb1ab7eb97dbbedbef4cb3836b6cd7c6e4e9"
     },
     {
       "path": "module/got/opening-panel.mjs",
@@ -2689,8 +2729,8 @@
     },
     {
       "path": "module/got/political-engine.mjs",
-      "bytes": 31096,
-      "sha256": "82c4f0c37d7519463744d3511a69fbdc64bb62a8e978f9c1f214ac57f7dba254"
+      "bytes": 31284,
+      "sha256": "f692d1bd3e6085b57d814b9cd7b8f971ef66f83d85f0b8a04d2d1c63582e2b89"
     },
     {
       "path": "module/got/portrait-data.mjs",
@@ -2718,6 +2758,51 @@
       "sha256": "cb94e20d29228325a2f45cd6b41e3cf789acd1c394ebe4536b72db2042446d7a"
     },
     {
+      "path": "module/got/psychology-preview.mjs",
+      "bytes": 16181,
+      "sha256": "360e359341e6597eeb5c985ddf286374327e121ca7f50b211a5f7b246b4f67f5"
+    },
+    {
+      "path": "module/got/reform-approval.mjs",
+      "bytes": 3356,
+      "sha256": "7f78baa70a975dbbfdd2e9fa41c31d1ed29efdfc35fe6ecf43eb2ceb1f74f8e5"
+    },
+    {
+      "path": "module/got/reform-contract.mjs",
+      "bytes": 15314,
+      "sha256": "7ce8fc7c9897cee43b00420548c2fde054b45f85e57e87101747e51bddf84436"
+    },
+    {
+      "path": "module/got/reform-economy.mjs",
+      "bytes": 25346,
+      "sha256": "a8cc446f352d0ba8bd465351b97faae9597baa3704d6b456cf8db14311ea1fac"
+    },
+    {
+      "path": "module/got/reform-engine.mjs",
+      "bytes": 39481,
+      "sha256": "5ef70bc03f057443bdf4d9099623c0d54246f3c128fe1184046bcf41abdba789"
+    },
+    {
+      "path": "module/got/reform-evidence.mjs",
+      "bytes": 6583,
+      "sha256": "bcaf935b261e12e657fbbedd52c64ceaaeb41445f74f50c29b18dd904dd299a1"
+    },
+    {
+      "path": "module/got/reform-meetings.mjs",
+      "bytes": 7673,
+      "sha256": "0a41abf179350264b59ca5247f5e3a2f68b416bf079956ea89d54da354178708"
+    },
+    {
+      "path": "module/got/reform-quotation.mjs",
+      "bytes": 10935,
+      "sha256": "283eff85f51a5f818f156643709194450e47a698cbb6b5202875c1c5926716e5"
+    },
+    {
+      "path": "module/got/reform-support.mjs",
+      "bytes": 18130,
+      "sha256": "9957331adb40759925ffb0ff6b9bdf55ef1605fab1c0866f4a38ca2ca664b5d9"
+    },
+    {
       "path": "module/got/scene-art-panel.mjs",
       "bytes": 6844,
       "sha256": "fb77eddfb4d7abc80b7dac0c5607c071ad618b43386b02bc6388d92adef5c58d"
@@ -2726,6 +2811,16 @@
       "path": "module/got/scene-art.mjs",
       "bytes": 7236,
       "sha256": "cbfb12991aee552c25cb3a65a83fbc3c0ebcb38cb240dbb8a3d23fd1c7987d88"
+    },
+    {
+      "path": "module/got/stance-config.mjs",
+      "bytes": 2252,
+      "sha256": "acf8e7a032ac361fd65eec37748b4b9f1f93f8204dd05e97d27a20ef8c472be4"
+    },
+    {
+      "path": "module/got/stance-engine.mjs",
+      "bytes": 6464,
+      "sha256": "cbac3764ee6d38706c1a9a30d8bf30836946df105e333eccdec61525df5030ac"
     },
     {
       "path": "module/got/state-panel.css",
@@ -2739,28 +2834,28 @@
     },
     {
       "path": "module/got/state-runtime.mjs",
-      "bytes": 14881,
-      "sha256": "5095955d63a99b840bea61d3fbd140424940f91ce42c5b7cd29754559364f670"
+      "bytes": 15211,
+      "sha256": "69bb42e3a339fce4078f329f3bd378ca63797fb5e7af32f2369fc5e3a852f74e"
     },
     {
       "path": "module/got/state-validation.mjs",
-      "bytes": 8732,
-      "sha256": "ca1d590721210ce4476dd7d739a3f613560747cbb2dbb7f8f8cf9727ee70d1cf"
+      "bytes": 9446,
+      "sha256": "eb1f0129568d6c7c27b719e37ae1ee0ae01b6f4ca807935bbc3cf43ca278a6ba"
     },
     {
       "path": "module/got/world-engine.mjs",
-      "bytes": 46034,
-      "sha256": "cb2db25f4d1fa9762c9849fa020b997e6e41981706cd7ee834ed340f88f087c6"
+      "bytes": 49831,
+      "sha256": "4920a339a044f76443452d82a3180964ec260d0fc96b71c5d6f3d1c4096a16b4"
     },
     {
       "path": "module/got/world-panel.mjs",
-      "bytes": 11605,
-      "sha256": "c186737d206f60cbdd7ebb7dc09be41e5fd4e2449fa7d59056459b25810d47dc"
+      "bytes": 12240,
+      "sha256": "f682b5ead0387fbeb7375f77274bcbba8f57066f44b2c581e4e2131f69fed910"
     },
     {
       "path": "module/got/world-schema.mjs",
-      "bytes": 10901,
-      "sha256": "130ad6aec25f5d12c1541a36432f0e2f49fe36c0bc79191fbf7092a6aef680d9"
+      "bytes": 11768,
+      "sha256": "fe69e9dd327793fc53917de7429c2299287ea5520e3e43aa45ecb66ff59ca4de"
     },
     {
       "path": "module/idb-snapshot.js",
@@ -2964,8 +3059,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1563,
-      "sha256": "19a46610fd3099d1543cd8c9d4fc96b591169508ccc8ea942604d1bcdf2b0074"
+      "bytes": 4555,
+      "sha256": "b4c938c20e2d54380ef301608749c183df759f3358c2dcc0ae2cfe4bf20ca210"
     },
     {
       "path": "runtime/LICENSE",
@@ -15010,12 +15105,12 @@
     {
       "path": "VERSION",
       "bytes": 10,
-      "sha256": "5ab53adbe57a8ece7e0f620feac46d2b245e0d50ae8b8a4f8f34b9578ee8081e"
+      "sha256": "138fdf350a583ce953a8f8bfdd2882b77a474a3f8024ba79bead01ef258cf5de"
     },
     {
       "path": "先读我.md",
-      "bytes": 1563,
-      "sha256": "19a46610fd3099d1543cd8c9d4fc96b591169508ccc8ea942604d1bcdf2b0074"
+      "bytes": 4555,
+      "sha256": "b4c938c20e2d54380ef301608749c183df759f3358c2dcc0ae2cfe4bf20ca210"
     },
     {
       "path": "启动游戏.cmd",

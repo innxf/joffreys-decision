@@ -1,3 +1,7 @@
+import {supportView} from './reform-support.mjs';
+import {audienceRequestView} from './audience-requests.mjs';
+import {dueReviews} from './reform-meetings.mjs';
+import {reformView} from './reform-engine.mjs';
 import {portrait} from './portrait-panel.mjs';
 import {characterName} from './portrait-data.mjs';
 import {audience,profiles} from './dialogue-core.mjs';
@@ -22,6 +26,7 @@ export function renderCourtMenus(runtime,controls){
  document.body.classList.toggle('on-map',!!document.querySelector('#opening-panel .region-board,#opening-panel .city-board'));
  document.body.classList.toggle('has-conversation',!document.getElementById('dialogue-panel')?.hidden);
  for(const d of document.querySelectorAll('#court-tasks[open]'))refreshTasks(d);
+ let notice=document.getElementById('court-audience-notice');if(!notice){notice=el('section');notice.id='court-audience-notice';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');nav.before(notice);}const incoming=g.opening?.meetings.some(m=>m.status==='in_progress')?[]:audienceRequestView(g).filter(r=>r.status==='notified');const stamp=JSON.stringify(incoming);if(notice.dataset.stamp!==stamp){notice.dataset.stamp=stamp;notice.replaceChildren();for(const r of incoming)renderAudience(r,notice);}
 }
 function closeOtherPanels(keep){for(const d of document.querySelectorAll('dialog[id^=court-][open]'))if(d!==keep)d.close();}
 async function openMenu(id,label){
@@ -36,13 +41,21 @@ async function openMenu(id,label){
  for(const actor of met){if(actor==='U001'||!profiles[actor])continue;const f=el('details','',host);el('summary',characterName(actor),f);f.append(portrait(actor));const office=g.offices.filter(o=>o.holder===actor).map(o=>o.title||o.name).filter(Boolean);el('p',office.length?office.join('、'):'已在本局会面记录中出现。',f);}return;
  }
  if(id==='world'){
+ const labels={institution_create_or_expand:'到岗书记员',force_duty_reassignment:'实际驻守',physical_security_upgrade:'已核验通道封堵',intel_network_deploy:'港口观察试办',force_command_or_payroll_shift:'部队供饷路线',procedure_and_authority_grant:'已完成核查'};
+ for(const item of supportView(g)){el('h3',labels[item.kind]||'改革交付',host);el('p',item.target+(item.count!==undefined?' · '+item.count+'人':'')+(item.post?' · 岗位'+item.post:''),host);const d=el('details','',host);el('summary','查看已送达依据与适用范围',d);for(const report of item.reports)el('p',report,d);}
+
  el('p','铁王座所能看见的天下，仍有赖渡鸦与信使。远方尚未送达的消息，不会出现在这里。',host);
  const known=(runtime.playerView().briefing||[]).flatMap(r=>r.reports||[]).concat(g.messages.filter(m=>m.recipient==='U001'&&m.status==='已收到').map(m=>m.content)).join('\n');let count=0;for(const [pattern,title,text]of [[/史塔克|北境|罗柏/,'北方与河间地','北方的兵事与诸侯立场，仍是朝廷来信关注的事。'],[/史坦尼斯|蓝礼|拜拉席恩/,'王位与诸侯','王位纷争牵动各方；宣称、结盟与真正的效忠，需要分别看待。'],[/粮|商|港|债/,'君临与商路','战争也影响粮食、商路与王室开支，朝廷需要持续留意送达的消息。'],[/高庭|提利尔|多恩/,'南方诸侯','南方诸侯的立场、往来与婚盟，是朝廷需要留意的动向。']])if(pattern.test(known)){el('h3',title,host);el('p',text,host);count++;}if(!count)el('p','尚无足以整理大陆局势的来报。',host);
  el('p','此页仅整理已经送达的简报；更具体的来信可在纪事中回看。',host);
  }
 }
+function renderAudience(r,host){
+ const {act,button}=current;el('p',(r.speaker?characterName(r.speaker)+'传话：':'')+r.text,host);if(!r.available)el('small','目前尚不能确认对方仍在等候，事项保留。',host);
+ const go=button('前往会面',async()=>{await act({type:'audience_visit',request_ref:r.id});if(current.runtime.read().activities.some(a=>a.status==='active'&&a.kind==='short_visit'&&a.participants.includes(r.actor)))openNPC(r.actor);});go.disabled=!r.available;host.append(go);host.append(button('留待周会',()=>act({type:'audience_defer',request_ref:r.id})));
+}
 function refreshTasks(d){
  const {runtime,button,act}=current,g=runtime.read(),host=fill(d),tod=(g.clock.elapsed_minutes+360)%1440;
+ for(const request of audienceRequestView(g).filter(r=>r.status!=='met'))renderAudience(request,host);
  el('h3','今日起居',host);for(const def of dailyDefinitions){const row=el('div','',host);row.className='schedule-row';el('strong',(def.at>=1440?'次日 ':'')+clock(def.at)+' · '+def.name,row);const today=Math.floor((g.clock.elapsed_minutes+360)/1440);const record=g.opening?.household?.days?.findLast(r=>r.definition===def.id&&r.day===today);el('small',({done:'已完成',skipped:'已略过',active:'进行中',offered:'侍从候命',postponed:'已推迟',expired:'已过时段'})[record?.status]||(def.at<tod?'依实际安排':'尚待安排'),row);}
  const meeting=g.opening?.meetings.find(m=>!m.missed&&m.status!=='closed');if(meeting){el('h3','御前会议',host);el('p','预约 '+clock(meeting.scheduled+360)+'。早膳之后赴会；重要召见会由侍从通报。',host);if(!meeting.activity)host.append(button('前往御前会议',async()=>{await act({type:'council_begin'});d.close();}));}
  const a=g.activities.find(a=>a.status==='active'&&a.participants.includes('U001'));if(!a&&!g.opening?.travel){const next=dailyDefinitions.map(x=>x.at%1440).filter(t=>t>tod).sort((a,b)=>a-b)[0];if(next)host.append(button('等候下一项日程 · '+clock(next),async()=>{await act({type:'wait',minutes:next-tod});d.close();}));}
@@ -54,6 +67,8 @@ function refreshTasks(d){
    if(cached&&t.settlement.status==='failed'){const b=button('重新请求整理',()=>run(true));b.disabled=!!window.gotDialogue?.postBusy;host.append(b);}
   }
  }
+ for(const p of reformView(g)){for(const op of p.operations||[]){el('p',op.text,host);for(const b of op.actions)host.append(button(b.label,()=>act(b.action,b.confirmation)));}if(p.posts?.length)host.append(button('传令撤回这项改革的驻守人员',()=>act({type:'cancel_order',order_ref:p.order_ref})));for(const force of p.supply_forces||[])host.append(button('核对供养并送将领',()=>act({type:'reform_supply_report',force_ref:force})));for(const network of p.networks||[])host.append(button('请求港口观察回报',()=>act({type:'reform_intel_report',network_ref:network})));el('h3',p.name,host);const fold=el('details','',host);el('summary','查看改革记录与已送达报告',fold);el('p',p.text,fold);host.append(button('向负责人索取最新报告',()=>act({type:'reform_report',project_ref:p.id})));for(const q of p.pending){el('p',q.reason,host);host.append(button('批准继续这一步',()=>act({type:'reform_control',project_ref:p.id,revision:p.revision,operation:'approve_step',step_ref:q.id},'按已批准范围和预算继续此步骤？')));}if(p.delay_pending)host.append(button('接受报告中的延期',()=>act({type:'reform_control',project_ref:p.id,revision:p.revision,operation:'accept_delay',step_ref:''},'接受已经报告的工期，不追加预算？')));for(const actor of p.commanders)host.append(button('征询当事人 '+characterName(actor),()=>act({type:'autonomy_request_review',actor,kind:'reform_execution',target_ref:p.id})));if(p.status==='completed'||p.status==='cancelled')continue;host.append(button(p.paused?'恢复原方案':'暂停后续工作',()=>act({type:'reform_control',project_ref:p.id,revision:p.revision,operation:p.paused?'resume':'pause',step_ref:''})));if(p.order_ref)host.append(button('撤回未交付工作',()=>act({type:'cancel_order',order_ref:p.order_ref},'撤令送达后停止未交付工作；已有成果、支出与债务保留。')));}
+ for(const p of g.projects.filter(p=>p.policy?.template==='general_reform')){const known=g.messages.some(m=>m.recipient==='U001'&&m.status==='已收到'&&m.basis?.refs.includes(p.id)&&m.content.includes('检查'))||g.dialogue.observations.some(o=>o.actors.includes('U001')&&o.targets?.some(t=>t.ref===p.id));if(!known)continue;for(const n of dueReviews(g,p).filter(n=>n.mode==='decision')){el('p',p.name+' · '+n.title+'：'+n.checks,host);host.append(button('批准通过此检查点，继续原范围',()=>act({type:'reform_control',project_ref:p.id,revision:p.policy.plan_revision,operation:'approve_checkpoint',step_ref:n.id},'仅继续原预算与范围，不追加授权？')));}}
  renderCalendar(runtime,host,{button,act});
 }
 function openNPC(id){

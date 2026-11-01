@@ -1,4 +1,7 @@
+import {reformActionText} from './reform-approval.mjs';
+import {operatingTerms} from './reform-economy.mjs';
 import {synchronizeGuardPresence} from './household-guards.mjs';
+import {applyMechDeltas} from './mech-state.mjs';
 import {dailyForActivity} from './daily-engine.mjs';
 import {barristanChoices} from './opening-content.mjs';
 import {eventProposal,proposalQueued,queueCardProposal} from './event-cards.mjs';
@@ -46,11 +49,12 @@ export function afterWorldAction(before,g,a,ctx){
  invalidateDecisions(g);
 }
 export function proposalView(g,p,ctx={}){
- const labels={nav_inspect_tunnel:'核查旧通道',campaign_issue:'交办已支持的年度事务',opening_decide:'会议裁决',opening_invite:'委托教会联络',replace_kingsguard:'确认七席交接',create_organization:'登记筹建机构',appoint_official:'任命',grant_authority:'发送筹备授权',activate_organization:'开始有限履职',plan_guard_transfer:'拟定近卫转属',execute_guard_transfer:'发出转属执行命令',grant_operation_authority:'授予有限操作权限',temporary_detail:'临时借调',cancel_order:'发出撤令',inspect_payment:'核验付款条件',pay_obligation:'安排付款',night_patrol:'加强夜巡',create_project:'整理指定目录',transfer_stock:'调拨口粮'};
- if(eventProposal(g,p)&&!ctx.councilCommit)return {id:p.id,status:p.status,title:'送交御前会议讨论',action:structuredClone(p.action),cost:'在会议确定范围后核对费用',duration:'本次交谈不发政令',conditions:p.conditions,reason:proposalQueued(g,p.id)?'已经加入待议事项，会议召开时呈报。':'这是一项正式提案，需在会议确认后交办。',ready:p.status==='pending'&&!proposalQueued(g,p.id)};
+ const labels={reform_maintain:'持续服务及付款授权',reform_operation_control:'调整后续运营',reform_supply_report:'核对供饷',reform_intel_report:'索取渠道报告',order_arrest:'发出抓捕命令（尚未抓获）',release_prisoner:'交办解除拘押',reform_propose:'交办自由改革',reform_revise:'修订改革剩余工作',reform_report:'询问改革进度',reform_control:'改革重要决定',nav_inspect_tunnel:'核查旧通道',campaign_issue:'交办已支持的年度事务',opening_decide:'会议裁决',opening_invite:'委托教会联络',replace_kingsguard:'确认七席交接',create_organization:'登记筹建机构',appoint_official:'任命',grant_authority:'发送筹备授权',activate_organization:'开始有限履职',plan_guard_transfer:'拟定近卫转属',execute_guard_transfer:'发出转属执行命令',grant_operation_authority:'授予有限操作权限',temporary_detail:'临时借调',cancel_order:'发出撤令',inspect_payment:'核验付款条件',pay_obligation:'安排付款',night_patrol:'加强夜巡',create_project:'整理指定目录',transfer_stock:'调拨口粮'};
+ if(eventProposal(g,p)&&!ctx.councilCommit)return {id:p.id,status:p.status,title:'送交御前会议讨论',action:structuredClone(p.action),cost:['reform_propose','reform_revise'].includes(p.action.type)?reformActionText(p.action):'在会议确定范围后核对费用',duration:'本次交谈不发政令',conditions:p.conditions,reason:proposalQueued(g,p.id)?'已经加入待议事项，会议召开时呈报。':'这是一项正式提案，需在会议确认后交办。',ready:p.status==='pending'&&!proposalQueued(g,p.id)};
  const preview=structuredClone(g);let reason='';try{executeProposals(preview,p.id,{...ctx,id:'preview',parent_revision:g.revision.state_id,result_revision:'preview'});}catch(e){reason=e.message;}
  const a=p.action;
  let cost='无新增现金规则；实际执行仍检查原供养与资源',duration='通知、履职和交接按既有规则推进';
+ if(['reform_propose','reform_revise'].includes(a.type)){cost='建设/阶段费用上限'+a.plan.budget+'金龙；按阶段实际投入。'+operatingTerms(a.plan);duration='准备、执行、初效核验；工期按时代与批准工作量，真实阻碍另计';}
  if(a.type==='create_project'){cost='预留10金龙，按实际工作支出';duration='送达后筹备30分钟、执行90分钟，受人员占用影响';}
  if(a.type==='pay_obligation'){cost='按已核验付款项与原预留结算，不重复扣款';duration='按原到期日和交付条件支付';}
  if(a.type==='temporary_detail')duration='本地交接60分钟，截止后归队另需60分钟';
@@ -134,7 +138,7 @@ export function applyDialogueAction(g,a,ctx){return safe(()=>{
   job.status=issues.length?'partial':'done';job.issues=issues;job.error=null;
   // Only an explicit player command may bypass the proposal button. Formal
   // politics and unresolved exchanges retain their existing approval route.
-  const routine=new Set(['night_patrol','cancel_order','inspect_payment','pay_obligation','nav_inspect_tunnel']);
+  const routine=new Set(['order_arrest','release_prisoner','night_patrol','cancel_order','inspect_payment','pay_obligation','nav_inspect_tunnel','reform_report','reform_control']);
   const newer=g.dialogue.turns.slice(g.dialogue.turns.indexOf(turn)+1).some(t=>t.actor===turn.actor&&t.activity===turn.activity);
   // Successful trials replace g.dialogue. Carry IDs, never object references,
   // into the next iteration; keep the candidate's original positional binding.
@@ -171,8 +175,9 @@ export function applyDialogueAction(g,a,ctx){return safe(()=>{
     observe(g,c.audience,'摄政已给出有限授权，仍需送达与执行：'+JSON.stringify(target(g,authId)),turn.id,[target(g,authId)]);
    }
   }
+  applyMechDeltas(g,c,a.post.mech_deltas||[],a.prose,turn.id,{observe,batchVersions:ctx.mechBatchVersions});
   const ids=a.post.candidates.map(()=>key(g));
-  a.post.candidates.forEach((p,i)=>g.dialogue.proposals.push({id:ids[i],turn_ref:turn.id,action:structuredClone(p.action),conditions:structuredClone(p.conditions),joint_group:p.joint_group,dependencies:p.depends_on.map(j=>ids[j]),bindings:c.targets.filter(t=>JSON.stringify(p.action).includes(t.ref)).map(t=>({ref:t.ref,value:t})),status:'pending',receipt_ref:null,...(ctx.savedTurn?{requires_council:!['night_patrol','cancel_order','inspect_payment','pay_obligation','nav_inspect_tunnel'].includes(p.action.type)}:{})}));
+  a.post.candidates.forEach((p,i)=>g.dialogue.proposals.push({id:ids[i],turn_ref:turn.id,action:structuredClone(p.action),conditions:structuredClone(p.conditions),joint_group:p.joint_group,dependencies:p.depends_on.map(j=>ids[j]),bindings:c.targets.filter(t=>JSON.stringify(p.action).includes(t.ref)).map(t=>({ref:t.ref,value:t})),status:'pending',receipt_ref:null,...(ctx.savedTurn?{requires_council:!['order_arrest','release_prisoner','night_patrol','cancel_order','inspect_payment','pay_obligation','nav_inspect_tunnel','reform_report','reform_control'].includes(p.action.type)}:{})}));
   return 'DIALOGUE_COMMITTED';
  }
  if(a.type==='dialogue_execute'){

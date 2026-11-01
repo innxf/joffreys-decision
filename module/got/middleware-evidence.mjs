@@ -1,3 +1,5 @@
+import {checkArrestEvidence} from './arrest-evidence.mjs';
+import {checkReformEvidence,checkReformReference} from './reform-evidence.mjs';
 import {characterAliases} from './portrait-data.mjs';
 // Shared, conservative checks for translated dialogue. No world mutations here.
 const need=(v,c)=>{if(!v)throw Error(c);};
@@ -81,6 +83,7 @@ export function explicitCondition(q){
 }
 function number(s){if(/^\d+(?:\.\d+)?$/.test(s))return +s;const digits={'零':0,'〇':0,'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};let total=0,n=0,v=0;for(const ch of s){if(ch in digits)v=digits[ch];else{const u={十:10,百:100,千:1000,万:10000}[ch];if(!u)return NaN;if(u===10000){total+=(n+v||1)*u;n=0;v=0;}else{n+=(v||1)*u;v=0;}}}return total+n+v;}
 const nums=(s,units)=>[...s.matchAll(new RegExp('(?<![0-9./])([0-9]+(?:\\.[0-9]+)?|[零〇一二两三四五六七八九十百千万]+)\\s*(?:个)?(?:'+units+')','g'))].map(m=>number(m[1]));
+export function quotedNumbers(text,units){return nums(operativeNumbers(text),units);}
 const numeral='(?:[0-9]+(?:\\.[0-9]+)?|[零〇一二两三四五六七八九十百千万]+)';
 function operativeNumbers(text){
  return text.split(/([，,。；;！？!?\n])/).map(part=>{
@@ -97,6 +100,10 @@ function orderedPeople(text){
  return text.replace(new RegExp('每(?:班|组|队|批|人)\\s*'+numeral+'\\s*(?:名|人)','g'),'');
 }
 export const actionParameters={
+ reform_maintain:{effect_ref:'已送达交付的书记员或渠道效果编号',operation:'enable启用按期续用或disable停止后续续用',auto_pay:'明确授权是否在资金足够时按规则服务费支付'},reform_operation_control:{effect_ref:'已交付运营效果编号',operation:'pause暂停、resume恢复或cancel终止；沉没投入和已交付库存保留'},
+ reform_supply_report:{force_ref:'已交付供饷路线的部队编号；只形成实际送达报告，不付款'},reform_intel_report:{network_ref:'仅已建立且仍在经费期的ORG-PORT港口观察渠道；只呈报实际观察'},
+ order_arrest:{target:'目标人物ID',executor:'执行者人物ID',force:'部队ID；单名白袍亲自执行为空',group:'班组索引；单人用0',count:'现有人数；单人用1',area:'red_keep红堡或city城内',secrecy:'secret秘密或public公开',reason:'玩家原句中的事由；不认证为事实'},release_prisoner:{arrest_ref:'已收到回报的ARREST记录编号'},
+ reform_propose:{plan:'通用改革合同：目标、范围、负责人、预算、时代依据、分项阶段、资源与受约束效果；具体结构见改革任务合同'},reform_revise:{project_ref:'已有改革编号',revision:'当前版本',plan:'通用改革合同：目标、范围、负责人、预算、时代依据、分项阶段、资源与受约束效果；具体结构见改革任务合同'},reform_report:{project_ref:'已知改革编号；按收到的报告查询，不改变世界成果'},reform_control:{project_ref:'已知改革编号',revision:'该方案当前版本',operation:'pause暂停、resume恢复、approve_step批准待决步骤、accept_delay接受明确超窗工期、approve_checkpoint批准到期检查点继续原范围',step_ref:'approve_step时为待决步骤编号，其他为空'},
  campaign_issue:{operation:'当前campaign_operations中的id；成本及最低天数按该项资料；正式事项须会议'},nav_inspect_tunnel:{source:'guard或varys；只委托核查'},
  create_organization:{name:'原话中的机构名称；1至80字',responsibilities:'非空职责字符串数组，每项1至200字；只筹建，须会议'},
  appoint_official:{organization_ref:'筹建中的新建机构编号',title:'原话中的职位名称；1至80字',person:'实际在君临、存活且可接触的人物编号；任命须会议且本人接受另行处理'},
@@ -111,7 +118,13 @@ export const actionParameters={
  transfer_stock:{source:'仅RES-FOOD-RK红堡、RES-FOOD-WATCH金袍子、RES-FOOD-NAVY港仓口粮池',destination:'同source允许列表；不得与source相同',amount:'正数，不超过2000标准人日口粮；不得超过可用数量；不能把袋、斤或金龙直接当人日；发出后送达，出库至入库需60分钟'}
 };
 export function checkActionEvidence(c,a,quote){
- const s=quoteText(quote),known=c.known||[],all=s+'\n'+known.filter(k=>k.ref==='current-input').map(k=>k.content).join('\n');
+ if(['order_arrest','release_prisoner'].includes(a.type)){checkArrestEvidence(c,a,quote);if(!a.force)return a;}
+ if(['reform_maintain','reform_operation_control'].includes(a.type)){const text=quoteText(quote),t=c.targets?.find(t=>t.ref===a.effect_ref&&t.kind==='reform_effect');need(t&&text.includes(a.effect_ref),'请明确已知的交付成果。');const meanings={pause:/暂停/,resume:/恢复/,cancel:/终止|停止/,enable:/持续|续用|续聘|恢复/,disable:/停止|不再续/};need(meanings[a.operation]?.test(text),'缺少对应运营决定。');if(a.type==='reform_maintain'&&a.operation==='enable'){need(t.service_price>0&&quotedNumbers(text,'金龙|枚').includes(t.service_price)&&/28/.test(text),'须说明28日周期服务费。');if(a.auto_pay)need(/自动支付|按期支付|持续支付|资金足够时支付|按期付款/.test(text),'持续自动付款须明确授权。');}return a;}
+ if(a.type==='reform_intel_report'){need(c.targets?.some(t=>t.ref===a.network_ref),'UNKNOWN_NETWORK');return a;}
+ if(a.type==='reform_supply_report'){need(c.targets?.some(t=>t.ref===a.force_ref),'UNKNOWN_FORCE');return a;}
+ if(a.type==='reform_propose'||a.type==='reform_revise'){if(a.type==='reform_revise')checkReformReference(c,a,quoteText(quote));checkReformEvidence(c,a.plan,quoteText(quote));return a;}
+  if(a.type==='reform_control'||a.type==='reform_report'){checkReformReference(c,a,quoteText(quote));return a;}
+  const s=quoteText(quote),known=c.known||[],all=s+'\n'+known.filter(k=>k.ref==='current-input').map(k=>k.content).join('\n');
  // A quote containing several numeric commands must be narrowed by the caller;
  // choosing whichever number happens to match the proposed action is unsafe.
  if(['count','max_count','amount','duration'].some(k=>a[k]!==undefined))need(commandClauses(s).length===1,'ACTION_PARAMETER_NEEDS_CLARIFICATION:multiple_commands');
@@ -155,10 +168,11 @@ export function requireMaterials(snapshot,input){
  for(const k of ['known','guidance'])if(input[k]?.trim())need(messages.some(m=>m.includes(normalize(input[k]))),'PROMPT_MATERIAL_MISSING:'+k);
 }
 export function councilEvidence(batch,phaseInput){
- const evidence=[],index=new Map();
+ const evidence=[],index=new Map(),mechanism_catalogue=[],mechanismIndex=new Map();
  const turns=batch.turns.map(t=>{const material=JSON.parse(phaseInput(t.context,t.pre,t.prose,'post').known);const allowed=[];
   for(const k of material.known){const key=JSON.stringify(k);if(!index.has(key)){index.set(key,evidence.length);evidence.push(k);}allowed.push(index.get(key));}
   delete material.known;
+  const schema=JSON.stringify(material.mechanisms);if(!mechanismIndex.has(schema)){mechanismIndex.set(schema,mechanism_catalogue.length);mechanism_catalogue.push(material.mechanisms);}material.mechanisms_ref=mechanismIndex.get(schema);delete material.mechanisms;
   return {turn_id:t.id,...material,allowed_evidence:allowed,input:t.context.input,prose:t.prose,pre:t.pre};
- });return {evidence,turns};
+ });return {evidence,mechanism_catalogue,turns};
 }

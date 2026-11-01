@@ -1,11 +1,17 @@
-import {characterMaterials,characterText,characterContract,checkCharacter,saveCharacter} from './character-state.mjs';
+import {absentActor,custodyUnavailable} from './custody-state.mjs';
+import {resolveArrestStance,arrestFundingChanged} from './arrest-stance.mjs';
+import {readMech} from './stance-engine.mjs';
+import {characterText,characterContract,checkCharacter,saveCharacter} from './character-state.mjs';
 // 2E adapters: existing orders/tasks remain the only execution ledger.
-import {actorEvidence,profiles,target,observe} from './dialogue-core.mjs';
+import {actorEvidence,readActorContext,profiles,target,observe} from './dialogue-core.mjs';
 const copy=structuredClone,now=g=>g.clock.elapsed_minutes;
 const need=(v,m)=>{if(!v)throw Error(m);};
 export const pending=t=>['sent','accepted','executing'].includes(t.status);
 export const taskConflicts=(g,t)=>g.execution.obstacles.filter(x=>x.active&&[t.actor_ref,t.order_ref,t.params.target_ref,t.params.obligation_ref].includes(x.target_ref));
-export const acceptedTask=(g,t)=>g.autonomy.jobs.some(j=>j.task_ref===t.id&&j.status==='done'&&j.result?.choice==='accept'&&j.conflicts===JSON.stringify(taskConflicts(g,t))&&JSON.stringify(j.scope)===JSON.stringify(describeTask(g,t)));
+export const judgmentChanged=(g,t,j)=>j.mechanism?
+ j.mechanism.revision!==readMech(g,t.actor_ref).revision||arrestFundingChanged(g,t,j)||j.conflicts!==JSON.stringify(taskConflicts(g,t))||JSON.stringify(j.scope)!==JSON.stringify(describeTask(g,t)):
+ j.resume_basis!==JSON.stringify(actorEvidence(g,t.actor_ref))||JSON.stringify(j.scope)!==JSON.stringify(describeTask(g,t));
+export const acceptedTask=(g,t)=>g.autonomy.jobs.some(j=>j.task_ref===t.id&&j.status==='done'&&j.result?.choice==='accept'&&(!j.mechanism||j.mechanism.revision===readMech(g,t.actor_ref).revision&&!arrestFundingChanged(g,t,j))&&j.conflicts===JSON.stringify(taskConflicts(g,t))&&JSON.stringify(j.scope)===JSON.stringify(describeTask(g,t)));
 export function initializeAutonomy(g){g.autonomy??={version:1,controls:[],jobs:[],documents:[],checkpoint:null};}
 export function control(g,t){initializeAutonomy(g);let c=g.autonomy.controls.find(c=>c.task_ref===t.id);if(!c){c={task_ref:t.id,wait:null,reason:'',resume_phase:t.phase,signals:[],request_ref:null,request_scope:null};g.autonomy.controls.push(c);}return c;}
 export function describeTask(g,t){const p=t.params,plan=target(g,p.target_ref),pay=g.obligations.find(x=>x.id===p.obligation_ref);return {kind:t.kind,executor:t.actor_ref,parameters:copy(p),plan,payment:pay?{id:pay.id,amount:pay.amount,due_minute:pay.due_minute,payment_condition:pay.payment_condition}:null};}
@@ -23,14 +29,15 @@ export function waitTask(g,t,code,o,kind='condition'){
 export function recoverable(code){return ['RESOURCE_UNAVAILABLE','PERSONNEL_UNAVAILABLE','PERSON_BUSY','REPLACEMENT_MISSING','PENDING_DECISION','PAYMENT_NOT_VERIFIED','AUTHORITY_EXPIRED','AUTHORITY_NOT_DELIVERED','NO_AUTHORITY','FOOD_UNAVAILABLE'].includes(code);}
 export function queueJudgment(g,t,o,reason){
  const c=control(g,t);if(g.autonomy.jobs.some(j=>j.task_ref===t.id&&!['done','stale'].includes(j.status)))return;
+ if(t.kind==='arrest'){resolveArrestStance(g,t,o,c,describeTask(g,t),taskConflicts(g,t));return;}
  const id=o.key(g,'JUDGE');observe(g,[t.actor_ref],'接令时遇到的具体问题：'+reason,id);g.autonomy.jobs.push({id,task_ref:t.id,actor:t.actor_ref,branch:g.revision.branch_id,status:'pending',reason,at:now(g),scope:describeTask(g,t),conflicts:JSON.stringify(taskConflicts(g,t)),attempts:0,snapshot:null,result:null,error:null});
  waitTask(g,t,reason,o,'judgment');if(t.phase==='delivery')c.resume_phase='start';
 }
-function scopeValid(g,j){const t=g.execution.tasks.find(t=>t.id===j.task_ref);return t&&t.status!=='cancelled'&&JSON.stringify(describeTask(g,t))===JSON.stringify(j.scope)&&j.conflicts===JSON.stringify(taskConflicts(g,t));}
+function scopeValid(g,j){const t=g.execution.tasks.find(t=>t.id===j.task_ref);return t&&!absentActor(g,t.actor_ref)&&t.status!=='cancelled'&&JSON.stringify(describeTask(g,t))===JSON.stringify(j.scope)&&j.conflicts===JSON.stringify(taskConflicts(g,t));}
 export function jobContext(g,id){
  const j=g.autonomy.jobs.find(j=>j.id===id);need(j&&j.branch===g.revision.branch_id&&scopeValid(g,j),'事务方案已改变，不能采用旧判断。');need(profiles[j.actor],'此执行者的判断资料尚未接入。');
  const t=g.execution.tasks.find(t=>t.id===j.task_ref),ord=g.orders.find(x=>x.id===t.order_ref);need(ord.delivered_minute!==null,'命令尚未送达。');
- const known=actorEvidence(g,j.actor),character=characterMaterials(g,j.actor,known);return {version:2,job:id,branch:g.revision.branch_id,world:g.revision.state_id,at:now(g),actor:j.actor,scope:copy(j.scope),known,character,personality:{...copy(profiles[j.actor]),personality:profiles[j.actor].personality+characterText({character})},reason:j.reason};
+ const shared=readActorContext(g,j.actor);return {version:2,job:id,branch:g.revision.branch_id,world:g.revision.state_id,at:now(g),actor:j.actor,scope:copy(j.scope),known:shared.known,character:shared.character,agenda:shared.agenda,personality:{...copy(profiles[j.actor]),priorities:copy(shared.agenda.priorities),personality:shared.personality.text+characterText(shared)},reason:j.reason};
 }
 export const executionContract=characterContract+' '+'你处理执行者已收到的具体委托。只返回JSON：{"choice":"accept|conditional|refuse|clarify","reason":"本人答复","refs":["已知来源编号"],"conditions":["尚需落实的条件"],"suggestion":"可为空的缩小、改期或替代建议"}。只代表本人，不替他人接受，不新增权限、资金、人员或完成事实。附条件接受不是无条件同意；不能把隐瞒或声称完成写成真实成果。按本局已知经历判断，不把原著未来当成已经发生；人物可以误判、冲动或有偏见，不为凑成可执行方案而一律赞同或理性让步。';
 export function checkJudgment(c,r){checkCharacter(c,r?.character);need(r&&Object.keys(r).filter(k=>k!=='character').sort().join('|')==='choice|conditions|reason|refs|suggestion','执行判断字段不符。');need(['accept','conditional','refuse','clarify'].includes(r.choice),'执行判断类型无效。');need(typeof r.reason==='string'&&r.reason.length>0&&r.reason.length<=3000&&typeof r.suggestion==='string'&&r.suggestion.length<=3000,'答复格式无效。');need(Array.isArray(r.conditions)&&r.conditions.length<=8&&r.conditions.every(x=>typeof x==='string'&&x.length>0&&x.length<=1000),'条件格式无效。');need(r.choice!=='accept'||!r.conditions.length,'附条件答复不能记为无条件接受。');need(Array.isArray(r.refs)&&r.refs.length>0&&r.refs.every(ref=>c.known.some(k=>k.ref===ref)),'判断引用了本人未知的资料。');return r;}
@@ -61,6 +68,7 @@ export function refreshWaits(g,o){
  initializeAutonomy(g);
  for(const j of g.autonomy.jobs.filter(j=>!['done','stale'].includes(j.status)))if(!scopeValid(g,j)){j.status='stale';j.error='方案已改变，旧判断不再适用。';const t=g.execution.tasks.find(t=>t.id===j.task_ref);if(t?.kind==='review_plan'&&t.status!=='cancelled'){t.status='cancelled';control(g,t).wait=null;o.order(g,t).status='已撤销';}else if(t?.status==='blocked'&&control(g,t).wait==='judgment'){control(g,t).wait='condition';}}
  for(const c of g.autonomy.controls){const t=g.execution.tasks.find(t=>t.id===c.task_ref);if(!t||t.status!=='blocked'||c.wait!=='condition')continue;
+  if(absentActor(g,t.actor_ref)||custodyUnavailable(g,t.actor_ref)&&!['cancel','arrest','release_prisoner'].includes(t.kind))continue;
   if(c.check_basis===waitBasis(g))continue;
   if(taskConflicts(g,t).length&&!acceptedTask(g,t))continue;
   if(c.request_ref?.startsWith('account:')){if(!g.politics.accounts.find(a=>a.id===c.request_ref.slice(8))?.receipt_present)continue;}

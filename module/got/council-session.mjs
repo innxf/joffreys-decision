@@ -1,3 +1,4 @@
+import {absentActor} from './custody-state.mjs';
 import {quoteMatches} from './middleware-evidence.mjs';
 import {saveCharacter} from './character-state.mjs';
 import {startCouncilV3,applyCouncilV3} from './council-v3.mjs';
@@ -7,6 +8,7 @@ import {worldOps} from './world-engine.mjs';
 import {applyWorldAction,RuleError} from './world-engine.mjs';
 import {applyDialogueAction} from './dialogue-engine.mjs';
 import {checkPre,checkPost,buildContext,observe,audience,exact,taskContracts} from './dialogue-core.mjs';
+import {readMech} from './stance-engine.mjs';
 import {issues,councilReport} from './opening-content.mjs';
 const copy=v=>structuredClone(v);
 const definition=(g,id)=>campaignIssue(g,id)||issues[id];
@@ -159,10 +161,12 @@ export function applyCouncilAction(g,a,ctx){
   }
   // Existing action handlers expect an active council; retain the audience during sealing.
   activity.status='active';activity.remaining=0;m.status='in_progress';
+  const mechBatchVersions=new Map(turns.map(t=>[t.context.actor,readMech(g,t.context.actor).revision]));
   for(const t of turns){
-   applyDialogueAction(g,{type:'dialogue_finish',turn_id:t.id,context:t.context,pre:t.pre,prose:t.prose,post:t.post,request_records:t.request_records},{...inner,councilFrozen:true});
+   applyDialogueAction(g,{type:'dialogue_finish',turn_id:t.id,context:t.context,pre:t.pre,prose:t.prose,post:t.post,request_records:t.request_records},{...inner,councilFrozen:true,mechBatchVersions});
   }
   for(const e of s.entries||[])if(e.characterReview)saveCharacter(g,e.characterReview.context,e.characterReview.result,e.id);
+  for(const t of turns)if(t.post.mech_deltas?.some(d=>d.agenda_impact==='review')&&g.dialogue.agendas[t.context.actor]?.character)g.dialogue.agendas[t.context.actor].character.pending=true;
   const appliedIssues=[];
   const conflict=e=>appliedIssues.length?'；请一并核对本次先前的决定：'+[...new Set(appliedIssues)].join('、'):'';
   for(const c of s.choices){try{if(campaignIssue(g,c.issue))campaignDecision(g,m,c.choice,inner,worldOps,c.issue,id=>applyDialogueAction(g,{type:'dialogue_execute',proposal_ref:id},inner));else applyWorldAction(g,{type:'opening_decide',meeting:m.id,...c},inner);appliedIssues.push(definition(g,c.issue)?.title||c.issue);}catch(e){throw new RuleError('议题「'+(definition(g,c.issue)?.title||c.issue)+'」未能交办：'+e.message+conflict(e));}}
@@ -178,10 +182,10 @@ export function applyCouncilAction(g,a,ctx){
   }
   activity.status='ended';activity.ended_at=end;activity.node=activity.nodes.length;activity.remaining=0;
   m.status='closed';m.attended=true;s.phase='closed';
-  m.minutes=s.version===3?s.agenda.map(q=>({title:q.title,status:'decided',choice:q.summary,orders:[...(m.issues[q.id]?.order_refs||[])]})):s.choices.map(c=>({title:definition(g,c.issue).title,status:m.issues[c.issue].status,choice:definition(g,c.issue).choices.find(x=>x[0]===c.choice)[1],orders:[...m.issues[c.issue].order_refs]}));
-  if(s.version===3)for(const q of s.agenda)if(!s.choices.some(c=>c.issue===q.id)){m.issues[q.id].status='decided';m.issues[q.id].decision_ref=ctx.id;}
+  m.minutes=s.version===3?s.agenda.map(q=>({title:q.title,status:q.report_only?'reported':q.deferred?'deferred':'decided',choice:q.summary,orders:[...(m.issues[q.id]?.order_refs||[])]})):s.choices.map(c=>({title:definition(g,c.issue).title,status:m.issues[c.issue].status,choice:definition(g,c.issue).choices.find(x=>x[0]===c.choice)[1],orders:[...m.issues[c.issue].order_refs]}));
+  if(s.version===3)for(const q of s.agenda)if(!s.choices.some(c=>c.issue===q.id)){m.issues[q.id].status=q.report_only||q.deferred?'deferred':'decided';if(!q.report_only&&!q.deferred)m.issues[q.id].decision_ref=ctx.id;}
   s.minutes=[...m.minutes.map(x=>x.choice),...turns.flatMap(t=>t.post.candidates.filter((p,i)=>s.approvals[t.id+':'+i]&&p.action.type!=='opening_decide').map(p=>'另命：'+p.quote))];
-  observe(g,['U001',...activity.participants],'书记将文书捧到桌前。「陛下，今日的决定已经记下：'+s.minutes.join('；')+'。文书即刻送出。」众人起身，等候国王离席。',m.id+':minutes');
+  observe(g,activity.participants.filter(id=>!absentActor(g,id)&&g.dialogue.presence.some(p=>p.activity_ref===activity.id&&p.actor===id&&p.present)),'书记将文书捧到桌前。「陛下，今日的决定已经记下：'+s.minutes.join('；')+'。文书即刻送出。」众人起身，等候国王离席。',m.id+':minutes');
   // Responses accompany the committed minutes; they are not a second execution.
   const responses=(g.campaign?.history||[]).filter(h=>h.choice==='council-decision'&&h.meeting===m.id&&h.reply).map(h=>h.reply);
   if(responses.length){

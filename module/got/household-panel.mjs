@@ -1,3 +1,4 @@
+import {renderArrests} from './arrest-panel.mjs';
 import {places} from './opening-content.mjs';
 import {household,guardSlots,guardCandidates,guardsInside,guardLocked} from './household-guards.mjs';
 import {currentDaily,mealCandidates,invitationReason,reminder,morningWashPending,nextRoomMeal,afterDinner} from './daily-engine.mjs';
@@ -24,7 +25,7 @@ export function renderHousehold(runtime,{button,act}){
     }d.showModal();});b.className='guard-slot';b.append(portrait(s.actor),node('span',(s.actor?characterName(s.actor):`第${index+1}席 · 空缺`)+' · '+statuses[s.mode]+(s.pending?' · 待到岗：'+characterName(s.pending.actor):'')));box.append(b);
   }
  }
- const settings=document.getElementById('court-personnel');if(settings){document.getElementById('household-settings')?.remove();const box=node('section','',settings);box.id='household-settings';node('h3','贴身值勤',box);node('p','新近卫抵达后接替当值者；只登记在红堡、尚无具体位置者，由传令召集，约一刻钟到岗。',box);
+ const settings=document.getElementById('court-personnel');if(settings){document.getElementById('household-settings')?.remove();const box=node('section','',settings);box.id='household-settings';renderArrests(runtime,box,{button,act});node('h3','贴身值勤',box);node('p','新近卫抵达后接替当值者；只登记在红堡、尚无具体位置者，由传令召集，约一刻钟到岗。',box);
   for(const [i,s]of guardSlots(g).entries()){const label=node('label',`近卫第${i+1}席 `,box),select=node('select','',label);const none=node('option','空缺',select);none.value='';for(const c of guardCandidates(g)){const opt=node('option',c.name+(c.reason?' · '+c.reason:''),select);opt.value=c.id;opt.disabled=!!c.reason;}select.value=s.pending?.actor||s.actor||'';const assign=button('安排第'+(i+1)+'席',()=>act({type:'guard_assign',slot:i,actor:select.value||null}));select.disabled=assign.disabled=guardLocked(g,i);box.append(assign);if(guardLocked(g,i))node('p','桑铎首日当值，今日不可调换。',box);}
   for(const meal of ['breakfast','lunch','dinner']){const details=node('details','',box);node('summary',dailyDefinitions.find(d=>d.id===meal).name+'常规人选',details);node('p','当前常规：'+(household(g).meals[meal].map(characterName).join('、')||'独自用餐'),details);const read=selection(g,meal,household(g).meals[meal],details);details.append(button('保存常规名单',()=>act({type:'daily_preferences',meal,actors:read()})));}
  }

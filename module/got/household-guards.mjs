@@ -1,3 +1,4 @@
+import {custodyUnavailable} from './custody-state.mjs';
 import {places} from './opening-content.mjs';
 import {placeRegions,travelMinutes} from './navigation-data.mjs';
 import {profiles} from './dialogue-profiles.mjs';
@@ -18,8 +19,9 @@ export function guardKnowledge(g,id){
 }
 const here=g=>person(g,'U001')?.location;
 export const placeOf=location=>Object.keys(places).find(k=>places[k]===location);
-const position=(g,id,location)=>{const a=person(g,id);if(a){a.location=location;a.location_precision='具体地点';a.last_updated_minute=now(g);}};
+const position=(g,id,location)=>{const a=person(g,id);if(a&&!custodyUnavailable(g,id)){a.location=location;a.location_precision='具体地点';a.last_updated_minute=now(g);}};
 export function guardUnavailable(g,id){
+ if(custodyUnavailable(g,id))return '无法自由行动或承担看管职责';
  const a=person(g,id),kg=g.kingsguard.find(k=>k.holder===id);
  if(!a||a.life!=='存活')return '已不在世或尚未登记';
  if(id!=='P016'&&!kg)return '不在本局御林铁卫名册';

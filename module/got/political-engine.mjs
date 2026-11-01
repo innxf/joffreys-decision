@@ -210,9 +210,7 @@ export function runPoliticalTask(g,t,ctx,o){
       o.spend(g,ctx,pay.amount,null,'新债实付利息',[pay.id,d.id]);due.paid=pay.amount;pay.status='已支付';o.finish(g,t,'本期利息已支付；债务本金没有因此减少。');return true;
     }
     if(t.kind==='bond_principal'){
-      const d=g.politics.debts.find(x=>x.id===p.target_ref);o.need(p.amount<=d.outstanding,'INVALID_PRINCIPAL');accrue(d,clock(g));o.spend(g,ctx,p.amount,null,'实还债券本金',[d.id]);d.outstanding-=p.amount;
-      for(const due of d.dues.filter(x=>x.kind==='principal')){const paid=Math.min(p.amount,due.amount-due.paid);due.paid+=paid;const obligation=g.obligations.find(x=>x.id===due.obligation_ref);obligation.amount=due.amount-due.paid;if(!obligation.amount)obligation.status='已支付';}
-      if(!d.outstanding){const denom=BigInt(d.period_minutes)*10000n;const value=Number((BigInt(d.interest_numerator)+denom/2n)/denom)/10000;if(value)obligation(g,ctx,d,value,'interest',clock(g),o);d.interest_numerator='0';}
+      const d=g.politics.debts.find(x=>x.id===p.target_ref);repayPrincipal(g,d,p.amount,ctx,o);
       o.finish(g,t,`本金已偿还${p.amount}；未偿本金${d.outstanding}。既有利息义务继续存在。`);return true;
     }
   }
@@ -255,4 +253,10 @@ export function politicalView(g){
     audits:g.politics.audits.filter(a=>received(a.report_ref)).map(a=>({id:a.id,account_ref:a.account_ref,result:a.result})),
     issues:g.politics.issues.map(i=>{const step=g.projects.find(p=>p.id===i.id)?.policy?.step_refs[0]||i.source_refs.find(ref=>g.orders.some(o=>o.id===ref)),order=step&&g.orders.find(o=>o.id===step);return {id:i.id,goal:i.goal,paid:i.paid,registrar:i.registrar,status:order&&!received(order.report_message_id)?'awaiting_report':i.status};}),
     debts:g.politics.debts.map(d=>({id:d.id,outstanding:d.outstanding,dues:d.dues.map(x=>({...x}))}))};
+}
+
+export function repayPrincipal(g,d,value,ctx,o,reservation=null){
+o.need(value<=d.outstanding,'INVALID_PRINCIPAL');accrue(d,clock(g));o.spend(g,ctx,value,reservation,'实还债券本金',[d.id,...d.dues.filter(x=>x.kind==='principal'&&x.paid<x.amount).map(x=>x.obligation_ref)]);d.outstanding-=value;
+      for(const due of d.dues.filter(x=>x.kind==='principal')){const paid=Math.min(value,due.amount-due.paid);due.paid+=paid;const obligation=g.obligations.find(x=>x.id===due.obligation_ref);obligation.amount=due.amount-due.paid;if(!obligation.amount)obligation.status='已支付';}
+      if(!d.outstanding){const denom=BigInt(d.period_minutes)*10000n;const value=Number((BigInt(d.interest_numerator)+denom/2n)/denom)/10000;if(value)obligation(g,ctx,d,value,'interest',clock(g),o);d.interest_numerator='0';}
 }
